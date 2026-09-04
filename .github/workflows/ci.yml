@@ -1,0 +1,29 @@
+name: Repository checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Validate Python and repository controls
+        run: python scripts/release_check.py
+      - name: Parse own-code MCP servers
+        run: |
+          node --check Startup/CommandBridge/batch-exec-server.js
+          node --check Startup/FlowBridge/flow-mcp-server.js

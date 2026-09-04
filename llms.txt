@@ -1,0 +1,29 @@
+# Agent of Record
+
+> A governed foundation for AI agents in public accounting: memory, approval-gated execution, behavioral learning, and auditable automation.
+
+## Start
+
+- README.md
+- docs/public-accounting-vision.md
+- docs/public-accounting-control-map.md
+- docs/architecture.md
+- docs/measured-results.md
+- docs/limitations.md
+
+## Core implementation
+
+- Startup/CommandBridge/batch-exec-server.js
+- Startup/FlowBridge/flow-mcp-server.js
+- CoworkConfig/cowork-memory/cowork-lessons.md
+- CoworkConfig/Skills/self-improvement/
+- GitHubSetup/
+
+## Synthetic example
+
+- examples/synthetic-control-loop/
+
+## Writing
+
+- docs/published-writing.md
+- docs/article-roadmap.md

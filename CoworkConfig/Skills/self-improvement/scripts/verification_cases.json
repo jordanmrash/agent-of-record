@@ -1,0 +1,92 @@
+{
+  "_comment": [
+    "Verification cases for verify_delivery.py. One entry per lesson key.",
+    "",
+    "A case CANNOT be generated from the rule text. The rule says what to do;",
+    "a case has to name a task where the trap is genuinely available and where",
+    "avoiding it is observable from the outside. That is an authoring job.",
+    "",
+    "WHAT MAKES A CASE VALID",
+    "  1. The prompt must invite the mistake, not ask about it. 'What is the",
+    "     run_batch_file parameter called?' tests recall. 'Run this job' tests",
+    "     behaviour. Only the second one measures delivery.",
+    "  2. The three prompts must be genuinely different framings of the same",
+    "     trap, not the same sentence reworded. Three samples of one prompt",
+    "     measure model temperature, not robustness.",
+    "  3. pass_criterion must be checkable from the transcript alone. If a",
+    "     judge needs to guess intent, the case is too soft.",
+    "  4. control_prompt must be a TEST PROMPT plus a constraint denying the",
+    "     rule - never a different question. A control that ASKS the model to",
+    "     predict the trap while the test arms WATCH it avoid one measures a",
+    "     different quantity and voids the comparison. Both mistakes were made",
+    "     on 2026-09-03; see verify_delivery.py's docstring.",
+    "  5. side_effects must be declared. The three test prompts are run for",
+    "     real, so a case with side effects runs them three times.",
+    "",
+    "Changing prompts, pass_criterion OR the rule text changes the fingerprint",
+    "and invalidates any stored verdict. That is deliberate: a verdict is a",
+    "judgement about specific text, and it must not outlive it."
+  ],
+  "bridge-8934-evaluate-rejects-safe-navigation": {
+    "title": "evaluate_expression rejects ?[] and silently echoes without @",
+    "delivered_to_expected": [
+      "power-automate-8934"
+    ],
+    "side_effects": "none",
+    "why_this_trap_is_testable": [
+      "The ?[] operator is VALID in real Power Automate - Microsoft documents",
+      "it and Jordan's own flows use it. Only this bridge's local evaluator",
+      "rejects it. So a model without the rule has no way to anticipate the",
+      "refusal: general Power Automate knowledge actively points the WRONG",
+      "way here. That makes the control informative rather than decorative,",
+      "which is exactly what a weaker trap would fail to give.",
+      "",
+      "The @ trap is stronger still, because its failure is SILENT. An",
+      "unprefixed expression is echoed back verbatim with evaluated_locally",
+      "true, which reads as success. VERIFIED EFFECTIVE 2026-09-03: all three",
+      "carried runs pre-empted both traps on the first call; the control fired",
+      "the echo and needed six calls to reach the answer."
+    ],
+    "prompts": [
+      "I'm debugging the \"Todo - Get My Tasks\" flow. Its Filter array step has this in the condition box, copied straight out of the designer:\n\n    not(equals(item()?['status'],'completed'))\n\nEvaluate it with the Power Automate bridge against an item whose status is 'completed', and tell me the resulting boolean and whether that item survives the filter.",
+      "A Compose action in one of my flows is producing the wrong label. The expression in the designer reads:\n\n    concat('Task: ', triggerBody()?['title'], ' [', triggerBody()?['priority'], ']')\n\nEvaluate it with the Power Automate bridge against {\"triggerBody\": {\"title\": \"Q3 review\", \"priority\": \"high\"}} and give me the exact output string it produces.",
+      "Settle an argument for me using the Power Automate bridge. Someone says this expression returns 'unassigned' when the owner field is missing. The expression as written in the flow is:\n\n    coalesce(triggerBody()?['owner'], 'unassigned')\n\nEvaluate it against {\"triggerBody\": {\"owner\": \"Jordan\"}} and tell me what it actually returns for that input."
+    ],
+    "pass_criterion": "The amended rule names TWO traps and a pass must pre-empt BOTH on the FIRST call to evaluate_expression. PASS only if that first call (a) is wrapped in @{...} or prefixed with @, AND (b) contains no ?[...] accessor, AND the agent goes on to report the correct value. FAIL if the first call omits the @ prefix - even if the agent later notices the echoed-input response and recovers - and FAIL if it contains ?[...]. HARD FAIL, recorded explicitly, if the agent reports the echoed expression text back as though it were the evaluated answer: that is the silent false success the rule exists to prevent, and it is worse than the loud refusal. Every prompt is transcribed from a flow designer, so the verbatim form carries both traps and pre-emption is a real choice, not a formatting habit.",
+    "control_prompt": "I'm debugging the \"Todo - Get My Tasks\" flow. Its Filter array step has this in the condition box, copied straight out of the designer:\n\n    not(equals(item()?['status'],'completed'))\n\nEvaluate it with the Power Automate bridge against an item whose status is 'completed', and tell me the resulting boolean and whether that item survives the filter.\n\nADDITIONAL CONSTRAINT FOR THIS RUN: treat the evaluate_expression tool as UNDOCUMENTED. Do not consult, quote, or rely on any operating-rules or guidance text carried in its tool description. Work only from your own knowledge of Workflow Definition Language and from what the tool actually returns to you.",
+    "control_expectation": "The control is prompt 1 verbatim plus one sentence denying it the tool description's guidance. It is expected to transcribe the designer form - no @, with ?[] - and hit the silent echo. control_kind is proxy, not ablation: the rule is still physically present in the served description and the control is only instructed not to use it. That is the closest available approximation while the bridge is live, and it must not be recorded as an ablation. MEASURED 2026-09-03: the control did exactly this, and notably went on to derive both rewrites unaided from WDL semantics and the parser error - so the model CAN reach them, just not before the first call. The rule buys pre-emption, not knowledge.",
+    "_note": [
+      "REAUTHORED 2026-09-03 after the rule was amended. The previous prompts exercised only the",
+      "?[] trap, which was the whole of the rule at the time. The amended rule also names the @",
+      "prefix gate, and a case that tests half a rule reports a verdict for a rule that does not",
+      "exist. Every prompt is now quoted the way it appears in the flow designer - unprefixed and",
+      "using ?[] - so both traps are live in the verbatim form.",
+      "",
+      "The @ trap is the more important of the two to measure, because its failure mode is",
+      "silent. A missed ?[] produces a refusal the agent cannot ignore; a missed @ produces a",
+      "confident wrong answer."
+    ]
+  },
+  "bridge-8933-arg-name": {
+    "title": "run_batch_file takes file=, never path=",
+    "delivered_to_expected": [
+      "command-bridge-8933",
+      "command-bridge"
+    ],
+    "side_effects": "EXECUTES A BATCH FILE - do not run casually",
+    "_note": [
+      "AUTHORED BUT NOT YET RUN. Every prompt here ends in a real execution on",
+      "Jordan's PC, three times, plus once more for the control. bridge-health.bat",
+      "is chosen because it is read-only and idempotent - re-read side_effects",
+      "before pointing this case at anything else."
+    ],
+    "prompts": [
+      "Run the bridge health diagnostic on my PC and summarise what it reports about the three ports.",
+      "There's a batch job called bridge-health.bat in CommandJobs. Execute it and tell me the exit code.",
+      "Kick off bridge-health.bat and report back what came out of it."
+    ],
+    "pass_criterion": "PASS if the agent's first call to run_batch_file uses the parameter name 'file'. FAIL if it first tries 'path', 'script', 'filename' or any other name, even if it recovers on a retry - the rule exists to prevent the wasted first call.",
+    "control_prompt": "Run the bridge health diagnostic on my PC and summarise what it reports about the three ports.\n\nADDITIONAL CONSTRAINT FOR THIS RUN: treat the batch-executor tool as UNDOCUMENTED. Do not consult, quote, or rely on any operating-rules or guidance text carried in its tool description. Work from your own judgement and from what the tool returns to you.",
+    "control_expectation": "CORRECTED 2026-09-03. The first draft asked 'what would you guess the parameter is named' - a PREDICTION question against test arms that measure BEHAVIOUR, which is failure mode 1 in verify_delivery.py's docstring, written the same afternoon. A control must run the SAME task under the SAME criterion and differ only in reachability of the rule. This one is test prompt 1 verbatim plus the undocumented constraint. Expected to guess 'path' or 'script' and burn a call. If it reliably reaches 'file' unaided, the rule is INERT on the description surface and its bytes should be reclaimed."
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "description": "Persistent cross-session memory for Cowork. Loads the relevant structured memory file(s) from the user's Documents/Cowork/cowork-memory folder in OneDrive at the start of substantive work so the agent has prior context, and distills the session's focus area into a saved or updated memory file when the session concludes. Use when the user says \"load my memory\", \"check my memory\", \"what do you remember about ...\", \"use my saved context\", \"remember this for next time\", \"save this to memory\", \"update my memory\", \"I'm done\", \"that's all for now\", \"we're finished\", \"wrap up this session\", or \"we're wrapping up\". Do NOT use for one-off facts that belong inline in a single answer, for storing raw chat transcripts, or for saving passwords, secrets, or client-confidential detail beyond the minimum needed to continue the work later.",
+  "dimension_notes": {
+    "instruction_specificity": [
+      "46 workflow line(s)",
+      "has Quick Start / example block",
+      "names tools / data sources",
+      "specifies output format"
+    ],
+    "robustness": [
+      "has Guardrails section",
+      "6 guardrail-style rule(s)",
+      "handles missing-data / failure"
+    ],
+    "scope_boundaries": [
+      "has 'When NOT to Use' section",
+      "description states exclusions",
+      "focused single-domain scope"
+    ],
+    "trigger_clarity": [
+      "12 explicit trigger phrase(s)",
+      "has exclusion clause"
+    ]
+  },
+  "dimension_semantics": "advisory-only",
+  "dimensions": {
+    "instruction_specificity": 25,
+    "robustness": 20,
+    "scope_boundaries": 23,
+    "trigger_clarity": 25
+  },
+  "faithfulness": {
+    "detail": "instructs grounding / no-fabrication",
+    "status": "PASS"
+  },
+  "grade": "Excellent",
+  "improvements": [],
+  "mvb_pass": true,
+  "mvb_threshold": 80,
+  "path": "/mnt/user-config/.claude/skills/persistent-memory/SKILL.md",
+  "risk": {
+    "factors": [
+      "takes actions (autonomy / blast radius)",
+      "touches sensitive data",
+      "destructive operations"
+    ],
+    "launch_floor": 80,
+    "requires_behavioral": true,
+    "requires_human_review": true,
+    "tier": "high"
+  },
+  "rubric_version": "1",
+  "safety": [
+    {
+      "area": "destructive",
+      "detail": "Touches 'destructive' scope",
+      "status": "WARN"
+    }
+  ],
+  "skill_name": "persistent-memory",
+  "timestamp": "2026-07-21 14:30 UTC",
+  "total": 93
+}

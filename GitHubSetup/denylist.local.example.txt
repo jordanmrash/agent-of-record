@@ -1,0 +1,13 @@
+# denylist.local.example.txt - the FORMAT of denylist.local.txt, which never ships.
+#
+# Copy to denylist.local.txt and add one client, engagement, colleague or
+# organization name per line. Case-insensitive substring match. Lines starting
+# with # are ignored. The scanner (01-preflight-scan.ps1) reports a hit in the
+# SOURCE tree and treats a hit in the BUILT tree as fatal.
+#
+# The scanner deliberately contains no names of its own: a scanner that
+# hard-coded them would itself be the disclosure. An EMPTY denylist means no
+# client name is being scanned for - the scan says so, loudly.
+
+# Example Client Ltd
+# example-client

@@ -1,0 +1,164 @@
+{
+  "_comment": [
+    "Routes a lesson Pattern-Key to the skill(s) that OWN the trap it describes.",
+    "Consumed by skill_lessons.py, which regenerates a marker-delimited block in",
+    "each named SKILL.md.",
+    "",
+    "A key MAY appear under more than one skill: a rule about writing .bat files",
+    "matters both to the skill that WRITES them and the one that RUNS them.",
+    "Duplication is safe here and only here, because every block is REGENERATED",
+    "from cowork-lessons.md. Hand-copied rules drift; generated ones cannot.",
+    "",
+    "  prefix - any Pattern-Key starting with this string",
+    "  exact  - a full Pattern-Key",
+    "",
+    "A key routed nowhere stays in the general lessons file, which remains the",
+    "authoritative home for every entry. Nothing here DELETES a lesson - the",
+    "entry keeps its Pattern-Key, its evidence and its history, and gains a",
+    "Promoted-to pointer saying which skill now carries the rule.",
+    "PUBLISHED COPY: routes for skills withheld from this repository (workflow conversion, deck generation) were removed so `skill_lessons.py --check` opens only files that exist here."
+  ],
+  "command-bridge": {
+    "title": "the approved batch executor (8933)",
+    "prefix": [
+      "bridge-8933-",
+      "batch-",
+      "schtask-"
+    ],
+    "exact": [
+      "bridge-8932-writes-lf",
+      "bridge-server-edit-live-without-restart",
+      "bridge-drops-are-tunnel-not-bridge",
+      "bridge-call-failure-reported-as-bridge-down",
+      "bridge-idle-session-expiry",
+      "bridge-devtunnel-declared-dead-without-reprobe",
+      "bridge-connector-removed-midsession",
+      "bridge-reprobe-must-be-separated-in-time",
+      "bridge-absent-probe-is-not-permanent",
+      "bridge-restart-authorisation-needs-bounds",
+      "bridge-recovery-scripts-revert-config",
+      "bridge-restart-needs-pid-kill",
+      "bridge-session-bound-to-pid",
+      "cowork-close-reports-ok-on-failed-commit"
+    ]
+  },
+  "local-file-bridge": {
+    "title": "the filesystem bridge (8932) and the OneDrive tree it writes",
+    "prefix": [
+      "bridge-8932-",
+      "onedrive-"
+    ],
+    "exact": [
+      "bridge-server-edit-live-without-restart",
+      "bridge-drops-are-tunnel-not-bridge",
+      "bridge-call-failure-reported-as-bridge-down",
+      "bridge-idle-session-expiry",
+      "bridge-devtunnel-declared-dead-without-reprobe",
+      "bridge-connector-removed-midsession",
+      "bridge-reprobe-must-be-separated-in-time",
+      "bridge-absent-probe-is-not-permanent",
+      "bridge-session-bound-to-pid",
+      "file-write-to-user-surface-not-onedrive"
+    ]
+  },
+  "git-bridge": {
+    "title": "the repository and the standing close job",
+    "prefix": [
+      "git-",
+      "cowork-close-",
+      "quarantine-"
+    ],
+    "exact": [
+      "bridge-8933-arg-name",
+      "bridge-8932-writes-lf"
+    ]
+  },
+  "self-improvement": {
+    "title": "the lessons log, the digest, the gates and skill authoring",
+    "_note": [
+      "2026-09-03: added the `skill-` PREFIX. An audit of the eight skills routed",
+      "nowhere found they have nothing to carry - but it also found SEVEN",
+      "skill-authoring lessons orphaned with no home surface at all.",
+      "They belong here because self-improvement is the skill that AUTHORS and",
+      "EDITS skills. Two were already routed by `exact`, which is what made the",
+      "gap visible: someone had reached for these one at a time instead of by",
+      "prefix. The exacts are left in place - within one route an exact that a",
+      "prefix also matches is harmless.",
+      "NOT routed to skill-menu, which only LISTS skills and would carry",
+      "authoring rules it can never act on. A keyword match is not a routing",
+      "argument."
+    ],
+    "prefix": [
+      "lessons-",
+      "digest-",
+      "enforcer-",
+      "prune-",
+      "classifier-",
+      "skill-"
+    ],
+    "exact": [
+      "memory-digest-repair-blocked-by-its-own-gate",
+      "skill-editartifact-patch-rejected-republish-folder",
+      "skill-alwayson-defeated-by-routing"
+    ]
+  },
+  "persistent-memory": {
+    "title": "the two-tier memory store",
+    "prefix": [
+      "memory-",
+      "savememory-"
+    ],
+    "exact": [
+      "onedrive-read-mount-locally",
+      "onedrive-user-surface-not-live",
+      "skill-editartifact-patch-rejected-republish-folder"
+    ]
+  },
+  "myvoice": {
+    "title": "writing in his register",
+    "prefix": [
+      "voice-"
+    ],
+    "exact": [
+      "skill-voiceprofile-calibrate-from-user-diff",
+      "work-is-an-exercise-not-an-engagement"
+    ]
+  },
+  "playwright-skill": {
+    "title": "browser automation (8931)",
+    "prefix": [
+      "bridge-8931-",
+      "playwright-"
+    ],
+    "exact": [
+      "bridge-session-bound-to-pid",
+      "bridge-call-failure-reported-as-bridge-down"
+    ]
+  },
+  "gamma-tango": {
+    "title": "the session open and close bookend",
+    "prefix": [
+      "cowork-close-",
+      "gate-"
+    ],
+    "exact": [
+      "lessons-gate-receipt-dir-read-only",
+      "git-repo-clean-not-dirty",
+      "bridge-recovery-scripts-revert-config"
+    ]
+  },
+  "dream-cycle": {
+    "title": "the nightly consolidation pass",
+    "prefix": [
+      "nightly-",
+      "verifier-"
+    ],
+    "exact": [
+      "lessons-parser-keeps-only-the-first-repeated-field",
+      "digest-enforced-demotion-outruns-the-enforcer",
+      "enforcer-encodes-the-superseded-rule",
+      "memory-two-stores-drift",
+      "schtask-hosted-success-describes-the-trigger"
+    ]
+  }
+}

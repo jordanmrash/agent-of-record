@@ -1,0 +1,18 @@
+{
+  "task.allowAutomaticTasks": "on",
+
+  // Stops VS Code reconnecting to previous-session terminals on reload.
+  // Without this, old bridge processes come back holding 8931/8932 and the
+  // new tasks fail with EADDRINUSE.
+  "terminal.integrated.enablePersistentSessions": false,
+
+  "remote.autoForwardPorts": true,
+  "remote.autoForwardPortsSource": "process",
+  "remote.restoreForwardedPorts": true,
+  "remote.portsAttributes": {
+    "8931": { "label": "Playwright", "onAutoForward": "silent" },
+    "8932": { "label": "Filesystem", "onAutoForward": "silent" },
+    "8933": { "label": "Commands",   "onAutoForward": "silent" },
+    "8934": { "label": "PowerAutomate", "onAutoForward": "silent" }
+  }
+}

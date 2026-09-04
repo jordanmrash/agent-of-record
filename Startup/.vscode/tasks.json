@@ -1,0 +1,150 @@
+{
+  // ==========================================================
+  //  Cowork Local Bridges
+  //  C:\Users\YOURUSER\Documents\COPILOT_COWORK\Startup\.vscode\tasks.json
+  //
+  //  All FOUR bridges start automatically when this folder is
+  //  opened (GO.bat). Supergateway is invoked here; --stdio points
+  //  at the matching server .cmd file in Startup\.
+  //
+  //  After every restart: set 8931, 8932, 8933 and 8934 to PUBLIC in
+  //  the Ports panel. That visibility does not persist.
+  //
+  //  2026-08-18: supergateway is now PINNED LOCALLY at
+  //  Startup\node_modules\supergateway (v3.4.3) and launched with
+  //  node directly. It used to run as "npx -y supergateway", which
+  //  hit the npm registry three times on every folder open - slow,
+  //  and it fails outright when the network is flaky.
+  //  Backup of the previous file: tasks.json.pre-local-supergateway-backup
+  //  A watchdog scheduled task (CoworkBridgeWatchdog) probes the
+  //  ports every 2 minutes and restarts any that have died.
+  //  2026-09-02: the watchdog covers ALL FOUR ports including 8934,
+  //  with per-port flags matching this file. Verified live via
+  //  watchdog\status.txt. Trust _bridge-watchdog.ps1, not this note.
+  //
+  //  2026-08-21: 8932 and 8933 now run STATELESS. --stateful and
+  //  --sessionTimeout 1800000 were removed from those two tasks: the
+  //  30-minute idle expiry silently dropped all three tool surfaces
+  //  mid-session on 2026-08-20 while every process stayed alive.
+  //  Stateful also measured a 16% call-drop rate on 8932 and did not
+  //  fix the 8933 long-job kill. 8931 KEEPS --stateful - it is required
+  //  for the Playwright Edge SSO profile lock - and must never get
+  //  --isolated, which would lose SSO.
+  //  Backup of the previous file: tasks.json.pre-stateless-8932-8933-backup
+  //
+  //  2026-08-21: the "Cowork Autorun Watcher (no port)" task was REMOVED.
+  //  AUTORUN.ps1 is not an approved execution path for Cowork - if 8933 is
+  //  unreachable the rule is to STOP and report, never to route work to
+  //  COPILOT_COWORK\autorun\queue. Auto-starting the watcher left that
+  //  path armed and inviting. The script itself is untouched on disk and
+  //  can still be run by hand; only the folderOpen auto-start is gone.
+  //
+  //  2026-09-02: ADDED the Power Automate Bridge on 8934. It follows the
+  //  8932/8933 STATELESS pattern deliberately - no --stateful, no
+  //  --sessionTimeout - per the 2026-08-21 finding above.
+  //  It exists because the Power Platform CLI cannot reach flows: there is
+  //  no `pac flow` command group, `pac admin` has no flow subcommand, and
+  //  `pac auth token` mints only the api.powerplatform.com audience, which
+  //  returned 401 against both the Dataverse workflow table and
+  //  api.flow.microsoft.com. Measured 2026-09-02; evidence in
+  //  Outputs\2026-09-02 - Flow CRUD Interface Probe.
+  //  The server is INERT by design until an Entra app registration is wired
+  //  into FlowBridge\flow-bridge.config.json: auth_strategy is "none",
+  //  read_only is true, allow_delete is false and no environment is
+  //  allowlisted, so every flow tool refuses with a clear reason.
+  //  Backup of the previous file: tasks.json.pre-8934-backup
+  // ==========================================================
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Cowork Playwright Bridge (8931)",
+      "type": "shell",
+      "command": "node",
+      "args": [
+        "C:\\Users\\YOURUSER\\Documents\\COPILOT_COWORK\\Startup\\node_modules\\supergateway\\dist\\index.js",
+        "--port", "8931",
+        "--outputTransport", "streamableHttp",
+        "--stateful",
+        "--sessionTimeout", "1800000",
+        "--stdio", "C:\\Users\\YOURUSER\\Documents\\COPILOT_COWORK\\Startup\\pw-server.cmd"
+      ],
+      "isBackground": true,
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "dedicated",
+        "showReuseMessage": false,
+        "clear": true
+      },
+      "problemMatcher": [],
+      "runOptions": { "runOn": "folderOpen" }
+    },
+    {
+      "label": "Cowork Filesystem Bridge (8932)",
+      "type": "shell",
+      "command": "node",
+      "args": [
+        "C:\\Users\\YOURUSER\\Documents\\COPILOT_COWORK\\Startup\\node_modules\\supergateway\\dist\\index.js",
+        "--port", "8932",
+        "--outputTransport", "streamableHttp",
+        "--stdio", "C:\\Users\\YOURUSER\\Documents\\COPILOT_COWORK\\Startup\\fs-server.cmd"
+      ],
+      "isBackground": true,
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "dedicated",
+        "showReuseMessage": false,
+        "clear": true
+      },
+      "problemMatcher": [],
+      "runOptions": { "runOn": "folderOpen" }
+    },
+    {
+      "label": "Cowork Command Bridge (8933)",
+      "type": "shell",
+      "command": "node",
+      "args": [
+        "C:\\Users\\YOURUSER\\Documents\\COPILOT_COWORK\\Startup\\node_modules\\supergateway\\dist\\index.js",
+        "--port", "8933",
+        "--outputTransport", "streamableHttp",
+        "--stdio", "C:\\Users\\YOURUSER\\Documents\\COPILOT_COWORK\\Startup\\exec-server.cmd"
+      ],
+      "isBackground": true,
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "dedicated",
+        "showReuseMessage": false,
+        "clear": true
+      },
+      "problemMatcher": [],
+      "runOptions": { "runOn": "folderOpen" }
+    },
+    {
+      "label": "Cowork Power Automate Bridge (8934)",
+      "type": "shell",
+      "command": "node",
+      "args": [
+        "C:\\Users\\YOURUSER\\Documents\\COPILOT_COWORK\\Startup\\node_modules\\supergateway\\dist\\index.js",
+        "--port", "8934",
+        "--outputTransport", "streamableHttp",
+        "--stdio", "C:\\Users\\YOURUSER\\Documents\\COPILOT_COWORK\\Startup\\flow-server.cmd"
+      ],
+      "isBackground": true,
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "dedicated",
+        "showReuseMessage": false,
+        "clear": true
+      },
+      "problemMatcher": [],
+      "runOptions": { "runOn": "folderOpen" }
+    }
+  ]
+}

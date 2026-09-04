@@ -1,0 +1,62 @@
+{
+  "description": "Jordan's session bookend command. When he types \"gamma tango\" (or \"gt\", \"gamma tango\nopen\", \"gamma tango close\", \"gamma tango me\", \"bookend this\", \"open the session\", \"close the\nsession\"), run the three-skill routine in one pass: git-bridge, persistent-memory,\nself-improvement.\nOPEN (start of a task): load the matching memory file, scan cowork-lessons.md\nPattern-Keys, and report the repo's current git status as the baseline.\nCLOSE (end of a task): log any lessons learned, update the memory file, then propose\nand run a git commit of what changed.\nIf the phrase arrives with no mode word, infer OPEN when no work has been done yet in\nthe session and CLOSE when it has; say which mode was chosen.\nDo NOT use for a plain git question (\"show me the diff\"), a plain memory request\n(\"save memory\"), or a plain lesson request (\"log that\") \u2014 route those to the single\nowning skill instead.\n",
+  "description_length": {
+    "detail": "878/1024 UTF-16 units",
+    "headroom_units": 146,
+    "max_units": 1024,
+    "status": "PASS",
+    "units": 878
+  },
+  "dimension_notes": {
+    "instruction_specificity": [
+      "23 workflow line(s)",
+      "has Quick Start / example block",
+      "no specific tools named",
+      "no output format"
+    ],
+    "robustness": [
+      "has Guardrails section",
+      "6 guardrail-style rule(s)",
+      "handles missing-data / failure"
+    ],
+    "scope_boundaries": [
+      "has 'When NOT to Use' section",
+      "description states exclusions",
+      "focused single-domain scope"
+    ],
+    "trigger_clarity": [
+      "11 explicit trigger phrase(s)",
+      "has exclusion clause"
+    ]
+  },
+  "dimension_semantics": "advisory-only",
+  "dimensions": {
+    "instruction_specificity": 16,
+    "robustness": 20,
+    "scope_boundaries": 23,
+    "trigger_clarity": 25
+  },
+  "faithfulness": {
+    "detail": "instructs grounding / no-fabrication",
+    "status": "PASS"
+  },
+  "grade": "Good",
+  "improvements": [],
+  "mvb_pass": true,
+  "mvb_threshold": 70,
+  "path": "working/gamma-tango/SKILL.md",
+  "risk": {
+    "factors": [
+      "takes actions (autonomy / blast radius)"
+    ],
+    "launch_floor": 70,
+    "requires_behavioral": true,
+    "requires_human_review": false,
+    "tier": "medium"
+  },
+  "rubric_version": "2",
+  "safety": [],
+  "skill_name": "gamma-tango",
+  "timestamp": "2026-08-21 17:28 UTC",
+  "total": 84
+}

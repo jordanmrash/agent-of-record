@@ -1,0 +1,57 @@
+{
+  "description": "Rewrites a draft, article, or piece of writing in Jordan Rash's personal voice \u2014 conversational, candid about struggle, plainspoken, lightly imperfect rather than corporate-polished. Activates on the literal command \"/myvoice\", and also on \"rewrite this in my voice\", \"make this sound like me\", \"apply my writing style\", \"redraft in my tone\", or \"run this through myvoice\". Do NOT use for purely factual/data tasks with no prose to restyle (spreadsheets, raw data pulls, calendar lookups) \u2014 use the relevant productivity skill instead. Do NOT use to draft content from scratch with no source text \u2014 ask for or gather a draft/topic first, then restyle it.",
+  "dimension_notes": {
+    "instruction_specificity": [
+      "33 workflow line(s)",
+      "has Quick Start / example block",
+      "names tools / data sources",
+      "specifies output format"
+    ],
+    "robustness": [
+      "has Guardrails section",
+      "7 guardrail-style rule(s)",
+      "handles missing-data / failure",
+      "has confirmation gate"
+    ],
+    "scope_boundaries": [
+      "has 'When NOT to Use' section",
+      "description states exclusions",
+      "delegates to a named skill",
+      "focused single-domain scope"
+    ],
+    "trigger_clarity": [
+      "6 explicit trigger phrase(s)",
+      "has exclusion clause"
+    ]
+  },
+  "dimension_semantics": "advisory-only",
+  "dimensions": {
+    "instruction_specificity": 25,
+    "robustness": 24,
+    "scope_boundaries": 25,
+    "trigger_clarity": 25
+  },
+  "faithfulness": {
+    "detail": "instructs grounding / no-fabrication",
+    "status": "PASS"
+  },
+  "grade": "Excellent",
+  "improvements": [],
+  "mvb_pass": true,
+  "mvb_threshold": 65,
+  "path": "/mnt/user-config/skills/myvoice/SKILL.md",
+  "risk": {
+    "factors": [
+      "read-only / low blast radius"
+    ],
+    "launch_floor": 65,
+    "requires_behavioral": false,
+    "requires_human_review": false,
+    "tier": "low"
+  },
+  "rubric_version": "1",
+  "safety": [],
+  "skill_name": "myvoice",
+  "timestamp": "2026-08-04 18:34 UTC",
+  "total": 99
+}

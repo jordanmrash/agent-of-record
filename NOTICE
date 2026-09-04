@@ -1,0 +1,11 @@
+Agent of Record
+Copyright 2026 Jordan Rash
+
+This repository depends on or interoperates with third-party open-source projects, including:
+
+- supergateway
+- Microsoft Model Context Protocol filesystem server
+- Microsoft Playwright MCP
+- Playwright
+
+Third-party source code is not presented as the author's original work. Review each upstream package's license and notices before redistribution or commercial use. The Playwright helper package retains its upstream author metadata.
