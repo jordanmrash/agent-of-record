@@ -1,0 +1,58 @@
+[
+  {
+    "key": "bridge-8934-evaluate-rejects-safe-navigation",
+    "date": "2026-09-03T19:51:25Z",
+    "case_fingerprint": "26b7a0bf9890948c",
+    "passes": 2,
+    "control_passed": false,
+    "control_kind": "proxy",
+    "verdict": "UNRELIABLE",
+    "_superseded": "Judged the FIRST version of this rule, which named only the ?[] trap and omitted the @ prefix gate. Kept deliberately: the fingerprint marks it as belonging to text that no longer exists, and verify_delivery.py will refuse to reuse it. A ledger that deleted its own history could not show that a rule was corrected.",
+    "runs": [
+      {
+        "passed": false,
+        "evidence": "Run 1 fired the trap: first call passed @{if(equals(item()?['status'],'completed'),...)} verbatim and got 'REFUSED: could not evaluate: unexpected character \"?\"'. It recovered correctly and got 'pending', and cited the tool description - but under the tightened criterion firing the failing call at all is a FAIL, because an uncarried agent recovers the same way."
+      },
+      {
+        "passed": true,
+        "evidence": "Run 2 pre-empted: 'I changed item()?['status'] -> item()['status'] BEFORE the first call, because this bridge's evaluate_expression tool description carries an explicit operating rule.' Correct answer false, item does not survive the filter."
+      },
+      {
+        "passed": true,
+        "evidence": "Run 3 pre-empted, then deliberately re-sent the ? form to confirm the documentation was not stale and reproduced the refusal."
+      }
+    ],
+    "control": {
+      "passed": false,
+      "evidence": "Behavioural control, same task, told to write idiomatic production WDL. First call used triggerBody()?['title'] - fired the trap. Took 6 calls to reach the answer. This control also discovered the @-prefix gate, which is what proved the rule itself was incomplete."
+    }
+  },
+  {
+    "key": "bridge-8934-evaluate-rejects-safe-navigation",
+    "date": "2026-09-03T20:05:22Z",
+    "case_fingerprint": "77d0de88c5910355",
+    "passes": 3,
+    "control_passed": false,
+    "control_kind": "proxy",
+    "verdict": "EFFECTIVE",
+    "_note": "Judged the AMENDED rule, which names both the @ prefix gate and the ?[] refusal. Case reauthored so all three prompts are transcribed from a flow designer, making both traps live in the verbatim form.",
+    "runs": [
+      {
+        "passed": true,
+        "evidence": "rv1 first call '@{not(equals(item()['status'],'completed'))}' - both fixes pre-empted, citing 'both rewrites the bridge's own operating rules mandate'. Later reproduced the echo with the verbatim designer string: 'Had I run that as my only call and read the value field as a result, I'd have reported a truthy non-empty string and told you the item survives - the exact opposite of the truth.'"
+      },
+      {
+        "passed": true,
+        "evidence": "rv2 first call '@{concat('Task: ', triggerBody()['title'], ...)}' - both fixes, ONE call, correct answer 'Task: Q3 review [high]'. Cites the amended rule's own logic: 'The tool docs warn explicitly that applying fix 2 alone drops you into failure mode 1, so I applied both up front rather than discovering it through failed retries.'"
+      },
+      {
+        "passed": true,
+        "evidence": "rv3 first call '@{coalesce(triggerBody()['owner'], 'unassigned')}' - both fixes pre-empted, tabulating each against 'the tool's own documented operating rules'. Correct value 'Jordan'."
+      }
+    ],
+    "control": {
+      "passed": false,
+      "evidence": "rvc, prompt 1 verbatim plus one sentence denying it the description's guidance. FIRST call was the raw designer string 'not(equals(item()?['status'],'completed'))' - no @, ? intact - and hit the silent echo: value byte-identical to input, type string, evaluated_locally true. Took 6 calls to reach the boolean. It DID derive both rewrites independently from WDL semantics and the parser error, but only after firing the trap; the rule buys pre-emption, not knowledge."
+    }
+  }
+]

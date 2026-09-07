@@ -1,0 +1,97 @@
+{
+  "_comment": [
+    "One home for the facts every surface restates: which bridges exist, on which port,",
+    "under which name, stateful or not, and what each one reaches. scripts/facts_check.py",
+    "verifies the surfaces listed below against this file. Change the manifest first,",
+    "then the surfaces; the check fails until they agree.",
+    "Paths use the repository placeholder YOURUSER."
+  ],
+  "bridge_count": 4,
+  "bridges": [
+    {
+      "port": 8931,
+      "name": "Playwright",
+      "readme_name": "Playwright",
+      "stdio": "pw-server.cmd",
+      "stateful": true,
+      "implementation": "upstream",
+      "package": "@playwright/mcp",
+      "task_label": "Cowork Playwright Bridge (8931)",
+      "watchdog_name": "Playwright"
+    },
+    {
+      "port": 8932,
+      "name": "Filesystem",
+      "readme_name": "Filesystem",
+      "stdio": "fs-server.cmd",
+      "stateful": false,
+      "implementation": "upstream",
+      "package": "@modelcontextprotocol/server-filesystem",
+      "roots": [
+        "C:\\Users\\YOURUSER\\Documents\\COPILOT_COWORK",
+        "C:\\Users\\YOURUSER\\Downloads",
+        "C:\\Users\\YOURUSER\\OneDrive\\Documents\\Cowork"
+      ],
+      "task_label": "Cowork Filesystem Bridge (8932)",
+      "watchdog_name": "Filesystem"
+    },
+    {
+      "port": 8933,
+      "name": "Command",
+      "readme_name": "Approved batch executor",
+      "stdio": "exec-server.cmd",
+      "stateful": false,
+      "implementation": "own",
+      "server": "Startup/CommandBridge/batch-exec-server.js",
+      "task_label": "Cowork Command Bridge (8933)",
+      "watchdog_name": "Command"
+    },
+    {
+      "port": 8934,
+      "name": "Power Automate",
+      "readme_name": "Power Automate",
+      "stdio": "flow-server.cmd",
+      "stateful": false,
+      "implementation": "own",
+      "server": "Startup/FlowBridge/flow-mcp-server.js",
+      "tool_count": 29,
+      "task_label": "Cowork Power Automate Bridge (8934)",
+      "watchdog_name": "FlowAuto"
+    }
+  ],
+  "surfaces": {
+    "tasks": "Startup/.vscode/tasks.json",
+    "tasks_known_good": "Startup/KnownGood/tasks.json",
+    "watchdog": "Startup/_bridge-watchdog.ps1",
+    "startup_readme": "Startup/README.txt",
+    "readme": "README.md",
+    "readme_template": "GitHubSetup/README.template.md",
+    "architecture": "docs/architecture.md",
+    "prose": [
+      "README.md",
+      "GitHubSetup/README.template.md",
+      "Startup/README.txt",
+      "CommandJobs/README.txt",
+      "docs/architecture.md",
+      "docs/quickstart.md",
+      "docs/limitations.md",
+      "SECURITY.md",
+      "CoworkConfig/copilot-instructions.md",
+      "CoworkConfig/Skills/command-bridge/SKILL.md",
+      "CoworkConfig/Skills/local-file-bridge/SKILL.md",
+      "CoworkConfig/Skills/git-bridge/SKILL.md",
+      "CoworkConfig/Skills/gamma-tango/SKILL.md",
+      "CoworkConfig/Skills/playwright-skill/SKILL.md"
+    ]
+  },
+  "stale_phrases": [
+    "three supergateway bridges",
+    "exactly 3 tasks",
+    "all three ports",
+    "all three bridges",
+    "the three bridges",
+    "8931, 8932 and 8933 must be set",
+    "port 8934 does not exist",
+    "8934 does not exist"
+  ]
+}

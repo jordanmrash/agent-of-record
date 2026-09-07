@@ -1,0 +1,10 @@
+{
+  "workpaper": "Fictional month-end reconciliation",
+  "period": "synthetic",
+  "required_segments": [
+    {"id": "A", "file": "segment-a.csv", "description": "Opening balances"},
+    {"id": "B", "file": "segment-b.csv", "description": "Period activity"},
+    {"id": "C", "file": "segment-c.csv", "description": "Adjustments"},
+    {"id": "D", "file": "segment-d.csv", "description": "Closing balances from the subledger"}
+  ]
+}

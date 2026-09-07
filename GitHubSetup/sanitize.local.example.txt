@@ -1,0 +1,21 @@
+# sanitize.local.example.txt - the FORMAT of sanitize.local.txt, which never ships.
+#
+# Copy to sanitize.local.txt. Each line is  find=replace  (first = splits it,
+# case-sensitive, longest / most specific pair FIRST). The build applies every
+# pair to the CONTENTS of every text file in the built tree and, since v2, to
+# FILE AND FOLDER NAMES as well - so a standing job can keep its local name
+# while the published copy carries a neutral one. The scan treats any surviving
+# find-term in the BUILT tree as fatal, which is the proof the pass ran.
+#
+# What belongs here, by category:
+#   the dev-tunnel host prefix            <host>=YOUR-TUNNEL-HOST
+#   Dataverse org prefixes                org<hex>=yourorg
+#   tenant / environment GUIDs            <guid>=00000000-0000-0000-0000-000000000000
+#   the machine account                   <account>=YOURUSER
+#   the firm's name inside the OneDrive folder name
+#   firm-abbreviated file names           <prefix>-close=cowork-close
+#   internal environment or system names  <name>=ProdCRM
+#   a sentence that describes work product (long sentence first, then the token)
+
+# h0stpr3f1x=YOUR-TUNNEL-HOST
+# orgabcdef12=yourorg

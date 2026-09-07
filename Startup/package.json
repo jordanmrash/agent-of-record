@@ -1,0 +1,22 @@
+{
+  "name": "agent-of-record-startup",
+  "version": "1.0.0",
+  "description": "Local MCP bridge launch dependencies for Agent of Record",
+  "private": true,
+  "main": "CommandBridge/batch-exec-server.js",
+  "scripts": {
+    "check": "node --check CommandBridge/batch-exec-server.js && node --check FlowBridge/flow-mcp-server.js"
+  },
+  "keywords": [
+    "mcp",
+    "microsoft-365-copilot",
+    "ai-agents",
+    "public-accounting"
+  ],
+  "author": "Jordan Rash",
+  "license": "MIT",
+  "type": "commonjs",
+  "dependencies": {
+    "supergateway": "3.4.3"
+  }
+}

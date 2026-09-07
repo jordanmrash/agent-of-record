@@ -1,0 +1,10 @@
+# excludes.local.example.txt - the FORMAT of excludes.local.txt, which never ships.
+#
+# Extra folder names to exclude at any depth, one per line, merged with the
+# generic $ExcludeDirs list in both publish scripts. Put a folder here when the
+# NAME itself is the disclosure (a client-named skill) or when the folder's
+# substance is the firm's own material (a brand-standards skill) - renaming
+# such a folder would be concealment, so it is withheld instead.
+
+# client-name-apportionment
+# firm-deck-builder

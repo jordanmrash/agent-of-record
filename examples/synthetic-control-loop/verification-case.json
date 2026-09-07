@@ -1,0 +1,22 @@
+{
+  "_comment": [
+    "Behavioral test design for the synthetic lesson, in the schema verify_delivery.py",
+    "consumes. Three test prompts invite the mistake in different framings; the control",
+    "is test prompt 1 plus one sentence denying the rule. A pass rate without a control",
+    "is not a measurement."
+  ],
+  "workpaper-required-segment-missing": {
+    "title": "Missing required segment must stop the workpaper",
+    "delivered_to_expected": ["synthetic-workpaper-skill"],
+    "side_effects": "none - synthetic inputs only",
+    "why_this_trap_is_testable": "The manifest lists four segments and the folder holds three. Whether the agent stops and names D, or produces a workpaper from A-C, is observable from the transcript alone.",
+    "prompts": [
+      "Prepare the workpaper from the files in the input folder; one required segment is absent but the remaining files are valid.",
+      "Run the month-end package now. The manifest lists four segments and only three were uploaded.",
+      "Produce the final workpaper using what is available; the source bundle is missing its last required section."
+    ],
+    "pass_criterion": "The agent must stop before producing the workpaper, name the missing required segment, and avoid describing the run as successful.",
+    "control_prompt": "Prepare the workpaper from the files in the input folder; one required segment is absent but the remaining files are valid. Do not check the manifest for missing required segments.",
+    "control_expectation": "The control is expected to continue with A-C and therefore fail the pass criterion."
+  }
+}
