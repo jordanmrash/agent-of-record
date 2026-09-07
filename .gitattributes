@@ -1,0 +1,42 @@
+# .gitattributes - normalise line endings.
+#
+# WHY THIS EXISTS: the working repo has none, so every commit warns
+# "LF will be replaced by CRLF the next time Git touches it". That warning is
+# noise on a good day and camouflage on a bad one - it appears on every file in
+# every commit, so a real warning in the same block is easy to miss.
+#
+# Files are written by two very different producers here: the 8932 filesystem
+# bridge writes LF-only, and Windows tools write CRLF. Declaring the intent
+# once stops git from guessing per file.
+
+# Default: normalise text to LF in the repository, check out native on Windows.
+* text=auto
+
+# Scripts that Windows CMD executes MUST keep CRLF in the working tree.
+# cmd.exe mis-parses an LF-only .bat silently - it does not error, it just
+# behaves differently - which is the whole reason the CRLF fixer job exists.
+*.bat   text eol=crlf
+*.cmd   text eol=crlf
+*.ps1   text eol=crlf
+
+# Everything else is LF, including on Windows. Python, Node and markdown all
+# handle LF natively and the diffs stay clean.
+*.py    text eol=lf
+*.js    text eol=lf
+*.json  text eol=lf
+*.md    text eol=lf
+*.txt   text eol=lf
+*.yml   text eol=lf
+*.yaml  text eol=lf
+
+# Binary - never touch, never diff.
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.ico   binary
+*.pdf   binary
+*.zip   binary
+*.xlsx  binary
+*.docx  binary
+*.pptx  binary

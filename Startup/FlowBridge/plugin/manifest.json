@@ -1,0 +1,40 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/teams/v1.29/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.29",
+  "version": "1.0.0",
+  "id": "00000000-0000-4000-8000-000000000000",
+  "developer": {
+    "name": "Jordan Rash",
+    "websiteUrl": "https://example.com/",
+    "privacyUrl": "https://example.com/privacy",
+    "termsOfUseUrl": "https://example.com/terms"
+  },
+  "name": {
+    "short": "Jordan Power Automate Bridge",
+    "full": "Jordan Power Automate Flow Lifecycle Bridge"
+  },
+  "description": {
+    "short": "Reads, creates, edits and deletes Power Automate flows.",
+    "full": "Connects Microsoft 365 agents to the local Power Automate bridge so cloud flows can be listed, inspected, created, edited, enabled, disabled and deleted. Refuses by default: no environment is permitted until it is explicitly allowlisted, writes are blocked while the bridge is read-only, deletion requires a separate opt-in plus an exact display-name confirmation, and every attempt is written to a local audit log."
+  },
+  "icons": {
+    "outline": "outline.png",
+    "color": "color.png"
+  },
+  "accentColor": "#FFFFFF",
+  "agentConnectors": [
+    {
+      "id": "jordan-power-automate-8934-v1",
+      "displayName": "Jordan Power Automate Bridge 8934",
+      "description": "Lists, reads, creates, edits, enables, disables and deletes Power Automate cloud flows through the local flow bridge. Every environment is refused until allowlisted, and deletion is refused unless explicitly enabled and confirmed by exact flow name.",
+      "toolSource": {
+        "remoteMcpServer": {
+          "mcpServerUrl": "https://YOUR-TUNNEL-HOST-8934.use.devtunnels.ms/mcp",
+          "authorization": {
+            "type": "None"
+          }
+        }
+      }
+    }
+  ]
+}

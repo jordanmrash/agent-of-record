@@ -1,0 +1,9 @@
+# allow.local.example.txt - the FORMAT of allow.local.txt, which never ships.
+#
+# Extra CommandJobs file names to publish, one per line, merged with the
+# generic allow list in 02-build-clean-repo.ps1 and 01-preflight-scan.ps1.
+# Use it for a standing job whose LOCAL name carries a token you sanitize
+# (pair the entry with a find=replace line in sanitize.local.txt so the
+# published copy is renamed).
+
+# my-firm-close.bat

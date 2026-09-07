@@ -1,0 +1,83 @@
+# .gitignore for the PUBLIC repo (v2, 2026-09-03).
+#
+# Deliberately stricter than the working repo's. The working repo is private and
+# local forever, so its ignore file only has to keep the tree tidy. This one is
+# a disclosure control, and it is the LAST line of defence rather than the first
+# - the build script never copies excluded folders in at all, so anything this
+# file catches represents a build-script gap worth fixing at source.
+
+# ---------------------------------------------------------------- generated --
+Outputs/
+**/Logs/
+*.log
+node_modules/
+package-lock.json
+__pycache__/
+*.pyc
+
+# ------------------------------------------------------- backups and scratch --
+# git is the backup. A .bak beside a tracked file is both redundant and a way
+# for a pre-correction version of a file to ship after the file was fixed.
+*.bak
+*.backup
+*-backup
+*.pre-*
+*.orig
+*.tmp
+working/
+scratch/
+
+# --------------------------------------------------------------- credentials --
+# Nothing credential-shaped, ever. Belt and braces: the scan checks content too,
+# because a token in a .py file would sail past every pattern below.
+*.env
+.env*
+*secret*
+*credential*
+*token*
+*.key
+*.pem
+*.pfx
+*.p12
+token-cache.json
+*-token-cache.json
+flow-bridge.config.json
+
+# ------------------------------------------------------------ machine-local --
+# Tunnel hostnames and per-machine config identify the machine and, in the case
+# of a devtunnel URL, are a live ingress to it.
+*.local.txt
+*.local.json
+denylist.local.txt
+_commit-msg.txt
+_lessons-known-keys.txt
+.lesson-receipts/
+allow.local.txt
+excludes.local.txt
+sanitize.local.txt
+skill-menu.cache.json
+
+# --------------------------------------------------------- superseded drafts --
+# Old drafts and staging artefacts that the build already excludes.
+SS_SKILL*
+_v050_*
+AUTORUN.ps1
+
+# --------------------------------------------------- engagement and client --
+# Present as a backstop only. The build script excludes these by name; if one
+# ever appears here it means the copy step let something through.
+Quarantine/
+EnvironmentDiscovery/
+**/state-apportionment/
+**/intercompany-eliminations/
+**/tax-client-emails/
+**/alteryx-to-python/
+**/je-builder/
+**/deck-builder/
+**/power-automate/
+**/tax-provision-report-replication/
+
+# ----------------------------------------------------------- not this repo --
+# AUTORUN is a forbidden execution fallback, kept on disk and out of git so
+# nobody reads its presence as endorsement.
+autorun/

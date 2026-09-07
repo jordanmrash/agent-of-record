@@ -1,0 +1,20 @@
+cff-version: 1.2.0
+message: "If you use this reference implementation, please cite it as below."
+title: "Agent of Record"
+version: "0.1.0"
+date-released: "2026-09-03"
+type: software
+authors:
+  - family-names: Rash
+    given-names: Jordan
+url: "https://github.com/jordanmrash/agent-of-record"
+repository-code: "https://github.com/jordanmrash/agent-of-record"
+license: MIT
+keywords:
+  - artificial intelligence
+  - public accounting
+  - AI agents
+  - Microsoft 365 Copilot
+  - governance
+  - agent memory
+  - behavioral verification

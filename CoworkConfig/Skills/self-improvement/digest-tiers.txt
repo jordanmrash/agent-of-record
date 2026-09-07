@@ -1,0 +1,74 @@
+# digest-tiers.txt - which rules must load EVERY session, and why.
+#
+# The always-on digest cannot hold every rule. Instruction-following decays
+# multiplicatively with the number of simultaneous instructions, so a 60-rule
+# preamble is not a control surface. But "keep the ones with 2+ hits" is the
+# wrong axis on its own: it would drop git-deletion-does-not-sanitize-history,
+# which has fired once and is unrecoverable when it fires.
+#
+# FOUR-WAY AXIS  (PARTIAL added 2026-09-01)
+#   ENFORCED  an automated check refuses the mistake on EVERY surface the
+#             mistake can be made on. Prose is genuinely redundant.
+#   PARTIAL   a check refuses it on some surfaces and is BLIND on others.
+#             Also dropped from always-on, because the per-surface preflight
+#             delivers it at the moment of the action - but the blind surfaces
+#             are declared, so the claim can be audited instead of assumed.
+#   PIN       one violation causes irreversible or invisible harm, and no
+#             automated check exists yet. Always-on regardless of hit count.
+#   (repeat)  hits >= 2, computed from the lessons file, not listed here.
+#
+# WHY PARTIAL EXISTS. Every line below used to say ENFORCED. On 2026-09-01
+# onedrive-recursive-scan-hydrates-tree was missed during a close, minutes
+# after the gate had printed it, because its prose had been quietened on the
+# strength of a check that reads .bat and .cmd files - and the mistake was made
+# in the agent's own shell, which that check cannot see. The rule was not wrong
+# and the check was not broken. The DEMOTION was wrong, and nothing could tell,
+# because no line recorded how far the enforcer reached.
+# See lesson digest-enforced-demotion-outruns-the-enforcer.
+#
+# SURFACES:  bat  cmd  ps1  session
+#   session means the agent acting directly through its tools rather than
+#   through a script. No file linter can read it, so every job_lint-backed
+#   claim is blind there by construction - which is exactly the surface the
+#   2026-09-01 miss happened on.
+#
+# covers:/blind: are CHECKED, not decorative. scope_check.py compares them
+# against the languages job_lint declares in code and fails on any drift, so
+# a claim here cannot outlive the enforcer it describes.
+#
+# Everything not in one of those three stays in cowork-lessons.md and loads
+# on demand through `lesson_gate.py preflight --surface <x>` at the moment of
+# the action - which is when it is useful anyway.
+#
+# NOTHING IS DELETED. This file decides what loads at turn 1, not what exists.
+# Mature memory systems down-rank rather than remove; Mem0's own guidance is
+# that idle memories dampen but "Nothing is ever deleted or hidden."
+#
+# Format:  PIN <key>  | reason
+#          ENFORCED|PARTIAL <key> | <enforcer> | what it does | covers: <surfaces> | blind: <surfaces>
+
+# ---------------------------------------------------------------------------
+# PARTIAL - a check refuses this where it can read, and is blind elsewhere.
+# Every line here said ENFORCED until 2026-09-01. Nothing about the checks
+# changed to make them PARTIAL; the labels were simply measured for the first
+# time, and none of the six was enforced everywhere. There are currently ZERO
+# fully-ENFORCED rules, and that is the honest state rather than a regression.
+# ---------------------------------------------------------------------------
+PARTIAL cowork-close-reports-ok-on-failed-commit | job_lint/no-verdict,untested-exit | refuses a job with no COWORK_RESULT, or a state-changing command whose errorlevel is never tested | covers: bat,cmd | blind: ps1,session
+PARTIAL verifier-pipe-masks-the-exit-code | job_lint/verifier-piped | refuses a checker whose output is piped, because the pipe's exit code is reported instead | covers: bat,cmd,ps1 | blind: session
+PARTIAL verifier-usage-error-reads-as-finding | job_lint/checker-no-args | refuses a known checker invoked with no arguments | covers: bat,cmd,ps1 | blind: session
+PARTIAL onedrive-recursive-scan-hydrates-tree | job_lint/onedrive-recursive | refuses a recursive OneDrive walk whose output is READ - a metadata-only walk is no longer a finding, per the 2026-09-01 sharpening | covers: bat,cmd,ps1 | blind: session
+PARTIAL quarantine-destination-inside-the-repo | job_lint/quarantine-in-repo | refuses a quarantine path under the repo root | covers: bat,cmd,ps1 | blind: session
+PARTIAL artifact-rollback-overwritten-on-rerun | job_lint/unguarded-snapshot | refuses an unguarded pre-edit copy | covers: bat,cmd,ps1 | blind: session
+
+# ---------------------------------------------------------------------------
+# PIN - irreversible or invisible on a single violation, no enforcer yet.
+# ---------------------------------------------------------------------------
+PIN git-deletion-does-not-sanitize-history | the path survives in every prior commit and every clone; there is no undo, and the repo is permanently unpublishable
+PIN git-renaming-is-not-sanitizing | a cosmetic rename leaves client work product in place and produces a clean grep, retiring the signal that would have prompted a real fix
+PIN bridge-8932-writes-lf | an LF-only .bat mis-parses in ways that look like a silent no-op, so the failure is invisible rather than loud
+PIN bridge-8932-parallel-writes-denied | a second batched write is auto-denied while the first approval is pending, and the denial is silent
+PIN bridge-8933-arg-name | a wrong parameter name fails the call outright; cheap to obey, and it recurs constantly
+PIN bridge-8933-env-partially-stripped | user-profile variables are empty, so a job that assumes them fails in a way that reads as a bridge fault
+PIN delivery-pointer-file-passes-as-artifact | a file carrying the deliverable's name but not its content is a FALSE DELIVERY - the user believes they have something they do not
+PIN lessons-digest-default-limit-truncates | a truncated regeneration silently removes live rules from the only delivery path measured to work
