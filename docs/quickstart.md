@@ -1,7 +1,8 @@
 # Quick Start
 
 This page validates the published snapshot and runs the demonstration. To
-install the bridges and the configuration on a PC, follow [Setup from zero](setup.md).
+install the bridges and the configuration, follow [Setup from zero](setup.md) on
+Windows or [Setup on macOS and Linux](setup-macos.md) on a Mac.
 
 ## Read the foundation first
 
@@ -24,7 +25,7 @@ node --check Startup/CommandBridge/batch-exec-server.js
 node --check Startup/FlowBridge/flow-mcp-server.js
 ```
 
-The checks should exit zero. The release check runs the live integrity checks, the cross-surface bridge facts check, the synthetic control-loop demonstration, and twelve negative-control self-test suites. `--json` writes the same results to a file; CI publishes that file as a build artifact for every push.
+The checks should exit zero. The release check runs the live integrity checks, the cross-surface bridge facts check, the synthetic control-loop demonstration, and thirteen negative-control self-test suites. `--json` writes the same results to a file; CI runs the gate on Windows and macOS for every push and pull request and publishes one results file per platform as a build artifact.
 
 ## Run the demonstration
 

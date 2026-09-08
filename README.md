@@ -81,7 +81,7 @@ These are measurements from the published tree, not aspirational claims:
 | Lesson keys routed into skills | 80 |
 | Lesson keys routed into plugin tools | 5 |
 | Routed skills | 9 |
-| Self-test suites | 12 |
+| Self-test suites | 13 |
 | Behaviorally verified effective rules | 1 |
 | Behaviorally verified inert rules | 1 |
 | Rules proven fully enforced across every behavior surface | 0 |
@@ -187,7 +187,7 @@ python scripts/public_scan.py
 python scripts/release_check.py --json release-results.json
 ```
 
-The release check runs the lessons validator, digest currency check, skill and plugin delivery checks, enforcement-scope audit, per-surface gate audit, the cross-surface bridge facts check, the synthetic control-loop demonstration, and the negative-control self-test suites. `--json` writes the results in machine-readable form. GitHub Actions runs the same checks on every push and publishes `release-results.json` as a build artifact.
+The release check runs the lessons validator, digest currency check, skill and plugin delivery checks, enforcement-scope audit, per-surface gate audit, the cross-surface bridge facts check, the synthetic control-loop demonstration, and the negative-control self-test suites. `--json` writes the results in machine-readable form. GitHub Actions runs the same checks on `windows-latest` and `macos-latest` for every push and pull request, and publishes a results file per platform as a build artifact.
 
 ## Author perspective
 
@@ -201,10 +201,10 @@ The operating rule is:
 
 ## Status and roadmap
 
-This is **v0.2: Verification and integrity**. It adds the cross-surface bridge facts check, the runnable synthetic control-loop demonstration, and machine-readable release results; the 0.2.1 snapshot adds the installable path - setup guide, personalizer, a connector package per bridge, and the configuration guide. Two v0.2 items - behavioral verdicts for ten routed rules, and reduction of duplicated configuration statements - carry to v0.3.
+This is **v0.3: Portable**. The foundation now runs on Windows and macOS from one tree, the command bridge's refusals are proven live on both in CI, `scripts/install_check.py` defines "installed" as a completed MCP handshake rather than a file that exists, and `AGENTS.md` carries the install contract for any agent pointed at the folder. From this release `main` keeps its history and takes pull requests; the macOS layer has a contributor. The portable layer was pulled forward ahead of the applied-work contract because a contributor on a second platform needed it first; the two verification items carried from v0.2 - behavioral verdicts for ten routed rules, and reduction of duplicated configuration statements - move with the contract.
 
-- **v0.3: Applied-work contract** — a common input, evidence, review, error, and audit contract for applied skills, plus the deferred verification items.
-- **v0.4: Applied public-accounting skills** — independently tested workflows using synthetic data.
+- **v0.4: Applied-work contract** — a common input, evidence, review, error, and audit contract for applied skills, plus the two carried verification items.
+- **v0.5: Applied public-accounting skills** — independently tested workflows using synthetic data.
 - **v1.0: Reference operating model** — reproducible deployment, governance, maintenance, and professional-review guidance.
 
 See [Roadmap](docs/roadmap.md) and the [open issues and milestones](https://github.com/jordanmrash/agent-of-record/issues).

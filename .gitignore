@@ -94,4 +94,4 @@ release-results.json
 Startup/posix/cowork-env.sh
 Startup/posix/watchdog/status.txt
 Startup/posix/watchdog/logs/
-install-results.json
+/install-results.json

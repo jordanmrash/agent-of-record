@@ -1,8 +1,21 @@
 COWORK COMMAND BRIDGE -- port 8933 implementation
 =================================================
-Startup\CommandBridge\batch-exec-server.js        v1.1.0
+Startup\CommandBridge\batch-exec-server.js        v1.2.0
 
-Launched by  Startup\exec-server.cmd , which tasks.json points --stdio at.
+Launched by  Startup\exec-server.cmd  on Windows and  Startup/posix/exec-server.sh
+on macOS and Linux; tasks.json points --stdio at whichever fits the host.
+
+PLATFORM. One source file runs on both. The platform decides four things and
+no security property: the shell (cmd.exe /d /s /c vs /bin/bash <script>), the
+executable extension (.bat/.cmd vs .sh), the comment marker the COWORK_OUTPUT
+directive hides behind (REM/:: vs #), and how a runaway process tree is killed
+(taskkill /T vs a process-group SIGKILL). Everything in PATH BOUNDARY below is
+one implementation used by both, and scripts/exec_bridge_selftest.py starts the
+real server and tries thirty-one ways out of it in the host's own script
+language - so a refusal that held on one platform and not the other fails the
+gate rather than shipping. The tooling root comes from COWORK_ROOT, set by the
+launcher, never from the MCP caller, who cannot set an environment variable
+through the one tool this server exposes.
 Plain Node, already installed. No npx, no installs, no package dependencies,
 nothing fetched from the network at start time.
 
@@ -30,9 +43,9 @@ The file must resolve under COPILOT_COWORK\CommandJobs. Rejected:
   absolute paths                 environment-variable paths (%VAR%, $env:, ${})
   drive-qualified paths (C:\,C:) home-relative paths (~)
   UNC / network (\\server\share) URL-style paths (file://, http://)
-  any colon (blocks ADS)         shell metacharacters (& | < > ^ " ' ` * ? CR LF TAB)
+  any colon (blocks ADS)         shell metacharacters (& | ; < > ^ " ' ` $ * ? CR LF TAB)
   .. traversal                   NUL bytes, empty, over 240 chars
-  extensions other than .bat/.cmd (checked on the CANONICAL path)
+  extensions other than .bat/.cmd on Windows, .sh on POSIX (checked on the CANONICAL path)
   nonexistent files              directories        non-regular files
   symlinks/junctions escaping CommandJobs           anything under Logs\
 

@@ -8,7 +8,9 @@
 - docs/public-accounting-vision.md
 - docs/public-accounting-control-map.md
 - docs/architecture.md
+- AGENTS.md
 - docs/setup.md
+- docs/setup-macos.md
 - CoworkConfig/README.md
 - docs/measured-results.md
 - docs/limitations.md
@@ -19,6 +21,8 @@
 - Startup/FlowBridge/flow-mcp-server.js
 - Startup/Plugins/
 - scripts/personalize.py
+- scripts/install_check.py
+- Startup/posix/
 - CoworkConfig/cowork-memory/cowork-lessons.md
 - CoworkConfig/Skills/self-improvement/
 - GitHubSetup/

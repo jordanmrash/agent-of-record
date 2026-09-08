@@ -1,4 +1,4 @@
-﻿# Review routing. A pull request that touches a path here requests review from
+# Review routing. A pull request that touches a path here requests review from
 # the listed owner, and branch protection requires that review before merge.
 #
 # Two roles. The repository owner reviews everything that carries a safety

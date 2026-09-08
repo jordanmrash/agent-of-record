@@ -10,11 +10,11 @@
 | Keys delivered to at least one skill | 80 |
 | Keys delivered to plugin tool descriptions | 5 |
 | Routed skills | 9 |
-| Self-test suites | 12 |
+| Self-test suites | 13 |
 | Effective behavioral verdicts | 1 |
 | Inert behavioral verdicts | 1 |
 | Fully enforced rules across every declared surface | 0 |
-| Bridge facts verified across surfaces (assertions) | 45 |
+| Bridge facts verified across surfaces (assertions) | 67 |
 | Synthetic control-loop demonstration | runs on every push |
 
 ## What the figures mean

@@ -3,9 +3,9 @@
 All notable changes to the published snapshot. The private working repository
 keeps the full commit history; each entry here summarizes one publication.
 
-## 0.3.0 - Portable
+## 0.3.0 - 2026-09-07
 
-Runs where the contributor is. 0.2.1 made the tree installable on Windows; this
+Portable. Runs where the contributor is. 0.2.1 made the tree installable on Windows; this
 makes it installable on a Mac, and makes "installed" a thing a machine can
 prove rather than a thing a person believes.
 

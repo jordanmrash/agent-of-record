@@ -1,5 +1,9 @@
 # Setup from zero
 
+This is the Windows path. For macOS or Linux, follow
+[Setup on macOS and Linux](setup-macos.md); the two share every step that is not
+about launchers, the watchdog or the shell.
+
 This guide takes a Windows PC with nothing installed to four running bridges
 that a Microsoft 365 Copilot Cowork session can call, with the skills, the
 lessons corpus and the memory files in place. It is the path the author's own
