@@ -11,6 +11,8 @@
 - AGENTS.md
 - docs/setup.md
 - docs/setup-macos.md
+- docs/install/claude-cowork-windows.md
+- docs/install/claude-cowork-mac.md
 - CoworkConfig/README.md
 - docs/measured-results.md
 - docs/limitations.md
