@@ -1,0 +1,40 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/teams/v1.29/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.29",
+  "version": "1.0.0",
+  "id": "00000000-0000-4000-8000-000000000000",
+  "developer": {
+    "name": "Jordan Rash",
+    "websiteUrl": "https://example.com/",
+    "privacyUrl": "https://example.com/privacy",
+    "termsOfUseUrl": "https://example.com/terms"
+  },
+  "name": {
+    "short": "Jordan Playwright Bridge",
+    "full": "Jordan Local Playwright Browser Bridge"
+  },
+  "description": {
+    "short": "Drives a local Microsoft Edge profile through Playwright.",
+    "full": "Connects Microsoft 365 agents to the local Playwright bridge so pages can be opened, read and operated in a dedicated Edge profile whose sign-ins the operator established once by hand. The session is stateful with a 30-minute idle timeout; nothing runs unless the tunnel is up and the bridge process is running on the operator's PC."
+  },
+  "icons": {
+    "outline": "outline.png",
+    "color": "color.png"
+  },
+  "accentColor": "#FFFFFF",
+  "agentConnectors": [
+    {
+      "id": "jordan-local-playwright-8931-v1",
+      "displayName": "Jordan Local Playwright 8931",
+      "description": "Opens, reads and operates web pages in a dedicated local Edge profile through the Playwright MCP server. Stateful session, 30-minute idle timeout, reaches only what the signed-in profile can reach.",
+      "toolSource": {
+        "remoteMcpServer": {
+          "mcpServerUrl": "https://YOUR-TUNNEL-HOST-8931.use.devtunnels.ms/mcp",
+          "authorization": {
+            "type": "None"
+          }
+        }
+      }
+    }
+  ]
+}

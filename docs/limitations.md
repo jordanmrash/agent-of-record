@@ -28,9 +28,9 @@ Only a small subset of routed rules has a behavioral verdict. The presence of th
 
 Automated checks remain blind to direct session behavior. The repository therefore reports zero rules fully enforced across every behavior surface.
 
-## Snapshot publication model
+## Discontinuous history before v0.3.0
 
-The public repository is rebuilt as one commit. This protects against disclosure through historical commits but removes conventional public commit history and complicates direct contribution.
+Through v0.3.0 the public repository was rebuilt as one commit on each publication. That protected against disclosure through historical commits, and it means the history before the v0.3.0 tag is a series of unrelated roots rather than a lineage: a branch cut before it will not rebase onto `main`. From v0.3.0 the history is conventional and pull requests merge directly.
 
 ## Upstream dependencies
 

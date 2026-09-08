@@ -1,0 +1,40 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/teams/v1.29/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.29",
+  "version": "1.0.0",
+  "id": "00000000-0000-4000-8000-000000000000",
+  "developer": {
+    "name": "Jordan Rash",
+    "websiteUrl": "https://example.com/",
+    "privacyUrl": "https://example.com/privacy",
+    "termsOfUseUrl": "https://example.com/terms"
+  },
+  "name": {
+    "short": "Jordan Batch Executor",
+    "full": "Jordan Approved Batch Executor"
+  },
+  "description": {
+    "short": "Runs an existing .bat or .cmd file from one approved folder.",
+    "full": "Connects Microsoft 365 agents to the local approved batch executor. The single tool runs one existing .bat or .cmd file by relative path under the CommandJobs folder - no command string, arguments, interpreter, working directory, environment, timeout or elevation can be supplied. The agent proposes the exact file contents, the operator approves once, the file is written and then run under that approval."
+  },
+  "icons": {
+    "outline": "outline.png",
+    "color": "color.png"
+  },
+  "accentColor": "#FFFFFF",
+  "agentConnectors": [
+    {
+      "id": "jordan-approved-batch-8933-v1",
+      "displayName": "Jordan Approved Batch Executor 8933",
+      "description": "Runs one existing .bat or .cmd file by relative path under the approved CommandJobs folder and returns stdout, stderr and the exit code. Nothing else can be passed: no command line, no arguments, no environment, no elevation.",
+      "toolSource": {
+        "remoteMcpServer": {
+          "mcpServerUrl": "https://YOUR-TUNNEL-HOST-8933.use.devtunnels.ms/mcp",
+          "authorization": {
+            "type": "None"
+          }
+        }
+      }
+    }
+  ]
+}

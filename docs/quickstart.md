@@ -1,5 +1,8 @@
 # Quick Start
 
+This page validates the published snapshot and runs the demonstration. To
+install the bridges and the configuration on a PC, follow [Setup from zero](setup.md).
+
 ## Read the foundation first
 
 This repository contains software capable of acting with the signed-in user's authority. Do not begin by running the bridges.
@@ -21,7 +24,7 @@ node --check Startup/CommandBridge/batch-exec-server.js
 node --check Startup/FlowBridge/flow-mcp-server.js
 ```
 
-The checks should exit zero. The release check runs the live integrity checks, the cross-surface bridge facts check, the synthetic control-loop demonstration, and eleven negative-control self-test suites. `--json` writes the same results to a file; CI publishes that file as a build artifact for every push.
+The checks should exit zero. The release check runs the live integrity checks, the cross-surface bridge facts check, the synthetic control-loop demonstration, and twelve negative-control self-test suites. `--json` writes the same results to a file; CI publishes that file as a build artifact for every push.
 
 ## Run the demonstration
 
@@ -43,15 +46,15 @@ The real configuration is intentionally gitignored.
 
 ## Configure local paths
 
-Replace:
+`scripts/personalize.py` replaces the placeholders in the operating trees in one
+pass - `C:\Users\YOURUSER\...`, the OneDrive folder name, `YOUR-TUNNEL-HOST`,
+and the shared placeholder app id in the connector packages. It is a dry run
+until `--apply` is passed and prints every file it changes. It does not touch
+the Power Automate placeholders (`yourorg.crm.dynamics.com`, the zero tenant
+GUID), which belong in the gitignored `flow-bridge.config.json`.
 
-- `C:\Users\YOURUSER\...`
-- `YOUR-TUNNEL-HOST`
-- `you@example.com`
-- zero GUID placeholders
-- `yourorg.crm.dynamics.com`
-
-Do not commit the resulting local configuration.
+A personalized tree fails `scripts/public_scan.py` by design. Do not commit it to
+anything public.
 
 ## Understand the command bridge before use
 

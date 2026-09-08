@@ -16,13 +16,20 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 TEXT_EXTENSIONS = {
-    ".bat", ".cfg", ".cmd", ".html", ".ini", ".js", ".json", ".md",
-    ".ps1", ".py", ".txt", ".xml", ".yaml", ".yml",
+    ".bash", ".bat", ".cfg", ".cmd", ".html", ".ini", ".js", ".json", ".md",
+    ".ps1", ".py", ".sh", ".txt", ".xml", ".yaml", ".yml", ".zsh",
 }
 
 PATTERNS = {
     "non-placeholder Windows user path": re.compile(
         r"C:\\Users\\(?!YOURUSER\b)[A-Za-z0-9._-]+", re.I
+    ),
+    # macOS and Linux homes leak the same way a Windows profile path does, and
+    # the POSIX launchers made that reachable. Angle-bracket and shell-variable
+    # forms are how the documentation refers to a home directory it cannot know,
+    # so those are the placeholders here.
+    "non-placeholder POSIX home path": re.compile(
+        r"/(?:Users|home)/(?!YOURUSER\b|<|\$|\{|\.\.)[A-Za-z0-9._-]+"
     ),
     "live dev-tunnel hostname": re.compile(
         r"(?<!YOUR-TUNNEL-HOST-)[A-Za-z0-9]{6,}-\d{2,5}\."
@@ -51,6 +58,7 @@ PATTERNS = {
 }
 
 PROHIBITED_NAMES = {
+    "cowork-env.sh",          # the operator's real POSIX paths; example is committed
     "denylist.local.txt",
     "sanitize.local.txt",
     "allow.local.txt",

@@ -1,0 +1,40 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/teams/v1.29/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.29",
+  "version": "1.0.0",
+  "id": "00000000-0000-4000-8000-000000000000",
+  "developer": {
+    "name": "Jordan Rash",
+    "websiteUrl": "https://example.com/",
+    "privacyUrl": "https://example.com/privacy",
+    "termsOfUseUrl": "https://example.com/terms"
+  },
+  "name": {
+    "short": "Jordan Filesystem Bridge",
+    "full": "Jordan Local Filesystem Bridge"
+  },
+  "description": {
+    "short": "Reads and writes files under three allowlisted folders.",
+    "full": "Connects Microsoft 365 agents to the local filesystem bridge. The upstream MCP filesystem server is started with exactly three roots - the tooling folder, Downloads and the OneDrive Cowork folder - and refuses every path outside them. Writes require approval in the agent surface; nothing outside the roots is reachable."
+  },
+  "icons": {
+    "outline": "outline.png",
+    "color": "color.png"
+  },
+  "accentColor": "#FFFFFF",
+  "agentConnectors": [
+    {
+      "id": "jordan-local-filesystem-8932-v1",
+      "displayName": "Jordan Local Filesystem 8932",
+      "description": "Lists, reads, writes, edits and moves files strictly under the three allowlisted roots passed to the filesystem server at start-up. Any path outside the roots is refused by the server itself.",
+      "toolSource": {
+        "remoteMcpServer": {
+          "mcpServerUrl": "https://YOUR-TUNNEL-HOST-8932.use.devtunnels.ms/mcp",
+          "authorization": {
+            "type": "None"
+          }
+        }
+      }
+    }
+  ]
+}

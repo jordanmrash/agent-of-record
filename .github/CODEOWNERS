@@ -1,6 +1,35 @@
-* @jordanmrash
+# Review routing. A pull request that touches a path here requests review from
+# the listed owner, and branch protection requires that review before merge.
+#
+# Two roles. The repository owner reviews everything that carries a safety
+# property or defines what the repository claims. The macOS contributor owns
+# the POSIX layer - they run it daily, and their review of a change there is
+# worth more than the owner's. Both are listed on the paths where a change to
+# one platform's layer could change the other's behaviour.
+#
+# The macOS contributor's handle is added by the owner when they accept the
+# collaboration invitation; until then the owner reviews the POSIX paths alone.
 
-/Startup/CommandBridge/ @jordanmrash
-/Startup/FlowBridge/ @jordanmrash
-/CoworkConfig/Skills/self-improvement/ @jordanmrash
-/SECURITY.md @jordanmrash
+# Default: everything.
+*                                              @jordanmrash
+
+# Safety properties. Owner-only, always.
+/Startup/CommandBridge/                        @jordanmrash
+/Startup/FlowBridge/                           @jordanmrash
+/scripts/public_scan.py                        @jordanmrash
+/scripts/exec_bridge_selftest.py               @jordanmrash
+/SECURITY.md                                   @jordanmrash
+
+# What the repository claims about itself and its facts.
+/docs/bridge-facts.json                        @jordanmrash
+/scripts/facts_check.py                        @jordanmrash
+/scripts/release_check.py                      @jordanmrash
+/AGENTS.md                                     @jordanmrash
+/CoworkConfig/Skills/self-improvement/         @jordanmrash
+
+# The POSIX layer. Add the macOS contributor alongside on these lines once
+# they have accepted the invitation, for example:
+#   /Startup/posix/    @jordanmrash @their-handle
+/Startup/posix/                                @jordanmrash
+/docs/setup-macos.md                           @jordanmrash
+/docs/evidence/                                @jordanmrash

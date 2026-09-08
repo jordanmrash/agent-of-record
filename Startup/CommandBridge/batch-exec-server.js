@@ -1,9 +1,13 @@
 #!/usr/bin/env node
 /* ============================================================================
- *  Cowork Command Bridge -- hardened batch-only MCP server   v1.1.0
- *  C:\Users\YOURUSER\Documents\COPILOT_COWORK\Startup\CommandBridge\batch-exec-server.js
+ *  Cowork Command Bridge -- hardened script-only MCP server   v1.2.0
+ *  <tooling root>/Startup/CommandBridge/batch-exec-server.js
  *
  *  Replaces the unrestricted `mcp-server-commands` package behind port 8933.
+ *
+ *  Runs on Windows and on POSIX (macOS, Linux). The platform decides the shell
+ *  and the executable extension; it does not decide any security property.
+ *  See the PLATFORM note in the config block.
  *
  *  ONE tool:  run_batch_file  { "file": "<relative path under CommandJobs>" }
  *
@@ -14,15 +18,17 @@
  *  UNC and environment-variable paths are refused outright.
  *
  *  LAYOUT
- *    Scripts       COPILOT_COWORK\CommandJobs\           (.bat / .cmd only)
- *    Logs          COPILOT_COWORK\CommandJobs\Logs\
- *    Deliverables  COPILOT_COWORK\Outputs\<YYYY-MM-DD - Task Name>\
+ *    Scripts       <tooling root>/CommandJobs/    (.bat/.cmd on Windows, .sh on POSIX)
+ *    Logs          <tooling root>/CommandJobs/Logs/
+ *    Deliverables  <tooling root>/Outputs/<YYYY-MM-DD - Task Name>/
  *
  *  OUTPUT DESTINATION
  *    The server NEVER invents or substitutes an output folder. The approved
- *    batch file declares its own destination on a directive line:
+ *    script declares its own destination on a directive line, behind its own
+ *    language's comment marker:
  *
- *        REM COWORK_OUTPUT: C:\Users\YOURUSER\Documents\COPILOT_COWORK\Outputs\2026-08-17 - Task Name
+ *        REM COWORK_OUTPUT: <tooling root>\Outputs\2026-08-17 - Task Name
+ *        #   COWORK_OUTPUT: <tooling root>/Outputs/2026-08-17 - Task Name
  *
  *    The server reads that directive, verifies it canonicalises under
  *    COPILOT_COWORK\Outputs, creates it if absent, and exposes it to the
@@ -44,7 +50,30 @@ const { spawn, spawnSync } = require('child_process');
 
 /* ---------------------------------------------------------------- config -- */
 
-const COWORK_ROOT  = 'C:\\Users\\YOURUSER\\Documents\\COPILOT_COWORK';
+/* PLATFORM
+ *
+ *  The bridge runs on Windows and on POSIX (macOS, Linux). Four things differ:
+ *  the shell that executes an approved script, the extension that may be
+ *  executed, the comment marker the COWORK_OUTPUT directive hides behind, and
+ *  how a runaway process tree is killed.
+ *
+ *  Everything that carries a security property is IDENTICAL on both: the path
+ *  validation, the containment checks against the canonicalised root, the
+ *  single-flight lock, the fixed timeout, the built environment, and the rule
+ *  that the caller supplies nothing but a relative filename. A port that
+ *  relaxed one of those would not be the same bridge.
+ *
+ *  The tooling root comes from COWORK_ROOT when the launcher sets it and from
+ *  the platform's home-relative default otherwise. That is deliberate: it is
+ *  why this file carries no personalized path, and why an operator's account
+ *  name never has to be written into the server. COWORK_ROOT is read from the
+ *  process the OPERATOR launched, never from the MCP caller, who cannot set an
+ *  environment variable through the one tool this server exposes.
+ */
+const IS_WINDOWS = process.platform === 'win32';
+
+const COWORK_ROOT  = process.env.COWORK_ROOT ||
+                     path.join(os.homedir(), 'Documents', 'COPILOT_COWORK');
 const JOB_ROOT_RAW = path.join(COWORK_ROOT, 'CommandJobs');
 const LOG_DIR      = path.join(JOB_ROOT_RAW, 'Logs');
 const OUTPUT_ROOT  = path.join(COWORK_ROOT, 'Outputs');
@@ -52,12 +81,32 @@ const OUTPUT_ROOT  = path.join(COWORK_ROOT, 'Outputs');
 const TIMEOUT_MS     = 300 * 1000;        // fixed; no caller override
 const MAX_STDOUT     = 5 * 1024 * 1024;
 const MAX_STDERR     = 5 * 1024 * 1024;
-const ALLOWED_EXT    = new Set(['.bat', '.cmd']);
+const ALLOWED_EXT    = IS_WINDOWS ? new Set(['.bat', '.cmd']) : new Set(['.sh']);
+const ALLOWED_EXT_TEXT = IS_WINDOWS ? '.bat and .cmd' : '.sh';
 const MAX_SCAN_FILES = 20000;
 const MAX_DIRECTIVE_BYTES = 256 * 1024;   // how much of a script we read to find the directive
 
+/* Path separator handling. A caller may write either separator; it is folded
+ * to the platform's own before resolution. On POSIX a backslash is a legal
+ * filename character, so folding the OTHER direction there would turn
+ * "sub\job.sh" into one strange filename instead of a traversal check. */
+const SEP      = IS_WINDOWS ? '\\' : '/';
+const SEP_FROM = IS_WINDOWS ? /\//g : /\\/g;
+
+/* The POSIX interpreter. bash rather than sh: the jobs in CommandJobs/ use
+ * bash constructs, and pinning it here means the script's own shebang cannot
+ * choose a different interpreter. */
+const POSIX_SHELL = '/bin/bash';
+
+/* The COWORK_OUTPUT directive hides behind the script language's own comment
+ * marker: REM or :: in a .bat, # in a .sh. The rest of the line is identical,
+ * so an operator reading either script sees the same declaration. */
+const DIRECTIVE_RE = IS_WINDOWS
+  ? /^\s*(?:REM|::)\s*COWORK_OUTPUT\s*[:=]\s*(.+?)\s*$/i
+  : /^\s*#\s*COWORK_OUTPUT\s*[:=]\s*(.+?)\s*$/i;
+
 const SERVER_NAME      = 'cowork-batch-exec';
-const SERVER_VERSION   = '1.1.0';
+const SERVER_VERSION   = '1.2.0';
 const DEFAULT_PROTOCOL = '2025-06-18';
 
 /* Maximum concurrent executions: 1, enforced process-wide. */
@@ -142,27 +191,38 @@ function validateBatchPath(input) {
     throw new RejectError(
       'colons are not permitted (blocks drive-qualified paths and alternate data streams)', raw);
 
-  const slashed = raw.replace(/\//g, '\\');
+  const slashed = raw.replace(SEP_FROM, SEP);
 
   // --- UNC / device / network paths ------------------------------------------
-  if (slashed.startsWith('\\\\'))
+  // Checked on BOTH platforms: a leading double separator is never a legitimate
+  // relative job path, and refusing it on POSIX costs nothing.
+  if (raw.startsWith('\\\\') || raw.startsWith('//'))
     throw new RejectError('UNC and network paths are not permitted', raw);
   if (/^[a-z]+:\/\//i.test(raw))
     throw new RejectError('URL-style paths are not permitted', raw);
 
   // --- absolute paths of every flavour ----------------------------------------
   // ':' is already refused above, so this catches root-relative "\foo" / "/foo".
-  if (slashed.startsWith('\\'))
+  // Both flavours are refused on both platforms -- win32.isAbsolute still runs
+  // on POSIX so that a Windows-shaped absolute path cannot slip through a mac.
+  if (raw.startsWith('\\') || raw.startsWith('/'))
     throw new RejectError('absolute paths are not permitted; supply a path relative to CommandJobs', raw);
-  if (path.isAbsolute(raw) || path.win32.isAbsolute(slashed))
+  if (path.isAbsolute(raw) || path.win32.isAbsolute(raw) || path.posix.isAbsolute(raw))
     throw new RejectError('absolute paths are not permitted; supply a path relative to CommandJobs', raw);
 
   // --- shell metacharacters ----------------------------------------------------
-  if (/[&|<>^"'`\r\n\t*?]/.test(raw))
+  // ';' and '$' matter on POSIX the way '&' and '%' matter on cmd. None of them
+  // can chain a command here, because the path is passed as its own argv entry
+  // and never concatenated into a command string -- but a filename containing
+  // one has no legitimate use, and refusing it by NAME beats refusing it
+  // incidentally because the file happened not to exist.
+  if (/[&|;<>^"'`$\r\n\t*?]/.test(raw))
     throw new RejectError('file contains illegal characters', raw);
 
   // --- textual traversal --------------------------------------------------------
-  if (slashed.split('\\').some(seg => seg === '..'))
+  // Split on BOTH separators regardless of platform: "..\x" must not survive on
+  // POSIX just because a backslash is a legal character there.
+  if (raw.split(/[\\/]/).some(seg => seg === '..'))
     throw new RejectError('.. traversal is not permitted', raw);
 
   const root = realJobRoot();
@@ -197,7 +257,7 @@ function validateBatchPath(input) {
   // --- extension, checked on the CANONICAL path ------------------------------------
   const ext = path.extname(real).toLowerCase();
   if (!ALLOWED_EXT.has(ext))
-    throw new RejectError(`only .bat and .cmd may be executed (got "${ext || 'none'}")`, real);
+    throw new RejectError(`only ${ALLOWED_EXT_TEXT} may be executed (got "${ext || 'none'}")`, real);
 
   // --- the log store is not an execution source -------------------------------------
   let realLogs;
@@ -228,7 +288,7 @@ function resolveApprovedOutput(realScriptPath) {
 
   let declared = null;
   for (const line of text.split(/\r?\n/)) {
-    const m = line.match(/^\s*(?:REM|::)\s*COWORK_OUTPUT\s*[:=]\s*(.+?)\s*$/i);
+    const m = line.match(DIRECTIVE_RE);
     if (m) { declared = m[1].replace(/^["']|["']$/g, '').trim(); break; }
   }
 
@@ -322,11 +382,20 @@ function diffSnapshots(before, after) {
 
 /* -------------------------------------------------------------- execute -- */
 
+/* Kill the whole tree, not just the shell. On Windows taskkill /T walks the
+ * child list. On POSIX the child is spawned into its own process group
+ * (detached: true) so that a negative pid signals the group -- otherwise a
+ * timed-out script's own children keep running after the shell dies. */
 function killTree(pid) {
   try {
-    spawnSync('taskkill', ['/PID', String(pid), '/T', '/F'], {
-      windowsHide: true, stdio: 'ignore', timeout: 20000
-    });
+    if (IS_WINDOWS) {
+      spawnSync('taskkill', ['/PID', String(pid), '/T', '/F'], {
+        windowsHide: true, stdio: 'ignore', timeout: 20000
+      });
+    } else {
+      try { process.kill(-pid, 'SIGKILL'); }
+      catch (_) { process.kill(pid, 'SIGKILL'); }
+    }
   } catch (_) { /* best effort */ }
 }
 
@@ -342,7 +411,18 @@ function runBatch(realPath, approvedOutput) {
     const before  = snapshot([jobRoot, outRoot], ['logs']);
 
     // Minimal, server-built environment. The MCP caller contributes nothing.
-    const env = {
+    // The job-facing COWORK_* names are identical on both platforms, so an
+    // approved script reads the same variables wherever it runs.
+    const jobEnv = {
+      COWORK_JOB_NAME:    jobName,
+      COWORK_JOB_TAG:     tag,
+      COWORK_JOB_ROOT:    jobRoot,
+      COWORK_OUTPUT_ROOT: outRoot,
+      COWORK_JOB_OUTPUT:  approvedOutput.dir,    // approved in the script, not by the caller
+      COWORK_ROOT:        COWORK_ROOT
+    };
+
+    const env = IS_WINDOWS ? {
       SystemRoot:  process.env.SystemRoot || 'C:\\Windows',
       windir:      process.env.windir || 'C:\\Windows',
       Path:        process.env.Path || process.env.PATH || '',
@@ -352,22 +432,38 @@ function runBatch(realPath, approvedOutput) {
       USERPROFILE: process.env.USERPROFILE || '',
       COMPUTERNAME: process.env.COMPUTERNAME || '',
       NUMBER_OF_PROCESSORS: process.env.NUMBER_OF_PROCESSORS || '',
-      COWORK_JOB_NAME:    jobName,
-      COWORK_JOB_TAG:     tag,
-      COWORK_JOB_ROOT:    jobRoot,
-      COWORK_OUTPUT_ROOT: outRoot,
-      COWORK_JOB_OUTPUT:  approvedOutput.dir     // approved in the script, not by the caller
+      ...jobEnv
+    } : {
+      PATH:   process.env.PATH || '/usr/bin:/bin:/usr/sbin:/sbin',
+      HOME:   process.env.HOME || os.homedir(),
+      TMPDIR: process.env.TMPDIR || os.tmpdir(),
+      LANG:   process.env.LANG || 'en_US.UTF-8',
+      SHELL:  POSIX_SHELL,
+      USER:   process.env.USER || '',
+      ...jobEnv
     };
 
-    // /d skip AutoRun registry hooks   /s treat the quoted path verbatim
-    // /c run then terminate.  Path passed as its own argv entry -- never concatenated.
-    const child = spawn('cmd.exe', ['/d', '/s', '/c', realPath], {
-      cwd: jobDir,
-      env,
-      windowsHide: true,                  // hidden window; nothing can prompt
-      stdio: ['ignore', 'pipe', 'pipe'],  // stdin closed: no interactive input
-      detached: false                     // no elevation, no new console
-    });
+    // Windows: /d skip AutoRun registry hooks, /s treat the quoted path
+    //          verbatim, /c run then terminate.
+    // POSIX:   the script is passed to bash as an argument rather than executed
+    //          directly, so a missing execute bit is not a silent failure and
+    //          the shebang cannot redirect execution to another interpreter.
+    // On both, the path is its own argv entry -- never concatenated into a
+    // command string, which is what keeps a filename from becoming an argument.
+    const child = IS_WINDOWS
+      ? spawn('cmd.exe', ['/d', '/s', '/c', realPath], {
+          cwd: jobDir,
+          env,
+          windowsHide: true,                  // hidden window; nothing can prompt
+          stdio: ['ignore', 'pipe', 'pipe'],  // stdin closed: no interactive input
+          detached: false                     // no elevation, no new console
+        })
+      : spawn(POSIX_SHELL, [realPath], {
+          cwd: jobDir,
+          env,
+          stdio: ['ignore', 'pipe', 'pipe'],  // stdin closed: no interactive input
+          detached: true                      // own process group, so killTree reaches children
+        });
 
     let out = Buffer.alloc(0), err = Buffer.alloc(0);
     let outTrunc = false, errTrunc = false;
@@ -488,8 +584,14 @@ function runBatch(realPath, approvedOutput) {
  *  file simply means no reminder. Job execution is untouched by this whole block.
  */
 
+/* Where the operating corpus lives. COWORK_CONFIG_ROOT is what Cowork itself
+ * loads -- the OneDrive "Cowork" folder on Windows, the equivalent on a Mac --
+ * and the launcher sets it because only the operator knows their OneDrive
+ * folder name. The in-repo copy is the fallback, so a checkout with no
+ * configured host still produces a reminder. Both are read-only here. */
+const CONFIG_ROOT = process.env.COWORK_CONFIG_ROOT || '';
 const LESSON_PATHS = [
-  'C:\\Users\\YOURUSER\\OneDrive\\Documents\\Cowork\\cowork-memory\\cowork-lessons.md',
+  ...(CONFIG_ROOT ? [path.join(CONFIG_ROOT, 'cowork-memory', 'cowork-lessons.md')] : []),
   path.join(COWORK_ROOT, 'CoworkConfig', 'cowork-memory', 'cowork-lessons.md')
 ];
 const MAX_LESSON_BYTES = 4 * 1024 * 1024;

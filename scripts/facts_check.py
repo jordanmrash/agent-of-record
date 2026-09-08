@@ -3,7 +3,8 @@
 
 Every bridge fact - port, name, stateful or not, roots, tool count - is stated in
 several places: the VS Code tasks, the watchdog, the .cmd launchers, two READMEs,
-the architecture diagram and the skills that drive the bridges. Each restatement
+the architecture diagram, the Cowork connector packages and the skills that
+drive the bridges. Each restatement
 is a place for drift to hide. The published v0.1.0 tree carried two: a skill that
 counted three bridges after a fourth had been added, and a skill that said port
 8934 did not exist after it had become the Power Automate bridge.
@@ -22,6 +23,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MANIFEST = os.path.join(ROOT, "docs", "bridge-facts.json")
 
 STATEFUL_WORDS = {True: "stateful", False: "stateless"}
+PLACEHOLDER_APP_ID = "00000000-0000-4000-8000-000000000000"
 
 
 class Findings:
@@ -55,7 +57,20 @@ def check_tasks(m, f):
     else:
         f.ok()
     text = strip_json_comments(live)
-    ports = re.findall(r'"--port",\s*"(\d+)"', text)
+    # One task now declares its port once per platform: the default args plus
+    # the osx and linux overrides. What must match the manifest is the set of
+    # ports served and the number of TASKS, not the number of times a port is
+    # written down - so ports are counted per task block, not per occurrence.
+    ports = []
+    for seg in _task_blocks(text):
+        found = re.findall(r'"--port",\s*"(\d+)"', seg)
+        if not found:
+            continue
+        if len(set(found)) != 1:
+            f.fail("tasks", "one task block declares more than one port: %s"
+                   % sorted(set(found)))
+            continue
+        ports.append(found[0])
     expected = [str(b["port"]) for b in m["bridges"]]
     if sorted(ports) != sorted(expected):
         f.fail("tasks", "tasks.json declares ports %s, manifest has %s" % (ports, expected))
@@ -77,12 +92,16 @@ def check_tasks(m, f):
         f.ok()
 
 
-def _task_segment(text, port):
-    # the block for a port runs from its "label" line to the next "label" line
+def _task_blocks(text):
+    """Each task block, from its "label" line to the next one."""
     labels = [mm.start() for mm in re.finditer(r'"label"\s*:', text)]
     for i, start in enumerate(labels):
         end = labels[i + 1] if i + 1 < len(labels) else len(text)
-        seg = text[start:end]
+        yield text[start:end]
+
+
+def _task_segment(text, port):
+    for seg in _task_blocks(text):
         if re.search(r'"--port",\s*"%s"' % port, seg):
             return seg
     return None
@@ -130,6 +149,72 @@ def check_launchers(m, f):
                 f.fail("launchers", "%s does not start %s" % (path, b["server"]))
             if not os.path.isfile(os.path.join(ROOT, b["server"])):
                 f.fail("launchers", "%s named in the manifest does not exist" % b["server"])
+        f.ok()
+
+
+def check_posix_launchers(m, f):
+    """Every Windows launcher has a POSIX sibling that starts the same server.
+
+    The claim v0.3 makes is that this runs on a Mac. The way that claim rots is
+    a bridge gaining a Windows launcher and never gaining the other one, so the
+    manifest names both and this refuses a pair that has drifted apart.
+    """
+    for b in m["bridges"]:
+        rel = b.get("stdio_posix")
+        if not rel:
+            f.fail("posix launchers", "port %s has no stdio_posix in the manifest"
+                   % b["port"])
+            continue
+        path = os.path.join("Startup", rel.replace("/", os.sep))
+        if not os.path.isfile(os.path.join(ROOT, path)):
+            f.fail("posix launchers", "%s is missing" % path)
+            continue
+        text = read(path)
+        live = "\n".join(l for l in text.splitlines()
+                         if not l.lstrip().startswith("#"))
+        if b["implementation"] == "upstream":
+            if b["package"] not in live:
+                f.fail("posix launchers", "%s does not start %s"
+                       % (path, b["package"]))
+        else:
+            leaf = b["server"].split("/")[-1]
+            if leaf not in live:
+                f.fail("posix launchers", "%s does not start %s"
+                       % (path, b["server"]))
+        # A POSIX launcher that hard-codes a home directory would defeat both
+        # the disclosure scan and the point of shipping it. It must COMPUTE the
+        # tooling root from its own location - merely mentioning COWORK_ROOT is
+        # not the property being asserted, so the pattern is the derivation.
+        if not re.search(r'COWORK_ROOT="\$\(cd\s+"\$HERE', text):
+            f.fail("posix launchers",
+                   "%s does not derive COWORK_ROOT from its own location" % path)
+            continue
+        f.ok()
+
+    # The task file must actually START them, per task. A launcher that exists
+    # but is wired to nothing is the same outage as a launcher that is missing,
+    # and one task keeping its override while another loses it is exactly the
+    # drift a whole-file check would miss.
+    tasks = strip_json_comments(read(m["surfaces"]["tasks"]))
+    for b in m["bridges"]:
+        rel = b.get("stdio_posix")
+        if not rel:
+            continue
+        seg = _task_segment(tasks, str(b["port"]))
+        if seg is None:
+            continue          # already reported by check_tasks
+        missing = [k for k in ("osx", "linux") if '"%s"' % k not in seg]
+        if missing:
+            f.fail("posix launchers",
+                   "port %s has no %s override in tasks.json; that platform "
+                   "would run the Windows launcher"
+                   % (b["port"], " or ".join(missing)))
+            continue
+        if rel not in seg:
+            f.fail("posix launchers",
+                   "port %s platform override does not point --stdio at %s"
+                   % (b["port"], rel))
+            continue
         f.ok()
 
 
@@ -201,6 +286,51 @@ def check_readmes(m, f):
             f.fail("Startup/README.txt", "Ports panel instruction lists %s" % listed)
 
 
+def check_plugins(m, f):
+    """Each bridge ships a Cowork connector package; its id and URL port must match."""
+    seen = set()
+    for b in m["bridges"]:
+        path = b["plugin_manifest"]
+        try:
+            manifest = json.loads(read(path))
+        except FileNotFoundError:
+            f.fail(path, "connector manifest missing for port %d" % b["port"])
+            continue
+        except ValueError as exc:
+            f.fail(path, "connector manifest is not valid JSON: %s" % exc)
+            continue
+        connectors = manifest.get("agentConnectors") or []
+        if len(connectors) != 1:
+            f.fail(path, "expected exactly one agentConnectors entry, found %d" % len(connectors))
+            continue
+        c = connectors[0]
+        if c.get("id") != b["connector_id"]:
+            f.fail(path, "connector id is %r, skills address %r" % (c.get("id"), b["connector_id"]))
+        else:
+            f.ok()
+        url = ((c.get("toolSource") or {}).get("remoteMcpServer") or {}).get("mcpServerUrl", "")
+        port = re.search(r"-(\d{4})\.[a-z0-9]+\.devtunnels\.ms/mcp$", url)
+        if not port or int(port.group(1)) != b["port"]:
+            f.fail(path, "mcpServerUrl %r does not point at port %d" % (url, b["port"]))
+        else:
+            f.ok()
+        if str(b["port"]) not in c.get("displayName", ""):
+            f.fail(path, "connector displayName does not carry the port")
+        else:
+            f.ok()
+        app_id = manifest.get("id", "")
+        if not re.fullmatch(r"[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}", app_id):
+            f.fail(path, "app id %r is not a GUID" % app_id)
+        elif app_id != PLACEHOLDER_APP_ID and app_id in seen:
+            # the published template shares one placeholder; personalize.py mints a
+            # distinct id per package, and two real packages must never share one
+            f.fail(path, "app id %s reused by another package - each upload needs its own" % app_id)
+        seen.add(app_id)
+        for icon in (manifest.get("icons") or {}).values():
+            if not os.path.isfile(os.path.join(ROOT, os.path.dirname(path), icon)):
+                f.fail(path, "icon %s referenced but missing" % icon)
+
+
 def _number(word):
     return {"one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6}.get(word.lower(), -1)
 
@@ -242,8 +372,8 @@ def main(argv):
         print("FACTS_CHECK: COULD NOT RUN - %s" % exc)
         return 2
     f = Findings()
-    for check in (check_tasks, check_watchdog, check_launchers, check_tool_count,
-                  check_readmes, check_architecture, check_prose):
+    for check in (check_tasks, check_watchdog, check_launchers, check_posix_launchers, check_tool_count,
+                  check_readmes, check_architecture, check_prose, check_plugins):
         try:
             check(m, f)
         except FileNotFoundError as exc:

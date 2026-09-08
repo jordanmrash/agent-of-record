@@ -8,6 +8,8 @@
 - docs/public-accounting-vision.md
 - docs/public-accounting-control-map.md
 - docs/architecture.md
+- docs/setup.md
+- CoworkConfig/README.md
 - docs/measured-results.md
 - docs/limitations.md
 
@@ -15,6 +17,8 @@
 
 - Startup/CommandBridge/batch-exec-server.js
 - Startup/FlowBridge/flow-mcp-server.js
+- Startup/Plugins/
+- scripts/personalize.py
 - CoworkConfig/cowork-memory/cowork-lessons.md
 - CoworkConfig/Skills/self-improvement/
 - GitHubSetup/

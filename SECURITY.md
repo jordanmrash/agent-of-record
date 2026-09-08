@@ -19,12 +19,15 @@ privileges on a real machine behind a public dev tunnel:
 
 A dev-tunnel hostname is a live ingress to the machine, not merely an
 identifier of it. It is never committed here; if one ever appears in a
-published tree, treat it as an incident: rotate the tunnel, then rebuild and
-force-push the snapshot.
+published tree, treat it as an incident: rotate the tunnel, then remove the
+value in a follow-up commit and, because a commit does not unpublish what an
+earlier one exposed, rotate anything else the history now reveals.
 
 ## Supported versions
 
-This is a published snapshot, rebuilt in full on each publication. Only the
+Through v0.3.0 this was a published snapshot, rebuilt in full on each
+publication; from v0.3.0 `main` keeps its history and accepts pull requests.
+Either way, only the
 current `main` and the latest tagged release are maintained.
 
 ## Reporting
@@ -49,7 +52,8 @@ documented in `GitHubSetup/PUBLISHING.md`; the values live only in local lists
 that are gitignored and never copied. Entries whose substance, not merely whose
 labels, described non-public work were withheld rather than rewritten. The publish gate in
 `GitHubSetup/` scans for credential shapes, a local denylist of names, and
-name-shaped prose before every publication, and the history is a single commit
+name-shaped prose in CI on every push and pull request, and the history before
+v0.3.0 is a series of single commits
 so nothing can be recovered from an earlier revision.
 
 GitHub Actions also runs `scripts/public_scan.py`, which checks public-safe

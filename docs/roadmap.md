@@ -22,6 +22,7 @@ Released 2026-09-07.
 - Runnable synthetic control-loop demonstration (`examples/synthetic-control-loop/run.py`). Shipped.
 - Expand behavioral verification to at least ten rules. Carried to v0.3.
 - Reduce duplicate configuration statements. Carried to v0.3; the facts check now measures the bridge subset.
+- 0.2.1: installable - setup guide from zero, placeholder personalizer with self-test, connector packages for all four bridges under the facts check, configuration guide with an empty-corpus start. Shipped 2026-09-07.
 
 ## v0.3: Applied-work contract
 

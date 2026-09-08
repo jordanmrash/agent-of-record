@@ -4,7 +4,9 @@
     "under which name, stateful or not, and what each one reaches. scripts/facts_check.py",
     "verifies the surfaces listed below against this file. Change the manifest first,",
     "then the surfaces; the check fails until they agree.",
-    "Paths use the repository placeholder YOURUSER."
+    "Paths use the repository placeholder YOURUSER.",
+    "connector_id is the tool namespace the skills address; plugin_manifest is the Cowork connector package that must carry it and the port.",
+    "stdio is the Windows launcher; stdio_posix is its macOS/Linux sibling under Startup/posix. facts_check.py verifies both exist and that neither hard-codes a root."
   ],
   "bridge_count": 4,
   "bridges": [
@@ -17,7 +19,10 @@
       "implementation": "upstream",
       "package": "@playwright/mcp",
       "task_label": "Cowork Playwright Bridge (8931)",
-      "watchdog_name": "Playwright"
+      "connector_id": "jordan-local-playwright-8931-v1",
+      "plugin_manifest": "Startup/Plugins/playwright-8931/manifest.json",
+      "watchdog_name": "Playwright",
+      "stdio_posix": "posix/pw-server.sh"
     },
     {
       "port": 8932,
@@ -33,7 +38,10 @@
         "C:\\Users\\YOURUSER\\OneDrive\\Documents\\Cowork"
       ],
       "task_label": "Cowork Filesystem Bridge (8932)",
-      "watchdog_name": "Filesystem"
+      "connector_id": "jordan-local-filesystem-8932-v1",
+      "plugin_manifest": "Startup/Plugins/filesystem-8932/manifest.json",
+      "watchdog_name": "Filesystem",
+      "stdio_posix": "posix/fs-server.sh"
     },
     {
       "port": 8933,
@@ -44,7 +52,10 @@
       "implementation": "own",
       "server": "Startup/CommandBridge/batch-exec-server.js",
       "task_label": "Cowork Command Bridge (8933)",
-      "watchdog_name": "Command"
+      "connector_id": "jordan-approved-batch-8933-v1",
+      "plugin_manifest": "Startup/Plugins/command-8933/manifest.json",
+      "watchdog_name": "Command",
+      "stdio_posix": "posix/exec-server.sh"
     },
     {
       "port": 8934,
@@ -56,7 +67,10 @@
       "server": "Startup/FlowBridge/flow-mcp-server.js",
       "tool_count": 29,
       "task_label": "Cowork Power Automate Bridge (8934)",
-      "watchdog_name": "FlowAuto"
+      "connector_id": "jordan-power-automate-8934-v1",
+      "plugin_manifest": "Startup/Plugins/power-automate-8934/manifest.json",
+      "watchdog_name": "FlowAuto",
+      "stdio_posix": "posix/flow-server.sh"
     }
   ],
   "surfaces": {
@@ -81,8 +95,11 @@
       "CoworkConfig/Skills/local-file-bridge/SKILL.md",
       "CoworkConfig/Skills/git-bridge/SKILL.md",
       "CoworkConfig/Skills/gamma-tango/SKILL.md",
-      "CoworkConfig/Skills/playwright-skill/SKILL.md"
-    ]
+      "CoworkConfig/Skills/playwright-skill/SKILL.md",
+      "docs/setup.md",
+      "CoworkConfig/README.md"
+    ],
+    "posix_launcher_dir": "Startup/posix"
   },
   "stale_phrases": [
     "three supergateway bridges",

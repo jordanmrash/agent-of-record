@@ -56,6 +56,8 @@ allow.local.txt
 excludes.local.txt
 sanitize.local.txt
 skill-menu.cache.json
+# packaged connector zips carry the real tunnel host once personalized
+Startup/Plugins/*.zip
 
 # --------------------------------------------------------- superseded drafts --
 # Old drafts and staging artefacts that the build already excludes.
@@ -84,3 +86,12 @@ autorun/
 
 # machine-readable output of scripts/release_check.py --json; published by CI, never committed
 release-results.json
+
+# --- POSIX bridge runtime (v0.3) -------------------------------------------
+# The operator's real paths and the watchdog's own output. cowork-env.sh is
+# also refused by scripts/public_scan.py by name, so a tracked copy fails the
+# gate rather than leaking a home directory.
+Startup/posix/cowork-env.sh
+Startup/posix/watchdog/status.txt
+Startup/posix/watchdog/logs/
+install-results.json

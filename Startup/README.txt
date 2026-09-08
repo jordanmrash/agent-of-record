@@ -1,6 +1,10 @@
 COWORK LOCAL BRIDGE -- STARTUP
 =============================
 
+First-time installation (prerequisites, npm install, personalizing the paths,
+registering the connector packages under Startup\Plugins) is docs\setup.md at
+the repository root. This file is the operating card once that is done.
+
 1. Double-click GO.bat. It opens VS Code on this folder, which auto-starts
    four tasks.
 
@@ -95,6 +99,6 @@ process from a previous session.
 If 8933 starts and immediately exits, check that `node` is on PATH --
 batch-exec-server.js is launched with `node`, not `npx`.
 
-Do not open C:\Users\YOURUSER\Documents\Cowork\Startup -- that is the old
-pre-rename folder. Its tasks compete for the same ports. The only correct
-launcher is COPILOT_COWORK\Startup\GO.bat.
+Do not run a second copy of this Startup folder from another location -- its
+tasks compete for the same ports. The only correct launcher is
+COPILOT_COWORK\Startup\GO.bat.

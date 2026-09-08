@@ -11,8 +11,18 @@ permissions:
 
 jobs:
   validate:
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
+    # The gate runs on both platforms the repository claims to support. The
+    # command bridge self-test starts the real server and exercises the
+    # platform's own script shape - .bat through cmd.exe on Windows, .sh through
+    # bash on macOS - so a refusal that holds on one and not the other fails
+    # here rather than on a contributor's machine.
+    name: gate (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest]
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -22,14 +32,22 @@ jobs:
         with:
           node-version: "20"
       - name: Validate repository controls, demonstration and self-tests
-        run: python scripts/release_check.py --json release-results.json
+        run: python scripts/release_check.py --json release-results-${{ matrix.os }}.json
       - name: Publish machine-readable results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: release-results
-          path: release-results.json
+          name: release-results-${{ matrix.os }}
+          path: release-results-${{ matrix.os }}.json
       - name: Parse own-code MCP servers
         run: |
           node --check Startup/CommandBridge/batch-exec-server.js
           node --check Startup/FlowBridge/flow-mcp-server.js
+      - name: POSIX launchers are executable and parse
+        if: runner.os != 'Windows'
+        run: |
+          for f in Startup/posix/*.sh Startup/posix/watchdog/*.sh; do
+            test -x "$f" || { echo "not executable: $f"; exit 1; }
+            bash -n "$f"
+          done
+          echo "launchers: executable and parse clean"

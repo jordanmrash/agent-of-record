@@ -8,6 +8,7 @@
 | **Platform** | Windows. The local layer is PowerShell, batch files, and VS Code tasks. |
 | **Host** | The four bridges are standard MCP servers. Microsoft 365 Copilot Cowork is the client this repository was built and operated against; it is reached through a dev tunnel only because that client is cloud-hosted. Any MCP client that can start a local process can use the two own-code servers directly. |
 | **Runs without the host** | `python examples/synthetic-control-loop/run.py` - the control loop end to end, no tenant, no tunnel, no network. |
+| **Install** | [Setup from zero](docs/setup.md) - a bare Windows PC to four reachable bridges and an installed configuration. `scripts/personalize.py` replaces every placeholder in one pass; each bridge ships its connector package under `Startup/Plugins/`. |
 
 Professional work is adopting AI faster than it is developing the controls, operating models, and institutional knowledge needed to use it reliably.
 
@@ -80,7 +81,7 @@ These are measurements from the published snapshot, not aspirational claims:
 | Lesson keys routed into skills | 80 |
 | Lesson keys routed into plugin tools | 5 |
 | Routed skills | 9 |
-| Self-test suites | 11 |
+| Self-test suites | 12 |
 | Behaviorally verified effective rules | 1 |
 | Behaviorally verified inert rules | 1 |
 | Rules proven fully enforced across every behavior surface | 0 |
@@ -129,11 +130,12 @@ Delivery is not treated as enforcement. A rule in a skill reaches only sessions 
 ## Start here
 
 1. Run the demonstration: `python examples/synthetic-control-loop/run.py`. It shows a missing input becoming a hard stop, then a delivered rule judged against a control - see the [synthetic control-loop scenario](examples/synthetic-control-loop/README.md).
-2. Read [Public Accounting Vision](docs/public-accounting-vision.md).
-3. Review [Public Accounting Control Map](docs/public-accounting-control-map.md).
-4. Read [Architecture and Trust Boundaries](docs/architecture.md).
-5. Run the repository validation described in [Quick Start](docs/quickstart.md).
-6. Review [Limitations](docs/limitations.md) before adapting any bridge.
+2. To run the bridges yourself, follow [Setup from zero](docs/setup.md); [CoworkConfig/README.md](CoworkConfig/README.md) explains how to start with an empty corpus rather than the author's.
+3. Read [Public Accounting Vision](docs/public-accounting-vision.md).
+4. Review [Public Accounting Control Map](docs/public-accounting-control-map.md).
+5. Read [Architecture and Trust Boundaries](docs/architecture.md).
+6. Run the repository validation described in [Quick Start](docs/quickstart.md).
+7. Review [Limitations](docs/limitations.md) before adapting any bridge.
 
 ## Repository map
 
@@ -144,8 +146,8 @@ CoworkConfig/    skills, memory, instructions, lesson routing, verification
 docs/            public-accounting vision, controls, architecture, evidence, roadmap
 examples/        synthetic demonstrations with no client or firm data
 GitHubSetup/     clean-room publication and disclosure gates
-scripts/         public repository validation
-Startup/         four local MCP bridges and the watchdog
+scripts/         public repository validation and the personalizer
+Startup/         four local MCP bridges, their connector packages, and the watchdog
 ```
 
 ## Future applied skills
@@ -199,7 +201,7 @@ The operating rule is:
 
 ## Status and roadmap
 
-This is **v0.2: Verification and integrity**. It adds the cross-surface bridge facts check, the runnable synthetic control-loop demonstration, and machine-readable release results. Two v0.2 items - behavioral verdicts for ten routed rules, and reduction of duplicated configuration statements - carry to v0.3.
+This is **v0.2: Verification and integrity**. It adds the cross-surface bridge facts check, the runnable synthetic control-loop demonstration, and machine-readable release results; the 0.2.1 snapshot adds the installable path - setup guide, personalizer, a connector package per bridge, and the configuration guide. Two v0.2 items - behavioral verdicts for ten routed rules, and reduction of duplicated configuration statements - carry to v0.3.
 
 - **v0.3: Applied-work contract** — a common input, evidence, review, error, and audit contract for applied skills, plus the deferred verification items.
 - **v0.4: Applied public-accounting skills** — independently tested workflows using synthetic data.

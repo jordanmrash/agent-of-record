@@ -94,6 +94,11 @@ CHECKS = [
 # Self-tests that live beside the public scripts rather than under the skill.
 ROOT_SELFTESTS = [
     ROOT / "scripts" / "facts_check_selftest.py",
+    ROOT / "scripts" / "personalize_selftest.py",
+    # Starts the command bridge as a real stdio MCP server and tries to escape
+    # it. Runs the platform's own script shape, so the same suite covers the
+    # Windows machine that publishes and the Mac that contributes.
+    ROOT / "scripts" / "exec_bridge_selftest.py",
 ]
 
 SELFTESTS = [

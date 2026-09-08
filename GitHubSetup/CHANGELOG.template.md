@@ -3,6 +3,34 @@
 All notable changes to the published snapshot. The private working repository
 keeps the full commit history; each entry here summarizes one publication.
 
+## 0.2.1 - 2026-09-07
+
+Installable. The 0.2.0 audit found a reference implementation that could be read
+and validated but not stood up: no from-zero guide, placeholders in 65 files with
+nothing to replace them, a connector package for one bridge out of four, and a
+lessons corpus with no way to start empty. This snapshot closes those four gaps.
+
+- `docs/setup.md`: from a bare Windows PC to four reachable bridges and an
+  installed configuration, in twelve steps, each stated from the files in the
+  tree rather than from memory. Tenant-dependent steps say so.
+- `scripts/personalize.py`: replaces `YOURUSER`, the OneDrive folder name,
+  `YOUR-TUNNEL-HOST` and the shared placeholder app id across `Startup/`,
+  `CommandJobs/`, `CoworkConfig/` and `docs/bridge-facts.json`; dry run by
+  default; leaves the documentation, the publishing tooling and the skill
+  attribution lines alone. `scripts/personalize_selftest.py` proves each of
+  those properties on a throwaway copy and that `public_scan.py` refuses the
+  personalized result; the release gate runs it.
+- Connector packages for all four bridges under `Startup/Plugins/` (the 8934
+  package moves there from `Startup/FlowBridge/plugin/`). `facts_check.py` now
+  verifies each package's connector id against the name the skills address, its
+  URL against its port, and that no two personalized packages share an app id -
+  three new negative controls in its self-test.
+- `CoworkConfig/README.md`: what installs where, which blocks are generated from
+  what, and the procedure for starting with an empty corpus - including what the
+  checkers report on an empty file and why.
+- `GO.bat` and `Startup/README.txt` corrected: the launcher comment still
+  described two bridges and two ports.
+
 ## 0.2.0 - 2026-09-07
 
 Verification and integrity. Three of the five v0.2 roadmap items ship here; the

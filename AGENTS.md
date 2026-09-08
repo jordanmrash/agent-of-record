@@ -5,12 +5,59 @@ human-facing entry point is `README.md`.
 
 ## What this repository is
 
-A published snapshot of a governed agent foundation: four local MCP bridges, a
+The public repository of a governed agent foundation: four local MCP bridges, a
 two-tier memory, a lessons corpus with generated delivery into skills, a behavioral
 verification harness, and clean-room publication tooling. It is a reference
 implementation, not a service, and it contains no client, firm, tenant or credential
 material. Placeholders are `YOURUSER`, `YOUR-TUNNEL-HOST`, `you@example.com`,
 `yourorg.crm.dynamics.com` and the zero GUID.
+
+## The install contract
+
+An agent pointed at a clone of this repository and asked to "set this up" has a
+defined job with a defined end. This is that definition. Do not improvise a
+different one, and do not report success on any evidence weaker than step 5.
+
+1. **Determine the host.** Windows and POSIX (macOS, Linux) are both supported
+   and they differ in four places only: the launcher directory (`Startup/` vs
+   `Startup/posix/`), the executable script extension (`.bat`/`.cmd` vs `.sh`),
+   the watchdog mechanism (Task Scheduler vs `launchd`), and the browser the
+   Playwright bridge drives. Everything else is shared. `docs/setup.md` is the
+   Windows path; `docs/setup-macos.md` is the POSIX one.
+
+2. **Validate the checkout before changing it.** `python scripts/release_check.py`
+   must print `RELEASE_CHECK: CLEAN`. If it does not, stop and report - the tree
+   is not what was published and nothing below will behave as documented.
+
+3. **Install the runtime.** `cd Startup && npm install` (pins supergateway).
+   On POSIX also `chmod +x Startup/posix/*.sh`; a clone can arrive without the
+   execute bit, and the launchers will not start without it.
+
+4. **Configure the machine, never the repository.** Real paths belong in
+   `Startup/posix/cowork-env.sh` (POSIX, gitignored) or come from
+   `scripts/personalize.py` (Windows). The operator's OneDrive folder name and
+   account name are things you must ASK for or read from the environment - never
+   guess, and never write either into a tracked file. `scripts/public_scan.py`
+   exists to catch you if you do.
+
+5. **Prove it, and let the proof be the report.**
+
+   ```bash
+   python scripts/install_check.py --json install-results.json
+   ```
+
+   This performs a real stdio MCP handshake against each own-code bridge,
+   checks the pinned runtime, enforces the 1024-character skill description cap,
+   and runs the corpus checks. `INSTALL_CHECK: CLEAN` is the completion
+   criterion. A `FAIL` line is the work that remains; each one names its own
+   remedy.
+
+**What you cannot verify, you must not claim.** Three things decide whether the
+bridges are reachable from a Cowork session and none of them are observable from
+the machine: whether the dev tunnel ports are set Public, whether the connector
+packages were uploaded, and whether tenant policy permits custom apps at all.
+`install_check.py` deliberately does not guess at them. Report them as operator
+steps with their evidence unknown rather than as passing checks.
 
 ## Before you change anything
 
@@ -47,11 +94,24 @@ material. Placeholders are `YOURUSER`, `YOUR-TUNNEL-HOST`, `you@example.com`,
   incomplete, and `release_check.py` runs the suites.
 - **No identifiers.** `scripts/public_scan.py` refuses real user paths, tunnel
   hostnames, tenant or environment identifiers and credential shapes. It runs in CI.
+- **Connector packages have one home.** Each bridge's Cowork connector package is
+  under `Startup/Plugins/<name>/`; `docs/bridge-facts.json` names the package and
+  the connector id the skills address, and `facts_check.py` verifies both.
+
+## Installing is not publishing
+
+`scripts/personalize.py` turns the placeholders into one operator's real values
+across the operating trees (`Startup/`, `CommandJobs/`, `CoworkConfig/`,
+`docs/bridge-facts.json`). A personalized tree fails `public_scan.py` by design.
+Never run the personalizer on a tree you intend to push; never "fix" the scan by
+widening its patterns. `docs/setup.md` is the installation path.
 
 ## Conventions
 
-- One commit per publication. `main` is rebuilt and force-pushed; do not stack
-  commits on it. See `GitHubSetup/PUBLISHING.md`.
+- `main` keeps its history and is protected: changes arrive as pull requests,
+  pass the gate on Windows and macOS in CI, and merge after review by the owner
+  named in `.github/CODEOWNERS`. Never force-push. The history before v0.3.0
+  is a series of single-commit snapshots; see `GitHubSetup/PUBLISHING.md`.
 - `CHANGELOG.md` gets one entry per publication. The README measurements table is
   updated from the release output, never typed in.
 - Attribution blocks inside each skill are license terms. Add a name alongside;

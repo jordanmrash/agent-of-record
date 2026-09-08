@@ -68,6 +68,25 @@
         "--sessionTimeout", "1800000",
         "--stdio", "C:\\Users\\YOURUSER\\Documents\\COPILOT_COWORK\\Startup\\pw-server.cmd"
       ],
+      // macOS and Linux use ${workspaceFolder} rather than an absolute path, so
+      // a contributor's clone needs no personalization to start. The Windows
+      // args above are left exactly as they were.
+      "osx": { "args": [
+        "${workspaceFolder}/node_modules/supergateway/dist/index.js",
+        "--port", "8931",
+        "--outputTransport", "streamableHttp",
+        "--stateful",
+        "--sessionTimeout", "1800000",
+        "--stdio", "${workspaceFolder}/posix/pw-server.sh"
+      ] },
+      "linux": { "args": [
+        "${workspaceFolder}/node_modules/supergateway/dist/index.js",
+        "--port", "8931",
+        "--outputTransport", "streamableHttp",
+        "--stateful",
+        "--sessionTimeout", "1800000",
+        "--stdio", "${workspaceFolder}/posix/pw-server.sh"
+      ] },
       "isBackground": true,
       "presentation": {
         "echo": true,
@@ -90,6 +109,18 @@
         "--outputTransport", "streamableHttp",
         "--stdio", "C:\\Users\\YOURUSER\\Documents\\COPILOT_COWORK\\Startup\\fs-server.cmd"
       ],
+      "osx": { "args": [
+        "${workspaceFolder}/node_modules/supergateway/dist/index.js",
+        "--port", "8932",
+        "--outputTransport", "streamableHttp",
+        "--stdio", "${workspaceFolder}/posix/fs-server.sh"
+      ] },
+      "linux": { "args": [
+        "${workspaceFolder}/node_modules/supergateway/dist/index.js",
+        "--port", "8932",
+        "--outputTransport", "streamableHttp",
+        "--stdio", "${workspaceFolder}/posix/fs-server.sh"
+      ] },
       "isBackground": true,
       "presentation": {
         "echo": true,
@@ -112,6 +143,18 @@
         "--outputTransport", "streamableHttp",
         "--stdio", "C:\\Users\\YOURUSER\\Documents\\COPILOT_COWORK\\Startup\\exec-server.cmd"
       ],
+      "osx": { "args": [
+        "${workspaceFolder}/node_modules/supergateway/dist/index.js",
+        "--port", "8933",
+        "--outputTransport", "streamableHttp",
+        "--stdio", "${workspaceFolder}/posix/exec-server.sh"
+      ] },
+      "linux": { "args": [
+        "${workspaceFolder}/node_modules/supergateway/dist/index.js",
+        "--port", "8933",
+        "--outputTransport", "streamableHttp",
+        "--stdio", "${workspaceFolder}/posix/exec-server.sh"
+      ] },
       "isBackground": true,
       "presentation": {
         "echo": true,
@@ -134,6 +177,18 @@
         "--outputTransport", "streamableHttp",
         "--stdio", "C:\\Users\\YOURUSER\\Documents\\COPILOT_COWORK\\Startup\\flow-server.cmd"
       ],
+      "osx": { "args": [
+        "${workspaceFolder}/node_modules/supergateway/dist/index.js",
+        "--port", "8934",
+        "--outputTransport", "streamableHttp",
+        "--stdio", "${workspaceFolder}/posix/flow-server.sh"
+      ] },
+      "linux": { "args": [
+        "${workspaceFolder}/node_modules/supergateway/dist/index.js",
+        "--port", "8934",
+        "--outputTransport", "streamableHttp",
+        "--stdio", "${workspaceFolder}/posix/flow-server.sh"
+      ] },
       "isBackground": true,
       "presentation": {
         "echo": true,

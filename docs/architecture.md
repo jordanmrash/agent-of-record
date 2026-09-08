@@ -128,8 +128,8 @@ The public repository is therefore:
 3. Sanitized in file contents and names.
 4. Scanned for identifiers, credentials, and name-shaped prose.
 5. Regenerated so generated control blocks match the sanitized corpus.
-6. Initialized as a new repository with one commit.
+6. Initialized as a new repository with one commit (the model through v0.3.0).
 
-This is intentionally a curated snapshot, not a conventional mirror of the working history.
+Through v0.3.0 this was intentionally a curated snapshot, not a conventional mirror of the working history. From v0.3.0 `main` keeps its history: changes arrive as pull requests, pass the gate on Windows and macOS in CI, and merge after review. The disclosure scan that once ran before each rebuild now runs on every push.
 
-Between full rebuilds, corrections to the published tree are made in a working clone of the snapshot and published by re-rooting that clone as a single commit and force-pushing it. The local substitution lists are re-applied on the next full rebuild, so a correction never carries history and never bypasses the scan.
+The publishing tooling in `GitHubSetup/` remains the way a fresh tree is produced from a private working copy when that is ever needed again; it is no longer the way `main` is updated.
