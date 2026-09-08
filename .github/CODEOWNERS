@@ -1,4 +1,4 @@
-# Review routing. A pull request that touches a path here requests review from
+﻿# Review routing. A pull request that touches a path here requests review from
 # the listed owner, and branch protection requires that review before merge.
 #
 # Two roles. The repository owner reviews everything that carries a safety
@@ -7,8 +7,7 @@
 # worth more than the owner's. Both are listed on the paths where a change to
 # one platform's layer could change the other's behaviour.
 #
-# The macOS contributor's handle is added by the owner when they accept the
-# collaboration invitation; until then the owner reviews the POSIX paths alone.
+# The macOS contributor (@dfeteau) co-owns the POSIX layer.
 
 # Default: everything.
 *                                              @jordanmrash
@@ -27,9 +26,7 @@
 /AGENTS.md                                     @jordanmrash
 /CoworkConfig/Skills/self-improvement/         @jordanmrash
 
-# The POSIX layer. Add the macOS contributor alongside on these lines once
-# they have accepted the invitation, for example:
-#   /Startup/posix/    @jordanmrash @their-handle
-/Startup/posix/                                @jordanmrash
-/docs/setup-macos.md                           @jordanmrash
-/docs/evidence/                                @jordanmrash
+# The POSIX layer. Either owner's review satisfies the requirement.
+/Startup/posix/                                @jordanmrash @dfeteau
+/docs/setup-macos.md                           @jordanmrash @dfeteau
+/docs/evidence/                                @jordanmrash @dfeteau
