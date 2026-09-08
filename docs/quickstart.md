@@ -2,7 +2,9 @@
 
 This page validates the published snapshot and runs the demonstration. To
 install the bridges and the configuration, follow [Setup from zero](setup.md) on
-Windows or [Setup on macOS and Linux](setup-macos.md) on a Mac.
+Windows or [Setup on macOS and Linux](setup-macos.md) on a Mac. For Claude Cowork, which runs on the
+machine and needs no tunnel, use [Claude Cowork on a Windows PC](install/claude-cowork-windows.md)
+or [Claude Cowork on a Mac](install/claude-cowork-mac.md).
 
 ## Read the foundation first
 

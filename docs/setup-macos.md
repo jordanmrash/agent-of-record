@@ -1,5 +1,8 @@
 # Setup on macOS and Linux
 
+> Using **Claude Cowork** rather than Copilot Cowork? Follow [Claude Cowork on a Mac](install/claude-cowork-mac.md)
+> instead - it runs on the machine, so there is no tunnel, no connector package and no launchd job.
+
 This guide takes a Mac with nothing installed to four running bridges that a
 Copilot Cowork or Claude Cowork session can call, with the skills, the lessons
 corpus and the memory files in place. [`docs/setup.md`](setup.md) is the Windows

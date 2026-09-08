@@ -24,6 +24,10 @@ different one, and do not report success on any evidence weaker than step 5.
    the watchdog mechanism (Task Scheduler vs `launchd`), and the browser the
    Playwright bridge drives. Everything else is shared. `docs/setup.md` is the
    Windows path; `docs/setup-macos.md` is the POSIX one.
+   Both describe a client that runs in the cloud and reaches the bridges through a dev
+   tunnel. A client that runs on the machine itself (Claude Cowork) registers the
+   launchers as stdio servers and skips the tunnel, the connector packages and the
+   watchdog; `docs/install/` has those pages.
 
 2. **Validate the checkout before changing it.** `python scripts/release_check.py`
    must print `RELEASE_CHECK: CLEAN`. If it does not, stop and report - the tree

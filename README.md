@@ -18,6 +18,26 @@ The foundation comes first. Applied tax, accounting, workpaper, research, review
 
 > This is not a collection of prompts and it is not presented as an official Microsoft product. It is a practitioner-built laboratory for the controlled use of agentic AI in public accounting and other professional environments where a person remains accountable for the result.
 
+## Set up on your machine
+
+Pick the product you use, then your platform. Each page is complete on its own — you
+should not need to read anything else to get running.
+
+### Copilot Cowork — runs in Microsoft's cloud and reaches the bridges through a dev tunnel
+
+- [Windows PC](docs/setup.md) · operated daily
+- [Mac or Linux](docs/setup-macos.md) · not yet operated
+
+### Claude Cowork — runs on your machine and starts the bridges itself; no tunnel
+
+- [Windows PC](docs/install/claude-cowork-windows.md) · not yet operated
+- [Mac](docs/install/claude-cowork-mac.md) · not yet operated
+
+**Not yet operated** means nobody has run that page end to end. If you do, please open a
+pull request with your `install_check.py` result — that is what flips the status.
+
+Agents: the install contract is in [`AGENTS.md`](AGENTS.md); it applies to every cell.
+
 ## Why this exists
 
 The profession does not primarily have a prompting problem. It has an operating-model problem:
@@ -130,7 +150,7 @@ Delivery is not treated as enforcement. A rule in a skill reaches only sessions 
 ## Start here
 
 1. Run the demonstration: `python examples/synthetic-control-loop/run.py`. It shows a missing input becoming a hard stop, then a delivered rule judged against a control - see the [synthetic control-loop scenario](examples/synthetic-control-loop/README.md).
-2. To run the bridges yourself, follow [Setup from zero](docs/setup.md); [CoworkConfig/README.md](CoworkConfig/README.md) explains how to start with an empty corpus rather than the author's.
+2. To run the bridges yourself, pick your product and platform under [Set up on your machine](#set-up-on-your-machine); [CoworkConfig/README.md](CoworkConfig/README.md) explains how to start with an empty corpus rather than the author's.
 3. Read [Public Accounting Vision](docs/public-accounting-vision.md).
 4. Review [Public Accounting Control Map](docs/public-accounting-control-map.md).
 5. Read [Architecture and Trust Boundaries](docs/architecture.md).
