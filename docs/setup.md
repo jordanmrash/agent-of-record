@@ -56,8 +56,10 @@ Internet access is needed at first start: `npx -y @playwright/mcp@latest` and
 
 ## 3. Place the repository
 
-The launchers, the watchdog and the jobs hard-code the tooling root, so clone
-to exactly this path:
+The bridge launchers derive their root from their own location and would run
+from any directory, but this route also installs the watchdog and the shipped
+jobs, and those carry the tooling root literally (step 4 personalizes it), so
+clone to exactly this path:
 
 ```powershell
 git clone https://github.com/jordanmrash/agent-of-record.git "$env:USERPROFILE\Documents\COPILOT_COWORK"
@@ -81,11 +83,26 @@ files are firm about keeping them straight:
 Organization>` on a work account. Look at `C:\Users\<account>` to see which you
 have.
 
+Tell the filesystem bridge where that second folder is. The launchers take it
+from `COWORK_CONFIG_ROOT`, which lives in a gitignored file beside them rather
+than in anything tracked:
+
+```powershell
+copy Startup\cowork-env.example.cmd Startup\cowork-env.cmd
+notepad Startup\cowork-env.cmd
+```
+
+Uncomment the `COWORK_CONFIG_ROOT` line and set it to
+`%USERPROFILE%\<OneDrive folder>\Documents\Cowork`. With it unset, or pointing at
+a folder that does not exist, `fs-server.cmd` starts with two roots and says so
+on stderr. `cowork-env.cmd` is refused by name in `scripts/public_scan.py`, so it
+cannot reach a public tree.
+
 ## 4. Personalize the tree
 
-Every operating file carries `YOURUSER` and the connector packages carry
-`YOUR-TUNNEL-HOST`. `scripts/personalize.py` replaces them in one pass and is a
-dry run until you add `--apply`:
+The watchdog, the shipped jobs and the skills carry `YOURUSER`, and the
+connector packages carry `YOUR-TUNNEL-HOST`. `scripts/personalize.py` replaces
+them in one pass and is a dry run until you add `--apply`:
 
 ```powershell
 python scripts\personalize.py --user <account> --onedrive-folder "OneDrive - Contoso"
@@ -95,12 +112,15 @@ python scripts\personalize.py --user <account> --onedrive-folder "OneDrive - Con
 Leave out `--onedrive-folder` when yours is plain `OneDrive`. Leave out
 `--tunnel-host` for now - you learn it in step 6 and run the script again.
 
-What changes: `Startup/`, `CommandJobs/`, `CoworkConfig/` and
-`docs/bridge-facts.json`. What does not: the documentation that explains the
-placeholders, the publishing tooling in `GitHubSetup/`, `scripts/`, and the
-`author-email` lines in the skills, which name the author rather than the
-operator. The script prints every file it touched with a count, and refuses a
-user name that is itself a placeholder.
+What changes: the watchdog, the connector packages and the Power Automate
+config example under `Startup/`, the jobs under `CommandJobs/`, and the skills
+under `CoworkConfig/`. What does not: the bridge launchers, `tasks.json` and the
+roots in `docs/bridge-facts.json` (they derive from the clone location and carry
+no placeholder), the documentation that explains the placeholders, the
+publishing tooling in `GitHubSetup/`, `scripts/`, and the `author-email` lines in
+the skills, which name the author rather than the operator. The script prints
+every file it touched with a count, and refuses a user name that is itself a
+placeholder.
 
 A personalized tree is an installation, not a publication. `scripts/public_scan.py`
 now fails on it by design - do not push it to a public remote. Keep your

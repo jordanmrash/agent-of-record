@@ -1,20 +1,28 @@
 #!/usr/bin/env python3
 """Replace the repository placeholders with one operator's real values.
 
-The published tree is sanitized: every path says ``C:\\Users\\YOURUSER``, every
-connector manifest points at ``YOUR-TUNNEL-HOST-<port>.use.devtunnels.ms`` and
-all four manifests share one placeholder app id. Running the bridges needs the
-real account name, the real OneDrive folder name, the real tunnel host and a
-distinct app id per connector package - in 60-plus files. This script does that
-substitution, reports it file by file, and is a dry run unless ``--apply`` is
-passed.
+The published tree is sanitized: every path that names an account says
+``C:\\Users\\YOURUSER``, every connector manifest points at
+``YOUR-TUNNEL-HOST-<port>.use.devtunnels.ms`` and all four manifests share one
+placeholder app id. Running the hosted (Copilot Cowork) route needs the real
+account name, the real OneDrive folder name, the real tunnel host and a
+distinct app id per connector package - in dozens of files. This script does
+that substitution, reports it file by file, and is a dry run unless ``--apply``
+is passed.
 
 Scope is deliberately narrow. Only the operating trees are touched:
 
-    Startup/          bridge launchers, VS Code tasks, watchdog, connector packages
+    Startup/          watchdog, connector packages, FlowBridge config
     CommandJobs/      approved batch jobs and their PowerShell bodies
     CoworkConfig/     skills, instructions, memory - the paths they cite
-    docs/bridge-facts.json   so scripts/facts_check.py still agrees with the tree
+    docs/bridge-facts.json   kept in scope; its roots are launcher variables now
+
+The bridge launchers (``Startup/*.cmd``, ``Startup/posix/*.sh``), the VS Code
+task file and the roots in ``docs/bridge-facts.json`` carry no placeholder: each
+launcher derives ``COWORK_ROOT`` from its own location, and machine-specific
+values such as ``COWORK_CONFIG_ROOT`` live in the gitignored
+``Startup/cowork-env.cmd`` (Windows) or ``Startup/posix/cowork-env.sh`` (POSIX).
+This script finds nothing to rewrite in them, by design.
 
 Everything that *documents* the placeholders - README.md, AGENTS.md,
 CONTRIBUTING.md, docs/*.md, GitHubSetup/ (the publishing tooling) and
@@ -204,6 +212,9 @@ def main(argv):
     print("Not touched, by design: docs that explain the placeholders, GitHubSetup/, scripts/,")
     print("skill attribution lines, and the Power Automate config (copy")
     print("Startup/FlowBridge/flow-bridge.config.example.json and fill in your own environment).")
+    print("Nothing to rewrite, by design: the bridge launchers, the VS Code task file and the")
+    print("roots in docs/bridge-facts.json derive from the clone location. Your config root goes")
+    print("in Startup/cowork-env.cmd (copy cowork-env.example.cmd), not in a tracked file.")
     if not args.tunnel_host:
         print("Re-run with --tunnel-host once VS Code shows the forwarded address, then package")
         print("the connector manifests under Startup/Plugins/.")

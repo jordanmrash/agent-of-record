@@ -130,6 +130,16 @@ def check_watchdog(m, f):
 
 
 def check_launchers(m, f):
+    """Every Windows launcher starts the right server, passes the right roots,
+    and derives its own root.
+
+    The Windows twin of the rule check_posix_launchers enforces. A launcher
+    that hard-codes C:\\Users\\... works only for a clone at that exact path
+    after personalize.py; one that computes COWORK_ROOT from %~dp0 works for a
+    clone anywhere. Roots are checked on the command line that starts the
+    upstream package, not anywhere in the file - a variable mentioned in an
+    `if defined` guard is not a root the server was given.
+    """
     for b in m["bridges"]:
         path = os.path.join("Startup", b["stdio"])
         if not os.path.isfile(os.path.join(ROOT, path)):
@@ -138,10 +148,11 @@ def check_launchers(m, f):
         text = read(path)
         live = "\n".join(l for l in text.splitlines() if not l.upper().startswith("REM"))
         if b["implementation"] == "upstream":
-            if b["package"] not in live:
+            starts = [l for l in live.splitlines() if b["package"] in l]
+            if not starts:
                 f.fail("launchers", "%s does not start %s" % (path, b["package"]))
             for root in b.get("roots", []):
-                if root not in live:
+                if not any(root in l for l in starts):
                     f.fail("launchers", "%s does not pass root %s" % (path, root))
         else:
             server = b["server"].replace("/", "\\")
@@ -149,6 +160,11 @@ def check_launchers(m, f):
                 f.fail("launchers", "%s does not start %s" % (path, b["server"]))
             if not os.path.isfile(os.path.join(ROOT, b["server"])):
                 f.fail("launchers", "%s named in the manifest does not exist" % b["server"])
+        if "%~dp0" not in live or not re.search(r'set\s+"?COWORK_ROOT=', live):
+            f.fail("launchers", "%s does not derive COWORK_ROOT from %%~dp0" % path)
+        if re.search(r"C:\\Users\\", text, re.I):
+            f.fail("launchers", "%s carries a C:\\Users\\ path; roots come from COWORK_ROOT, "
+                                "%%USERPROFILE%% or cowork-env.cmd" % path)
         f.ok()
 
 

@@ -1,7 +1,7 @@
 {
   // ==========================================================
   //  Cowork Local Bridges
-  //  C:\Users\YOURUSER\Documents\COPILOT_COWORK\Startup\.vscode\tasks.json
+  //  Startup\.vscode\tasks.json  (any clone location - see below)
   //
   //  All FOUR bridges start automatically when this folder is
   //  opened (GO.bat). Supergateway is invoked here; --stdio points
@@ -61,16 +61,18 @@
       "type": "shell",
       "command": "node",
       "args": [
-        "C:\\Users\\YOURUSER\\Documents\\COPILOT_COWORK\\Startup\\node_modules\\supergateway\\dist\\index.js",
+        "${workspaceFolder}\\node_modules\\supergateway\\dist\\index.js",
         "--port", "8931",
         "--outputTransport", "streamableHttp",
         "--stateful",
         "--sessionTimeout", "1800000",
-        "--stdio", "C:\\Users\\YOURUSER\\Documents\\COPILOT_COWORK\\Startup\\pw-server.cmd"
+        "--stdio", "${workspaceFolder}\\pw-server.cmd"
       ],
-      // macOS and Linux use ${workspaceFolder} rather than an absolute path, so
-      // a contributor's clone needs no personalization to start. The Windows
-      // args above are left exactly as they were.
+      // Every platform uses ${workspaceFolder} rather than an absolute path, so a
+      // clone needs no personalization to start: VS Code opens this Startup folder
+      // and the launchers derive their own root from their location (the .cmd
+      // files via %~dp0, the .sh files via $HERE). Machine-specific values go in
+      // the gitignored cowork-env.cmd / posix/cowork-env.sh, never here.
       "osx": { "args": [
         "${workspaceFolder}/node_modules/supergateway/dist/index.js",
         "--port", "8931",
@@ -104,10 +106,10 @@
       "type": "shell",
       "command": "node",
       "args": [
-        "C:\\Users\\YOURUSER\\Documents\\COPILOT_COWORK\\Startup\\node_modules\\supergateway\\dist\\index.js",
+        "${workspaceFolder}\\node_modules\\supergateway\\dist\\index.js",
         "--port", "8932",
         "--outputTransport", "streamableHttp",
-        "--stdio", "C:\\Users\\YOURUSER\\Documents\\COPILOT_COWORK\\Startup\\fs-server.cmd"
+        "--stdio", "${workspaceFolder}\\fs-server.cmd"
       ],
       "osx": { "args": [
         "${workspaceFolder}/node_modules/supergateway/dist/index.js",
@@ -138,10 +140,10 @@
       "type": "shell",
       "command": "node",
       "args": [
-        "C:\\Users\\YOURUSER\\Documents\\COPILOT_COWORK\\Startup\\node_modules\\supergateway\\dist\\index.js",
+        "${workspaceFolder}\\node_modules\\supergateway\\dist\\index.js",
         "--port", "8933",
         "--outputTransport", "streamableHttp",
-        "--stdio", "C:\\Users\\YOURUSER\\Documents\\COPILOT_COWORK\\Startup\\exec-server.cmd"
+        "--stdio", "${workspaceFolder}\\exec-server.cmd"
       ],
       "osx": { "args": [
         "${workspaceFolder}/node_modules/supergateway/dist/index.js",
@@ -172,10 +174,10 @@
       "type": "shell",
       "command": "node",
       "args": [
-        "C:\\Users\\YOURUSER\\Documents\\COPILOT_COWORK\\Startup\\node_modules\\supergateway\\dist\\index.js",
+        "${workspaceFolder}\\node_modules\\supergateway\\dist\\index.js",
         "--port", "8934",
         "--outputTransport", "streamableHttp",
-        "--stdio", "C:\\Users\\YOURUSER\\Documents\\COPILOT_COWORK\\Startup\\flow-server.cmd"
+        "--stdio", "${workspaceFolder}\\flow-server.cmd"
       ],
       "osx": { "args": [
         "${workspaceFolder}/node_modules/supergateway/dist/index.js",

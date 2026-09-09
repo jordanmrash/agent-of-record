@@ -58,6 +58,7 @@ PATTERNS = {
 }
 
 PROHIBITED_NAMES = {
+    "cowork-env.cmd",         # the operator's real Windows paths; example is committed
     "cowork-env.sh",          # the operator's real POSIX paths; example is committed
     "denylist.local.txt",
     "sanitize.local.txt",

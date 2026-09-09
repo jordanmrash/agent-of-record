@@ -38,11 +38,18 @@ different one, and do not report success on any evidence weaker than step 5.
    execute bit, and the launchers will not start without it.
 
 4. **Configure the machine, never the repository.** Real paths belong in
-   `Startup/posix/cowork-env.sh` (POSIX, gitignored) or come from
-   `scripts/personalize.py` (Windows). The operator's OneDrive folder name and
-   account name are things you must ASK for or read from the environment - never
-   guess, and never write either into a tracked file. `scripts/public_scan.py`
-   exists to catch you if you do.
+   `Startup/cowork-env.cmd` (Windows) or `Startup/posix/cowork-env.sh` (POSIX),
+   both gitignored and both refused by name in `scripts/public_scan.py`; copy the
+   `cowork-env.example.*` beside each and set `COWORK_CONFIG_ROOT` to the folder
+   the host loads skills from. The launchers derive the tooling root from their
+   own location on both platforms, so a client that starts them directly
+   (`docs/install/`) can use a clone in any directory. The hosted (tunnel)
+   route still runs `scripts/personalize.py` for the connector manifests, the
+   watchdog, the shipped jobs and the skills, and those expect the clone at the
+   path `docs/setup.md` names. The operator's OneDrive folder name and account
+   name are things you must ASK for or read from the environment - never guess,
+   and never write either into a tracked file. `scripts/public_scan.py` exists
+   to catch you if you do.
 
 5. **Prove it, and let the proof be the report.**
 

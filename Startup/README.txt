@@ -19,13 +19,35 @@ the repository root. This file is the operating card once that is done.
 WHAT RUNS
 ---------
   8931  Playwright      pw-server.cmd    browser automation
-  8932  Filesystem      fs-server.cmd    read/write three roots: COPILOT_COWORK, Downloads, OneDrive Cowork
+  8932  Filesystem      fs-server.cmd    read/write three roots: %COWORK_ROOT% (this clone), %USERPROFILE%\Downloads, %COWORK_CONFIG_ROOT% (your Cowork folder, from cowork-env.cmd)
   8933  Commands        exec-server.cmd  runs approved .bat/.cmd from CommandJobs
   8934  Power Automate  flow-server.cmd  cloud-flow lifecycle (FlowBridge\flow-mcp-server.js)
 
 Each task wraps a stdio MCP server in supergateway.
 The .cmd files are the source of truth for their server arguments --
 tasks.json only points --stdio at them. Do not copy arguments between them.
+
+WHERE THE PATHS COME FROM
+-------------------------
+No launcher carries a C:\Users path. Each .cmd derives COWORK_ROOT (the
+clone) from its own location with %~dp0, and tasks.json points at the
+launchers through ${workspaceFolder}, so the launchers work for a clone in
+any directory. The one value the repository cannot know is your Cowork
+folder - the third filesystem root, where skills, copilot-instructions.md
+and cowork-memory live. Set it once:
+
+  copy cowork-env.example.cmd cowork-env.cmd
+  (edit: set "COWORK_CONFIG_ROOT=%USERPROFILE%\OneDrive - <Org>\Documents\Cowork")
+
+cowork-env.cmd is gitignored and refused by name in scripts\public_scan.py,
+so your account name never reaches the repository. With it absent, or
+pointing at a folder that does not exist, fs-server.cmd starts with two
+roots and says so on stderr. The same file can override COWORK_PW_BROWSER
+and COWORK_PW_PROFILE for the Playwright bridge. The watchdog
+(_bridge-watchdog.ps1) and the shipped jobs still carry personalized paths
+and expect the clone at %USERPROFILE%\Documents\COPILOT_COWORK;
+scripts\personalize.py handles those. A client that starts the launchers
+directly (docs\install\claude-cowork-windows.md) needs neither.
 
 
 8933 COMMAND BRIDGE -- HARDENED 2026-08-17

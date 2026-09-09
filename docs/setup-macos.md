@@ -25,7 +25,7 @@ Only these. Everything else in `docs/setup.md` applies unchanged.
 | Executable job scripts | `.bat` and `.cmd` | `.sh` |
 | Output directive | `REM COWORK_OUTPUT: ...` | `# COWORK_OUTPUT: ...` |
 | Job shell | `cmd.exe /d /s /c` | `/bin/bash <script>` |
-| Local paths | `scripts/personalize.py` rewrites them | launchers derive them; overrides in `cowork-env.sh` |
+| Local paths | launchers derive them; overrides in `Startup/cowork-env.cmd` | launchers derive them; overrides in `Startup/posix/cowork-env.sh` |
 | Watchdog | Task Scheduler, `_watchdog-install.ps1` | `launchd`, `Startup/posix/watchdog/` |
 | Playwright browser | `msedge` | `chrome` by default, `COWORK_PW_BROWSER` to change |
 

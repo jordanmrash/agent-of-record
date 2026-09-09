@@ -62,9 +62,24 @@ CASES = [
     ("stale phrase returns to a skill",
      lambda t: edit(t, "CoworkConfig/Skills/git-bridge/SKILL.md", "## Guardrails", "## Guardrails\n\n- Port 8934 does not exist."),
      r"stale phrase present: 'port 8934 does not exist'"),
+    # Anchored on the command line that starts the server: the variable is also
+    # named in the `if defined` guard above it, and a root that survives only
+    # there was never handed to the server.
     ("launcher loses a filesystem root",
-     lambda t: edit(t, "Startup/fs-server.cmd", ' "C:\\Users\\YOURUSER\\OneDrive\\Documents\\Cowork"', ""),
-     r"does not pass root"),
+     lambda t: edit(t, "Startup/fs-server.cmd", ' "%COWORK_CONFIG_ROOT%"', ""),
+     r"does not pass root %COWORK_CONFIG_ROOT%"),
+    # --- the Windows half of the derivation rule. Each of these is a launcher
+    # that works only for a clone at one exact path after personalize.py. ---
+    ("a Windows launcher hard-codes a C:\\Users root instead of deriving it",
+     lambda t: edit(t, "Startup/exec-server.cmd",
+                    'cd /d "%COWORK_ROOT%\\CommandJobs"',
+                    'cd /d "C:\\Users\\YOURUSER\\Documents\\COPILOT_COWORK\\CommandJobs"'),
+     r"exec-server\.cmd carries a C:\\Users\\ path"),
+    ("a Windows launcher never sets COWORK_ROOT",
+     lambda t: edit(t, "Startup/pw-server.cmd",
+                    'set "COWORK_ROOT=%%~fI"',
+                    'set "COWORK_ROOT_UNUSED=%%~fI"'),
+     r"pw-server\.cmd does not derive COWORK_ROOT from %~dp0"),
     ("Startup README drops a port line",
      lambda t: edit(t, "Startup/README.txt", "  8934  Power Automate  flow-server.cmd", "  8935  Power Automate  flow-server.cmd"),
      r"no port-table line for 8934"),

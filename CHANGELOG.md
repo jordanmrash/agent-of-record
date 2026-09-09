@@ -3,6 +3,36 @@
 All notable changes to the published snapshot. The private working repository
 keeps the full commit history; each entry here summarizes one publication.
 
+## Unreleased
+
+- **The Windows launchers derive their root.** `Startup/*.cmd` compute
+  `COWORK_ROOT` from their own location (`%~dp0`), the way `Startup/posix/*.sh`
+  already did, so a clone runs from any directory without personalization.
+  `exec-server.cmd` creates `CommandJobs` and `Outputs` if the clone did not
+  bring them; `fs-server.cmd` passes `%COWORK_ROOT%`, `%USERPROFILE%\Downloads`
+  and - only when it is set and exists - `%COWORK_CONFIG_ROOT%`, otherwise it
+  says so on stderr and starts with two roots rather than letting the upstream
+  server exit on a missing folder. Machine-specific values live in a gitignored
+  `Startup/cowork-env.cmd`, documented by `cowork-env.example.cmd`; the file is
+  refused by name in `scripts/public_scan.py`, as `cowork-env.sh` is.
+- **Roots by variable.** The Windows arguments in `Startup/.vscode/tasks.json`
+  (and the KnownGood copy) use `${workspaceFolder}` like the `osx` and `linux`
+  overrides; `docs/bridge-facts.json` states the filesystem roots as the launcher
+  variables. `scripts/personalize.py` now finds nothing to rewrite in the
+  launchers, the task file or the manifest roots - its scope is the watchdog,
+  the connector packages, the shipped jobs and the skills. Issue #6, item 5.
+- `facts_check.py` enforces the Windows half of the derivation rule: every
+  `.cmd` launcher must set `COWORK_ROOT` from `%~dp0` and may not carry a
+  `C:\Users\` path, and a filesystem root counts only when it is on the command
+  line that starts the server. Two new negative controls, one re-anchored;
+  `personalize_selftest.py` now asserts the launchers stay free of account paths
+  before and after personalization.
+- `docs/setup.md`, `docs/setup-macos.md`, `docs/install/claude-cowork-windows.md`
+  and `AGENTS.md` describe the new shape: the hosted route still clones to the
+  fixed path because its watchdog and jobs are personalized; a client that
+  starts the launchers directly clones anywhere and sets its config root in
+  `cowork-env.cmd`.
+
 ## 0.3.0 - 2026-09-07
 
 Portable. Runs where the contributor is. 0.2.1 made the tree installable on Windows; this
