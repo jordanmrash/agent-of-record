@@ -1,24 +1,32 @@
 # Claude Cowork on a Windows PC
 
-> **Status: not yet operated.** Written 2026-09-08 from the published files (`main` at
-> `29593a9`) and the operated Windows machine; nobody has run this page end to end. The
-> repository's own guides cover the Copilot Cowork route only — this page is the first
-> written for Claude Cowork. Steps marked *expected* describe what the design says should
-> happen. If you run it, open a pull request with your `install_check.py` result and any
-> correction — that is how this page becomes operated.
+> **Status: not yet operated.** Written 2026-09-08 from the published files and revised
+> 2026-09-09 against Anthropic's published description of how Claude Cowork executes;
+> nobody has run this page end to end. Steps marked *expected* describe what the design
+> says should happen. If you run it, open a pull request with your `install_check.py`
+> result and any correction — that is how this page becomes operated.
+
+> **A local desktop session is required.** Anthropic's *Claude Cowork architecture
+> overview* (read 2026-09-09) says sessions run in the cloud by default, that local
+> execution remains available for existing desktop deployments, and that local MCP
+> servers do not run in a cloud session. Every bridge on this page is a local MCP server.
+> A cloud session will follow every step and find no executor. On a managed device, the
+> MDM key `isLocalDevMcpEnabled` set to false disables local MCP servers outright.
+> `[verify: how the desktop app labels a local session, and whether a new install can
+> start one]`
 
 **How this configuration connects.** Claude Cowork runs on this machine. It starts each
-bridge itself as a stdio process and talks to it directly. There is no tunnel, nothing to
-make public, and nothing that has to keep running between sessions.
+registered bridge itself as a stdio process and talks to it directly. There is no tunnel,
+nothing to make public, and nothing that has to keep running between sessions.
 
-**What you get.** The bridges (browser, filesystem, approval-gated batch executor), the
-executor's refusal contract, the job conventions under `CommandJobs`, the release gate,
-and the lessons machinery. **What you don't.** Anything that lives in a Microsoft 365
-tenant — mail, calendar, Teams, SharePoint, Power BI — and the Power Platform environment
-the fourth bridge (Power Automate) authenticates against. That bridge is safe to register
-anyway: it refuses every call until an environment is deliberately allowed in
-`Startup\FlowBridge\flow-bridge.config.json`. On a personal machine, leave it unconfigured
-or leave it out.
+**Why this page installs one bridge, not four.** Claude Cowork already reads and writes
+the folders you connect, fetches the web, remembers across sessions and runs shell
+commands — in a Linux virtual machine, never on Windows. Nothing it does natively can run
+a `.bat`, read the registry, or drive a Windows application. The approved batch executor
+is the only path from a session to `cmd.exe`, so it is the one required component, and
+with it come the job conventions, the release gate and the lessons machinery. The browser
+and filesystem bridges are optional here; the Power Automate bridge needs a tenant. What
+each part lets you do is in [What this repository adds to Claude Cowork](claude-cowork.md).
 
 ---
 
@@ -27,114 +35,96 @@ or leave it out.
 | Need | Notes |
 |---|---|
 | Windows 10 or 11 | |
+| Claude Cowork desktop app, in a **local** session | Able to add stdio MCP servers (see the note above). |
 | Git | `git --version` |
-| Node.js 20 LTS or later | Runs the two own-code bridges; `npx` fetches the two upstream ones on first start. `node --version`, `npx --version` |
-| Python 3.10 or later | The gate, the checkers, `personalize.py`, `install_check.py`. `python --version` |
-| Microsoft Edge | The Windows Playwright launcher drives an Edge profile (`--browser msedge`). |
-| Claude Cowork | Installed and able to add stdio MCP servers. |
-| GitHub CLI | Optional — only for opening the pull request at the end. |
+| Node.js 20 LTS or later | Runs the executor. `node --version` |
+| Python 3.10 or later | The gate, the checkers, `install_check.py`. `python --version` |
+| Microsoft Edge | **Optional** — only if you register the browser bridge, which drives an Edge profile. |
+| GitHub CLI | **Optional** — only for opening the pull request at the end. |
 
 Not required for this configuration (*expected*): VS Code, a tunnel or port forwarding of
-any kind, a Microsoft 365 tenant. Those belong to the hosted setups.
+any kind, a package install under `Startup/`, a Microsoft 365 tenant. Those belong to the
+hosted setup.
 
-## 2. Clone and install
+## 2. Clone and validate
 
 ```bash
 git clone https://github.com/jordanmrash/agent-of-record.git "<tooling root>"
 cd "<tooling root>"
 python scripts/release_check.py
-cd Startup
-npm install
-cd ..
 ```
 
-`<tooling root>` is yours to choose on both platforms — step 3 says what the launchers
-derive from it.
+`<tooling root>` is yours to choose — step 3 says what the launchers derive from it.
 
-Run the gate **before** installing anything: `release_check.py` must end with
+Run the gate **before** anything else: `release_check.py` must end with
 `RELEASE_CHECK: CLEAN (22 checks)`. On a fresh clone anything else means the tree is wrong
 before you have changed a single file — stop and open an issue with the output rather
 than working around it. Do not adjust a check to make it pass.
 
-`npm install` runs inside `Startup/`, not at the root: `Startup/package.json` pins
-`supergateway 3.4.3`, and the tasks launch it from `Startup/node_modules` so the version
-that starts is the version that was tested. The two own-code bridges need no packages at
-all; the browser and filesystem bridges are fetched by `npx` on their first start.
+There is nothing to install. The executor is plain `node` with no packages and fetches
+nothing at start. The hosted route's `Startup/package.json` pins `supergateway`, the HTTP
+wrapper a cloud client needs to reach a stdio server through a tunnel; this route has no
+tunnel and never starts it. Only the optional browser and filesystem bridges fetch a
+package, by `npx`, on their first start.
 
 ## 3. Choose your folders
 
-The tooling root is the clone, wherever you put it. Each `.cmd` launcher in `Startup\`
-derives `COWORK_ROOT` from its own location (`%~dp0`), exactly as the POSIX launchers do,
-so nothing has to be personalized for the bridges to start. The one value the repository
-cannot know is your config root, and that goes in a gitignored file beside the launchers:
-
-```powershell
-copy Startup\cowork-env.example.cmd Startup\cowork-env.cmd
-notepad Startup\cowork-env.cmd
-```
-
-Uncomment `set "COWORK_CONFIG_ROOT=..."` and point it at the folder this client loads
-skills from — or leave it commented to run the filesystem bridge with two roots and keep
-the corpus in `CoworkConfig\` inside the clone. `cowork-env.cmd` is refused by name in
-`public_scan.py`, so your account name cannot reach a public tree. The same file can set
-`COWORK_PW_BROWSER` and `COWORK_PW_PROFILE` for the browser bridge.
+Every Windows launcher derives the tooling root from its own location (`%~dp0`, one
+directory above `Startup\`), so a clone can live anywhere and nothing needs personalizing.
+On first start `exec-server.cmd` changes directory into `CommandJobs`; the executor creates
+`CommandJobs\Logs\` and `Outputs\` beside `Startup\` if they are absent.
 
 | Root | Holds | Where |
 |---|---|---|
-| **Tooling root** | `Startup\` (bridges), `CommandJobs\` (approved scripts), `CommandJobs\Logs\`, `Outputs\` | The clone, wherever you put it (`COWORK_ROOT`, derived). `exec-server.cmd` creates `CommandJobs` and `Outputs` beside `Startup\` if the clone did not bring them. |
-| **Config root** | Skills, standing instructions, `cowork-memory\` | `[verify: where Claude Cowork loads skills and instructions from]`. Leave `COWORK_CONFIG_ROOT` unset to keep the corpus in the in-repo `CoworkConfig\`; set it to add that folder as the filesystem bridge's third root. The Copilot host reads `<OneDrive>\Documents\Cowork`; this client may not. |
+| **Tooling root** | `Startup\`, `CommandJobs\`, `CommandJobs\Logs\`, `Outputs\` | The clone, wherever you put it (`COWORK_ROOT`, derived) |
+| **Config root** | The lessons corpus and the memory files the tooling reads | The in-repo `CoworkConfig\` unless you keep the corpus elsewhere. Under Claude Cowork this is *not* where skills load from — skills are uploaded (step 7) — so leave `COWORK_CONFIG_ROOT` unset unless you move the corpus. |
 
-**Where each root is defined — and only there.** The `.cmd` launchers in `Startup\` are
-the source of truth for every server's command line.
+Machine-specific settings live in one gitignored file created from the template. Nothing
+in it is required — every launcher runs with defaults when it is absent:
 
-- **Executor** — `Startup\exec-server.cmd` changes directory into `%COWORK_ROOT%\CommandJobs`
-  and runs `node %COWORK_ROOT%\Startup\CommandBridge\batch-exec-server.js`. `CommandJobs` is
-  wherever that `cd` lands; a job's `REM COWORK_OUTPUT:` directive must resolve under the
-  sibling `Outputs` or the job is **refused**, never redirected. Per-run logs (`.log`,
-  `.exit`, `.json`) go to `CommandJobs\Logs\`.
-- **Filesystem** — `Startup\fs-server.cmd` passes `"%COWORK_ROOT%"`, `"%USERPROFILE%\Downloads"`
-  and, if set and present, `"%COWORK_CONFIG_ROOT%"` to the upstream server. That is the
-  whole allowed list. If the config root is set but the folder does not exist, the launcher
-  says so on stderr and starts with two roots rather than letting the upstream server exit.
-- **Browser** — `Startup\pw-server.cmd` drives Edge (`COWORK_PW_BROWSER` to change) with the
-  profile `%USERPROFILE%\pw-sso-profile` (`COWORK_PW_PROFILE` to change) and writes
-  screenshots to `%COWORK_ROOT%\playwright-output`. Create the profile once and sign in to
-  whatever the bridge will need: `msedge.exe --user-data-dir="%USERPROFILE%\pw-sso-profile"`.
-  The bridge never sees a password. Use a test account until you have watched the approval
-  flow work.
+```bat
+copy Startup\cowork-env.example.cmd Startup\cowork-env.cmd
+```
 
-`scripts\personalize.py` is not needed for the bridges. Run it only if you install the
-shipped skills (step 7), which still cite one Windows layout; it rewrites the watchdog, the
-jobs, the connector manifests and the skills, is a dry run until `--apply`, and produces a
-tree that fails `public_scan.py` by design — keep that on a local branch and never push it.
+| Variable | Default | Sets |
+|---|---|---|
+| `COWORK_CONFIG_ROOT` | unset | Where the executor's operating-rules reminder reads the live corpus, and the filesystem bridge's third root if you register that bridge. |
+| `COWORK_PW_PROFILE` | `%USERPROFILE%\pw-sso-profile` | The browser bridge's persistent profile, if registered. |
+| `COWORK_ROOT` | derived | Only to point the bridges at a different tree. |
 
-**Known gap.** The three bridge skills (`command-bridge`, `local-file-bridge`,
-`playwright-skill`) address the bridges by the Copilot connector ids
-(`jordan-approved-batch-8933-v1` and siblings) and describe `.bat` jobs on this layout.
-Under Claude Cowork the tool names will differ; their host-adapter sections are issue #6
-work.
+`public_scan.py` refuses any tracked file containing a real `C:\Users\<name>` path;
+`cowork-env.cmd` is where yours belongs.
+
+**Where each root is defined — and only there.**
+
+- **Executor** — `exec-server.cmd`: `cd /d "%COWORK_ROOT%\CommandJobs"`, then
+  `node Startup\CommandBridge\batch-exec-server.js`. A job's `REM COWORK_OUTPUT:` directive
+  must resolve under `Outputs\` or the job is **refused**, never redirected. Jobs run as
+  `cmd.exe /d /s /c <script>` with a complete user environment; per-run logs go to
+  `CommandJobs\Logs\`.
+- **Filesystem** (optional) — `fs-server.cmd` passes `%COWORK_ROOT%`,
+  `%USERPROFILE%\Downloads` and, if set and present, `%COWORK_CONFIG_ROOT%` to the
+  upstream server. That is the whole allowed list.
+- **Browser** (optional) — `pw-server.cmd` runs `@playwright/mcp` against the Edge profile
+  above and writes to `%COWORK_ROOT%\playwright-output`.
 
 ## 4. Start the bridges
 
-*Expected:* you don't. In this configuration the host starts each bridge when it needs
-it and stops it when the session ends.
+*Expected:* you don't. In this configuration the host starts each registered bridge when
+it needs it and stops it when the session ends.
 
-To confirm a bridge starts at all, run its launcher by hand — it waits on standard input
-for an MCP client and prints nothing until one connects:
+To confirm the executor starts at all, run its launcher by hand — it waits on standard
+input for an MCP client and prints nothing until one connects:
 
 ```bat
 Startup\exec-server.cmd
 ```
 
-Press Ctrl+C to stop it. The four launchers are `pw-server.cmd` (browser), `fs-server.cmd`
-(filesystem), `exec-server.cmd` (batch executor) and `flow-server.cmd` (Power Automate).
-The executor is plain `node` with no dependencies and fetches nothing at start; the browser
-and filesystem launchers use `npx -y`, so their **first** start downloads a package and
-needs the network. `Startup\GO.bat` and `.vscode\tasks.json` belong to the **hosted**
+Press Ctrl+C to stop it. `Startup\GO.bat` and `.vscode\tasks.json` belong to the **hosted**
 Windows setup (they open VS Code and wrap each server for a tunnel); you do not need them
 here.
 
-## 5. Check they answer
+## 5. Check it answers
 
 Step 2 already did this. Inside `release_check.py`, `exec_bridge_selftest.py` opens a live
 session with the executor and runs 40 cases in `.bat` form through `cmd.exe` — the line
@@ -146,37 +136,28 @@ environment.
 ## 6. Connect your agent host
 
 **Option A — the designed path.** Point Claude Cowork at the cloned folder and ask it to
-install the bridges according to `AGENTS.md`. The install contract there is written for an
-agent: validate the checkout, install the runtime, write your config root into
-`Startup\cowork-env.cmd` (a value it must ask you for, never guess), prove it with
-`install_check.py`. This is the claim v0.3 makes; running it is the test.
+install the executor according to `AGENTS.md`. The install contract there is written for an
+agent: validate the checkout, write your config root into `Startup\cowork-env.cmd` if you
+moved the corpus (a value it must ask you for, never guess), register the launcher, prove
+it with `install_check.py --route local`. This is the claim v0.3 makes; running it is the
+test.
 
-**Option B — by hand.** In the host's connector settings, add each bridge as a **stdio**
-server:
+**Option B — by hand.** In the host's connector settings, add the executor as a **stdio**
+server, and any optional bridge you want:
 
-| Bridge | Command | Notes |
+| Bridge | Command | Register it? |
 |---|---|---|
-| Filesystem | `<tooling root>\Startup\fs-server.cmd` | Allowed directories: the clone, `%USERPROFILE%\Downloads`, and `COWORK_CONFIG_ROOT` if set (step 3). |
-| Approved batch executor | `<tooling root>\Startup\exec-server.cmd` | One tool: `run_batch_file`. Runs `.bat`/`.cmd` only. |
-| Browser | `<tooling root>\Startup\pw-server.cmd` | Edge, profile `pw-sso-profile` (step 3). |
-| Power Automate | `<tooling root>\Startup\flow-server.cmd` | Optional. Refuses everything until configured; needs a Power Platform tenant to be useful. |
+| Approved batch executor | `<tooling root>\Startup\exec-server.cmd` | **Yes.** One tool: `run_batch_file`. Runs `.bat`/`.cmd` only. Plain `node`, no dependencies, fetches nothing at start. |
+| Browser | `<tooling root>\Startup\pw-server.cmd` | Optional — a signed-in Edge profile with traces to disk. Uses `npx -y`, so its **first** start downloads a package and needs the network. |
+| Filesystem | `<tooling root>\Startup\fs-server.cmd` | Optional — only for tool parity with the hosted route. Connect the clone as a folder instead and the host's own file tools cover it. |
+| Power Automate | `<tooling root>\Startup\flow-server.cmd` | Optional — needs a Power Platform tenant; refuses everything until configured. |
 
-These are the `stdio` entries in `docs/bridge-facts.json` (`pw-server.cmd`, `fs-server.cmd`,
-`exec-server.cmd`, `flow-server.cmd`). If the client cannot spawn a `.cmd` file directly,
-use `cmd /c <path>` as the command. `[verify: how this client spawns a stdio server on
-Windows]`
+These are the `stdio` entries in `docs/bridge-facts.json`; the commands above should match
+it exactly, and if they do not, the facts file wins and this page is wrong. If the client
+cannot spawn a `.cmd` file directly, use `cmd /c <path>` as the command. `[verify: how this
+client spawns a stdio server on Windows]`
 
-**Environment.** Since executor v1.3.0 the job environment is server-built and complete
-regardless of how the bridge was started: `%USERPROFILE%`, `%APPDATA%`, `%LOCALAPPDATA%`
-and `%TEMP%` are derived from the account when the launching process lacks them, and the
-user PATH from `HKCU\Environment` is appended to the machine PATH, so a job sees what an
-interactive session of the same account would see. The hosted Windows setup had measured
-the opposite (profile variables empty, machine PATH only) when the bridge was started by
-its scheduled-task watchdog; that is what 1.3.0 closed. Two things stay true of every
-start: there is no console, so `timeout /t` fails and nothing can prompt, and there is
-no elevation.
-
-## 7. Where skills and instructions live
+## 7. Skills, instructions and memory on this host
 
 The repo ships a complete configuration under `CoworkConfig\`:
 
@@ -192,12 +173,30 @@ Start with an **empty** corpus, as `CoworkConfig\README.md` describes. The shipp
 and memory files are one operator's record of one machine — the right thing to read and
 the wrong thing to operate under.
 
-Where this client loads skills from is `[verify]`. The Copilot host reads
-`<OneDrive>\Documents\Cowork\skills\` and the setup guides copy `CoworkConfig\Skills\*`
-there; put the skills wherever Claude Cowork reads them, and point `--config-root` in step 9
-at the same folder. Two limits carried from the operated tenant: a skill whose
-`description` exceeds 1024 characters is dropped silently, and `copilot-instructions.md`
-never took effect there, which is why the lesson digest is also routed into the skills.
+**Skills.** Claude Cowork takes a `SKILL.md` you upload as your own skill (Customize ›
+Skills), or one delivered by a plugin; skills installed from its directory are view-only.
+Upload `self-improvement` first — its scripts are host-agnostic and the corpus depends on
+them — then whichever bridge skill matches a bridge you registered. The shipped skills
+address the bridges by the Copilot host's connector ids and describe OneDrive paths and
+`.bat` jobs; their host-adapter sections are issue #6 work, so until then read them as
+reference. `[verify: the uploader tolerates the skills' `cowork:` and `metadata:`
+frontmatter keys; where it caps a description]`
+
+**Instructions.** `copilot-instructions.md` is the Copilot host's file and has no
+equivalent here *(expected)*. It carries the lessons digest, and that digest is also
+regenerated into every skill's `SKILL-LESSONS` block — which is how the rules reach this
+host.
+
+**Memory.** Claude's own memory — one store shared with chat, editable topic files — is the
+pointer tier: preferences, standing context, who is who. On Team and Enterprise plans it is
+off until the user turns it on. The deep tier stays in files:
+`CoworkConfig\cowork-memory\*.md`, one home per fact, with evidence and dates, under git.
+Do not duplicate a fact across both.
+
+**Running the lessons tooling.** `lesson_check.py`, `digest_apply.py` and
+`skill_lessons.py` are Python. They run in the session's own VM if the connected folder is
+visible there *(unverified)*, or as a `.bat` job through the executor, as the hosted route
+does.
 
 ## 8. Keep them running
 
@@ -208,13 +207,14 @@ session and start a new one; do not restart anything on the machine.
 ## 9. Prove it
 
 ```bash
-python scripts/install_check.py --config-root "<config root>" --json install-results.json
+python scripts/install_check.py --route local --config-root "<config root>" --json install-results.json
 ```
 
 `INSTALL_CHECK: CLEAN` is the finish line. The check starts each own-code bridge as a real
 stdio MCP server and completes a handshake — not a test that a file exists — checks the
-pinned runtime, enforces the 1024-character cap on skill descriptions, and runs the corpus
-checks. Each `FAIL` line names its own remedy. Read the JSON before deciding anything
+runtime, enforces the 1024-character cap on skill descriptions, and runs the corpus checks.
+`--route local` records `supergateway` as skipped rather than required: this route never
+starts it. Each `FAIL` line names its own remedy. Read the JSON before deciding anything
 works: a bridge that starts but fails its handshake is not installed.
 
 Do not commit `install-results.json`. It names your machine, and `.gitignore` excludes it
@@ -235,8 +235,8 @@ until it exists, paste the result into your pull-request description instead.
   any name containing a shell metacharacter (`& | < > ^ " ' * ? ; $`, a backtick, CR, LF or
   TAB). Containment is decided on canonical paths, never by string prefix, so
   `CommandJobsEvil` cannot masquerade as `CommandJobs`.
-- The filesystem bridge reads and writes only inside the directories you allow when you
-  register it. Everything else is refused.
+- The filesystem bridge, if registered, reads and writes only inside the directories you
+  allow when you register it. Everything else is refused.
 - A refusal is the control working. Do not widen a scan or a check to make a run pass.
 
 **This configuration in particular:**
@@ -248,5 +248,7 @@ until it exists, paste the result into your pull-request description instead.
   automatic retry; the script is left in place afterwards.
 - No elevation. A job that needs administrator rights must be redesigned or run by you.
 - No tunnel, so there is nothing to make public and no remote party can reach the bridges.
+- Nothing the host runs in its own terminal reaches Windows: that shell is a Linux VM. The
+  executor is the only host path, which is the point of registering it.
 - No Microsoft 365 surface. Skills that assume mail, calendar, Teams or SharePoint tools
   will not find them here.

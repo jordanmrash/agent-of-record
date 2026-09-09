@@ -28,6 +28,12 @@ observe them. What it can prove, it proves by doing.
     python scripts/install_check.py
     python scripts/install_check.py --json install-results.json
     python scripts/install_check.py --config-root "/path/to/Cowork"
+    python scripts/install_check.py --route local
+
+`--route` names how the agent host reaches the bridges. `hosted` (the default) is
+a cloud client behind a dev tunnel, which needs the pinned supergateway; `local`
+is a client on the machine that starts each launcher itself as a stdio server,
+where supergateway is never used and is reported as skipped rather than required.
 
 Exit 0 when every check passes, 1 when any fails.
 """
@@ -81,7 +87,7 @@ def run(cmd: list[str], timeout: int = 30) -> tuple[int, str]:
 
 # ----------------------------------------------------------------- runtime --
 
-def check_runtime(rep: Report) -> None:
+def check_runtime(rep: Report, route: str = "hosted") -> None:
     for name, cmd, needed in (
         ("node", ["node", "--version"], True),
         ("python", [sys.executable, "--version"], True),
@@ -103,6 +109,11 @@ def check_runtime(rep: Report) -> None:
         major = int(m.group(1))
         rep.add("runtime", "node is 20 or newer",
                 PASS if major >= 20 else FAIL, out.strip())
+
+    if route == "local":
+        rep.add("runtime", "supergateway", SKIP,
+                "not used on the local route - the host starts each launcher as a stdio server")
+        return
 
     pinned = ROOT / "Startup" / "package.json"
     installed = ROOT / "Startup" / "node_modules" / "supergateway"
@@ -379,6 +390,11 @@ def main(argv: list[str]) -> int:
                          "(default: $COWORK_CONFIG_ROOT)")
     ap.add_argument("--json", default=None, metavar="FILE",
                     help="also write machine-readable results")
+    ap.add_argument("--route", choices=("hosted", "local"), default="hosted",
+                    help="hosted: a cloud client reaches the bridges through "
+                         "supergateway and a dev tunnel (Copilot Cowork); "
+                         "local: the client starts the launchers itself as stdio "
+                         "servers (Claude Cowork) - supergateway is not checked")
     args = ap.parse_args(argv)
 
     if not FACTS.is_file():
@@ -388,7 +404,7 @@ def main(argv: list[str]) -> int:
     config_root = resolve_config_root(args.config_root)
 
     rep = Report()
-    check_runtime(rep)
+    check_runtime(rep, args.route)
     check_servers(rep, facts)
     check_config(rep, config_root)
     check_corpus(rep, config_root)
@@ -407,7 +423,7 @@ def main(argv: list[str]) -> int:
 
     print()
     print(f"host: {platform.system()} {platform.release()}  "
-          f"python {platform.python_version()}")
+          f"python {platform.python_version()}  route {args.route}")
     print(f"config root: {config_root or '(not given)'}")
 
     if args.json:
@@ -431,6 +447,7 @@ def main(argv: list[str]) -> int:
                      "machine": platform.machine(),
                      "python": platform.python_version()},
             "config_root": "<config-root>" if config_root else None,
+            "route": args.route,
             "checks": [{**r, "detail": scrub(r["detail"])} for r in rep.rows],
             "passed": passed, "failed": failed, "skipped": skipped,
             "clean": failed == 0,

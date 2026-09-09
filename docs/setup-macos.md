@@ -1,7 +1,9 @@
 # Setup on macOS and Linux
 
 > Using **Claude Cowork** rather than Copilot Cowork? Follow [Claude Cowork on a Mac](install/claude-cowork-mac.md)
-> instead - it runs on the machine, so there is no tunnel, no connector package and no launchd job.
+> instead - it runs on the machine, so there is no tunnel, no connector package and no launchd job,
+> and it installs only the executor. [What this repository adds to Copilot Cowork](install/copilot-cowork.md)
+> explains what the pieces on this page are for.
 
 This guide takes a Mac with nothing installed to four running bridges that a
 Copilot Cowork or Claude Cowork session can call, with the skills, the lessons

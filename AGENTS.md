@@ -25,17 +25,24 @@ different one, and do not report success on any evidence weaker than step 5.
    Playwright bridge drives. Everything else is shared. `docs/setup.md` is the
    Windows path; `docs/setup-macos.md` is the POSIX one.
    Both describe a client that runs in the cloud and reaches the bridges through a dev
-   tunnel. A client that runs on the machine itself (Claude Cowork) registers the
-   launchers as stdio servers and skips the tunnel, the connector packages and the
-   watchdog; `docs/install/` has those pages.
+   tunnel - the **hosted** route. A client that runs on the machine itself (Claude
+   Cowork) is the **local** route: it registers the launchers as stdio servers and skips
+   the tunnel, `supergateway`, the connector packages, the personalizer and the watchdog,
+   and it installs only what that host lacks - the executor is required, the browser and
+   filesystem bridges are optional. `docs/install/README.md` compares the routes;
+   `docs/install/claude-cowork-*.md` are the pages. The local route needs a **local**
+   desktop session: the vendor states that local MCP servers do not run in a cloud
+   session, so an agent in a cloud session cannot complete it and must say so.
 
 2. **Validate the checkout before changing it.** `python scripts/release_check.py`
    must print `RELEASE_CHECK: CLEAN`. If it does not, stop and report - the tree
    is not what was published and nothing below will behave as documented.
 
-3. **Install the runtime.** `cd Startup && npm install` (pins supergateway).
-   On POSIX also `chmod +x Startup/posix/*.sh`; a clone can arrive without the
-   execute bit, and the launchers will not start without it.
+3. **Install the runtime.** Hosted route: `cd Startup && npm install` (pins
+   supergateway, the HTTP wrapper the tunnel needs). Local route: nothing - the executor
+   is plain `node` and the host starts it directly, so do not install `supergateway`.
+   On POSIX also `chmod +x Startup/posix/*.sh` on either route; a clone can arrive
+   without the execute bit, and the launchers will not start without it.
 
 4. **Configure the machine, never the repository.** Real paths belong in
    `Startup/cowork-env.cmd` (Windows) or `Startup/posix/cowork-env.sh` (POSIX),
@@ -54,7 +61,8 @@ different one, and do not report success on any evidence weaker than step 5.
 5. **Prove it, and let the proof be the report.**
 
    ```bash
-   python scripts/install_check.py --json install-results.json
+   python scripts/install_check.py --json install-results.json                # hosted route
+   python scripts/install_check.py --route local --json install-results.json  # local route
    ```
 
    This performs a real stdio MCP handshake against each own-code bridge,
