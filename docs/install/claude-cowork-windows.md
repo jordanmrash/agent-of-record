@@ -137,9 +137,11 @@ here.
 ## 5. Check they answer
 
 Step 2 already did this. Inside `release_check.py`, `exec_bridge_selftest.py` opens a live
-session with the executor and runs 31 cases in `.bat` form through `cmd.exe` — the line
-that reads `EXEC_SELFTEST: OK - 31 of 31 cases passed`. That run was proven on Windows on
-2026-09-08. If it passed, the executor answers and refuses what it should.
+session with the executor and runs 40 cases in `.bat` form through `cmd.exe` — the line
+that reads `EXEC_SELFTEST: OK - 40 of 40 cases passed on Windows`. That run was proven on
+Windows on 2026-09-09. If it passed, the executor answers, refuses what it should,
+normalizes a script's line endings before running it, and hands jobs a complete
+environment.
 
 ## 6. Connect your agent host
 
@@ -164,11 +166,15 @@ These are the `stdio` entries in `docs/bridge-facts.json` (`pw-server.cmd`, `fs-
 use `cmd /c <path>` as the command. `[verify: how this client spawns a stdio server on
 Windows]`
 
-**Expected environment difference.** The hosted Windows setup measured a stripped job
-environment — `%APPDATA%`, `%LOCALAPPDATA%` and `%USERPROFILE%` empty, the user PATH
-missing, `timeout /t` failing for lack of a console. Those are properties of how *that*
-machine spawns the executor. A locally-hosted spawn may differ in either direction.
-Re-measure before porting any workaround from `docs/setup.md`.
+**Environment.** Since executor v1.3.0 the job environment is server-built and complete
+regardless of how the bridge was started: `%USERPROFILE%`, `%APPDATA%`, `%LOCALAPPDATA%`
+and `%TEMP%` are derived from the account when the launching process lacks them, and the
+user PATH from `HKCU\Environment` is appended to the machine PATH, so a job sees what an
+interactive session of the same account would see. The hosted Windows setup had measured
+the opposite (profile variables empty, machine PATH only) when the bridge was started by
+its scheduled-task watchdog; that is what 1.3.0 closed. Two things stay true of every
+start: there is no console, so `timeout /t` fails and nothing can prompt, and there is
+no elevation.
 
 ## 7. Where skills and instructions live
 

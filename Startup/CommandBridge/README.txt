@@ -1,6 +1,6 @@
 COWORK COMMAND BRIDGE -- port 8933 implementation
 =================================================
-Startup\CommandBridge\batch-exec-server.js        v1.2.0
+Startup\CommandBridge\batch-exec-server.js        v1.3.0
 
 Launched by  Startup\exec-server.cmd  on Windows and  Startup/posix/exec-server.sh
 on macOS and Linux; tasks.json points --stdio at whichever fits the host.
@@ -11,7 +11,7 @@ executable extension (.bat/.cmd vs .sh), the comment marker the COWORK_OUTPUT
 directive hides behind (REM/:: vs #), and how a runaway process tree is killed
 (taskkill /T vs a process-group SIGKILL). Everything in PATH BOUNDARY below is
 one implementation used by both, and scripts/exec_bridge_selftest.py starts the
-real server and tries thirty-one ways out of it in the host's own script
+real server and tries forty ways out of it in the host's own script
 language - so a refusal that held on one platform and not the other fails the
 gate rather than shipping. The tooling root comes from COWORK_ROOT, set by the
 launcher, never from the MCP caller, who cannot set an environment variable
@@ -86,6 +86,33 @@ Environment handed to the script (server-built; caller contributes nothing):
   %COWORK_JOB_NAME%      script base name
   %COWORK_JOB_TAG%       name_timestamp, matching the log filenames
 
+Plus, since v1.3.0, a COMPLETE user environment -- what an interactive session
+of the same account would carry:
+  Windows  SystemRoot, windir, SystemDrive, ComSpec, PATHEXT, COMPUTERNAME,
+           USERNAME, USERPROFILE, HOMEDRIVE, HOMEPATH, APPDATA, LOCALAPPDATA,
+           ProgramData, ProgramFiles, ProgramFiles(x86), ProgramW6432, TEMP,
+           TMP, NUMBER_OF_PROCESSORS, and Path = the machine PATH the server
+           was started with followed by the user's PATH from HKCU\Environment
+           (%VAR% references expanded)
+  POSIX    PATH (the server's, plus ~/.local/bin, ~/bin, /opt/homebrew/bin,
+           /opt/homebrew/sbin, /usr/local/bin, /usr/local/sbin where they
+           exist), HOME, USER, LOGNAME, SHELL, LANG, TMPDIR
+Every value the launching process supplied is kept; the rest is DERIVED from
+the account the server runs as (os.homedir, os.userInfo, the registry) -- never
+from the MCP caller, who still has no parameter that reaches the environment.
+Until 1.3.0 a bridge started by the scheduled-task watchdog handed its jobs an
+environment with the profile variables empty and only the machine PATH, so
+per-user tools had to be located by hand inside every script. The result
+reports user_path_entries, the number of user PATH entries appended.
+
+Line endings (v1.3.0): before a script runs, its line terminators are rewritten
+to the platform's convention IN PLACE -- an LF-only .bat/.cmd becomes CRLF on
+Windows (cmd.exe mis-parses LF-only files silently), a CRLF .sh becomes LF on
+POSIX (bash rejects CR). Nothing but the terminators changes; a file that
+already mixes both is left alone. The result reports line_endings as one of
+unchanged, lf-to-crlf, crlf-to-lf, mixed-left-alone, skipped-large,
+not-writable, unreadable.
+
 
 EXECUTION CONTROLS
 ------------------
@@ -98,13 +125,17 @@ EXECUTION CONTROLS
   stdin         closed -- no interactive input is possible
   window        hidden (windowsHide) -- nothing can prompt
   cmd.exe flags /d /s /c, server-supplied (/d skips AutoRun registry hooks)
-  environment   minimal and server-built
+  environment   server-built and COMPLETE (profile variables and the user PATH
+                derived from the account; the caller contributes nothing)
+  line endings  rewritten to the platform convention in place before the run;
+                mixed files left alone; reported as line_endings
   retries       none -- a failed script is never rerun automatically
   cleanup       none -- the batch file is deliberately left in place
 
 Exit codes: 9999 timeout, 9998 failed to start, 9997 no exit code reported.
 
 Returned per run: stdout, stderr, exit code, timed_out, start/end/duration,
+line_endings, user_path_entries,
 files created / modified / deleted across CommandJobs and Outputs, the
 output folder and its files, and the log path.
 

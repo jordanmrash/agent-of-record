@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /* ============================================================================
- *  Cowork Command Bridge -- hardened script-only MCP server   v1.2.0
+ *  Cowork Command Bridge -- hardened script-only MCP server   v1.3.0
  *  <tooling root>/Startup/CommandBridge/batch-exec-server.js
  *
  *  Replaces the unrestricted `mcp-server-commands` package behind port 8933.
@@ -37,6 +37,27 @@
  *    folder created. If the directive is present but resolves outside Outputs,
  *    the job is REFUSED rather than silently redirected.
  *
+ *  LINE ENDINGS (v1.3.0)
+ *    cmd.exe mis-parses an LF-only .bat silently -- a `call :label` misses,
+ *    a block ends early, and the job reports a clean exit having skipped work.
+ *    bash fails a CRLF .sh loudly instead ("$'\r': command not found").
+ *    Scripts reach CommandJobs from tools that write the other convention
+ *    (the 8932 filesystem bridge writes LF), so before running an approved
+ *    script the server rewrites its line terminators to the platform's own
+ *    convention, in place, and reports that it did. Nothing but the
+ *    terminators changes, and a file with mixed endings is left alone.
+ *
+ *  JOB ENVIRONMENT (v1.3.0)
+ *    The environment a job runs in is built by the server -- the MCP caller
+ *    still contributes nothing -- but it is now COMPLETE: the profile
+ *    variables (USERPROFILE, APPDATA, LOCALAPPDATA, TEMP on Windows; HOME,
+ *    USER on POSIX) are derived from the account the server runs as when the
+ *    launching process lacks them, and the user's own PATH (HKCU\Environment
+ *    on Windows; the conventional user bin directories on POSIX) is appended
+ *    to the machine PATH. Until 1.3.0 a bridge started by a scheduled task
+ *    handed jobs an environment with those variables empty, so per-user tools
+ *    had to be located by hand inside every script.
+ *
  *  Zero npm dependencies. Speaks MCP JSON-RPC 2.0 over newline-delimited
  *  stdio directly. Nothing is fetched from the network at start time.
  * ==========================================================================*/
@@ -59,7 +80,8 @@ const { spawn, spawnSync } = require('child_process');
  *
  *  Everything that carries a security property is IDENTICAL on both: the path
  *  validation, the containment checks against the canonicalised root, the
- *  single-flight lock, the fixed timeout, the built environment, and the rule
+ *  single-flight lock, the fixed timeout, the server-built environment (see
+ *  buildJobEnvironment -- complete, but never caller-supplied), and the rule
  *  that the caller supplies nothing but a relative filename. A port that
  *  relaxed one of those would not be the same bridge.
  *
@@ -85,6 +107,7 @@ const ALLOWED_EXT    = IS_WINDOWS ? new Set(['.bat', '.cmd']) : new Set(['.sh'])
 const ALLOWED_EXT_TEXT = IS_WINDOWS ? '.bat and .cmd' : '.sh';
 const MAX_SCAN_FILES = 20000;
 const MAX_DIRECTIVE_BYTES = 256 * 1024;   // how much of a script we read to find the directive
+const MAX_NORMALIZE_BYTES = 4 * 1024 * 1024; // a script larger than this runs as-is, unnormalised
 
 /* Path separator handling. A caller may write either separator; it is folded
  * to the platform's own before resolution. On POSIX a backslash is a legal
@@ -106,7 +129,7 @@ const DIRECTIVE_RE = IS_WINDOWS
   : /^\s*#\s*COWORK_OUTPUT\s*[:=]\s*(.+?)\s*$/i;
 
 const SERVER_NAME      = 'cowork-batch-exec';
-const SERVER_VERSION   = '1.2.0';
+const SERVER_VERSION   = '1.3.0';
 const DEFAULT_PROTOCOL = '2025-06-18';
 
 /* Maximum concurrent executions: 1, enforced process-wide. */
@@ -380,6 +403,153 @@ function diffSnapshots(before, after) {
   return { created: created.sort(), modified: modified.sort(), deleted: deleted.sort() };
 }
 
+/* ------------------------------------------------ script line endings -- */
+/*
+ * Rewrites an approved script's line terminators to the platform's own
+ * convention, IN PLACE, before it runs: LF-only .bat/.cmd -> CRLF on Windows,
+ * CRLF .sh -> LF on POSIX. The file that runs is the file that exists, changed
+ * in nothing but its terminators. Byte-level (latin1 round trip), so a script
+ * in any encoding is rewritten losslessly. A file that already mixes the two
+ * conventions is left exactly as it is and reported as such; a file over
+ * MAX_NORMALIZE_BYTES runs as-is. Never throws: a normalisation that cannot
+ * happen is reported, not fatal.
+ */
+function normalizeLineEndings(realPath) {
+  let buf;
+  try { buf = fs.readFileSync(realPath); }
+  catch (_) { return 'unreadable'; }
+  if (buf.length > MAX_NORMALIZE_BYTES) return 'skipped-large';
+  const text  = buf.toString('latin1');
+  const crlf  = (text.match(/\r\n/g) || []).length;
+  const lf    = (text.match(/\n/g) || []).length - crlf;      // bare LFs
+  const cr    = (text.match(/\r/g) || []).length - crlf;      // bare CRs
+  if (IS_WINDOWS) {
+    if (lf === 0) return 'unchanged';                          // already CRLF (or no newlines)
+    if (crlf > 0 || cr > 0) return 'mixed-left-alone';
+    try { fs.writeFileSync(realPath, Buffer.from(text.replace(/\n/g, '\r\n'), 'latin1')); }
+    catch (_) { return 'not-writable'; }
+    return 'lf-to-crlf';
+  }
+  if (crlf === 0) return 'unchanged';
+  if (lf > 0 || cr > 0) return 'mixed-left-alone';
+  try { fs.writeFileSync(realPath, Buffer.from(text.replace(/\r\n/g, '\n'), 'latin1')); }
+  catch (_) { return 'not-writable'; }
+  return 'crlf-to-lf';
+}
+
+/* ------------------------------------------------------ job environment -- */
+/*
+ * The environment an approved script runs in. Built entirely by the server:
+ * the MCP caller has no parameter that reaches it, and nothing from the
+ * request is read here. It is COMPLETE, meaning it carries what an
+ * interactive session of the same account would carry --
+ *
+ *   Windows  SystemRoot, windir, SystemDrive, ComSpec, PATHEXT, COMPUTERNAME,
+ *            USERNAME, USERPROFILE, HOMEDRIVE, HOMEPATH, APPDATA, LOCALAPPDATA,
+ *            ProgramData, ProgramFiles, ProgramFiles(x86), ProgramW6432,
+ *            TEMP, TMP, NUMBER_OF_PROCESSORS, and Path = the machine PATH the
+ *            server was started with, followed by the user's PATH read from
+ *            HKCU\Environment (with %VAR% references expanded).
+ *   POSIX    PATH (the server's, plus the conventional user bin directories
+ *            that exist: ~/.local/bin, ~/bin, /opt/homebrew/{bin,sbin},
+ *            /usr/local/{bin,sbin}), HOME, USER, LOGNAME, SHELL, LANG, TMPDIR.
+ *
+ * -- derived from the account the server runs as whenever the launching
+ * process did not supply them. A bridge started by a scheduled task or a
+ * launchd job gets a stripped environment; until 1.3.0 that stripping reached
+ * every job, and per-user tools had to be located by hand inside scripts.
+ * Values the launching process DID supply are kept as they are.
+ */
+function readUserPathWindows(lookup) {
+  try {
+    const reg = path.join(process.env.SystemRoot || 'C:\\Windows', 'System32', 'reg.exe');
+    const r = spawnSync(reg, ['query', 'HKCU\\Environment', '/v', 'Path'],
+                        { encoding: 'utf8', timeout: 5000, windowsHide: true });
+    const m = /^\s*Path\s+REG_(?:EXPAND_)?SZ\s+(.*)$/im.exec(r.stdout || '');
+    if (!m) return '';
+    return m[1].trim().replace(/%([^%]+)%/g, (whole, name) => {
+      const v = lookup(name);
+      return v === undefined ? whole : v;
+    });
+  } catch (_) { return ''; }
+}
+
+function mergePath(entries, caseInsensitive) {
+  const out = [], seen = new Set();
+  for (const e of entries) {
+    const t = (e || '').trim();
+    if (!t) continue;
+    const k = caseInsensitive ? t.toLowerCase().replace(/[\\/]+$/, '') : t.replace(/\/+$/, '');
+    if (seen.has(k)) continue;
+    seen.add(k); out.push(t);
+  }
+  return out;
+}
+
+function buildJobEnvironment(jobEnv) {
+  const pe = process.env;
+  if (IS_WINDOWS) {
+    const systemRoot  = pe.SystemRoot || 'C:\\Windows';
+    const systemDrive = pe.SystemDrive || systemRoot.slice(0, 2);
+    let profile = pe.USERPROFILE || '';
+    if (!profile) { try { profile = os.homedir() || ''; } catch (_) { profile = ''; } }
+    const appdata = pe.APPDATA      || (profile ? path.join(profile, 'AppData', 'Roaming') : '');
+    const local   = pe.LOCALAPPDATA || (profile ? path.join(profile, 'AppData', 'Local') : '');
+    const temp    = pe.TEMP || pe.TMP || (local ? path.join(local, 'Temp') : os.tmpdir());
+    let username = pe.USERNAME || '';
+    if (!username) { try { username = os.userInfo().username || ''; } catch (_) { username = ''; } }
+    const env = {
+      SystemRoot:  systemRoot,
+      windir:      pe.windir || systemRoot,
+      SystemDrive: systemDrive,
+      ComSpec:     pe.ComSpec || path.join(systemRoot, 'System32', 'cmd.exe'),
+      PATHEXT:     pe.PATHEXT || '.COM;.EXE;.BAT;.CMD',
+      COMPUTERNAME: pe.COMPUTERNAME || '',
+      NUMBER_OF_PROCESSORS: pe.NUMBER_OF_PROCESSORS || String(os.cpus().length),
+      USERNAME:    username,
+      USERPROFILE: profile,
+      HOMEDRIVE:   pe.HOMEDRIVE || (profile ? profile.slice(0, 2) : ''),
+      HOMEPATH:    pe.HOMEPATH  || (profile ? profile.slice(2) : ''),
+      APPDATA:     appdata,
+      LOCALAPPDATA: local,
+      ProgramData: pe.ProgramData || (systemDrive + '\\ProgramData'),
+      ProgramFiles: pe.ProgramFiles || (systemDrive + '\\Program Files'),
+      'ProgramFiles(x86)': pe['ProgramFiles(x86)'] || (systemDrive + '\\Program Files (x86)'),
+      ProgramW6432: pe.ProgramW6432 || pe.ProgramFiles || (systemDrive + '\\Program Files'),
+      TEMP:        temp,
+      TMP:         temp
+    };
+    const lookup = (name) => {
+      const hit = Object.keys(env).find(k => k.toLowerCase() === name.toLowerCase());
+      return hit === undefined ? undefined : env[hit];
+    };
+    const machinePath = pe.Path || pe.PATH || '';
+    const userPath    = readUserPathWindows(lookup);
+    env.Path = mergePath([...machinePath.split(';'), ...userPath.split(';')], true).join(';');
+    return { env: Object.assign(env, jobEnv),
+             userPathEntries: userPath ? userPath.split(';').filter(Boolean).length : 0 };
+  }
+  let home = pe.HOME || '';
+  if (!home) { try { home = os.homedir() || ''; } catch (_) { home = ''; } }
+  let user = pe.USER || pe.LOGNAME || '';
+  if (!user) { try { user = os.userInfo().username || ''; } catch (_) { user = ''; } }
+  const candidates = [
+    home && path.join(home, '.local', 'bin'), home && path.join(home, 'bin'),
+    '/opt/homebrew/bin', '/opt/homebrew/sbin', '/usr/local/bin', '/usr/local/sbin'
+  ].filter(p => { try { return p && fs.statSync(p).isDirectory(); } catch (_) { return false; } });
+  const basePath = pe.PATH || '/usr/bin:/bin:/usr/sbin:/sbin';
+  const env = {
+    PATH:    mergePath([...basePath.split(':'), ...candidates], false).join(':'),
+    HOME:    home,
+    USER:    user,
+    LOGNAME: pe.LOGNAME || user,
+    TMPDIR:  pe.TMPDIR || os.tmpdir(),
+    LANG:    pe.LANG || 'en_US.UTF-8',
+    SHELL:   POSIX_SHELL
+  };
+  return { env: Object.assign(env, jobEnv), userPathEntries: candidates.length };
+}
+
 /* -------------------------------------------------------------- execute -- */
 
 /* Kill the whole tree, not just the shell. On Windows taskkill /T walks the
@@ -399,7 +569,7 @@ function killTree(pid) {
   } catch (_) { /* best effort */ }
 }
 
-function runBatch(realPath, approvedOutput) {
+function runBatch(realPath, approvedOutput, lineEndings) {
   return new Promise((resolve) => {
     const jobDir  = path.dirname(realPath);
     const jobName = path.basename(realPath, path.extname(realPath));
@@ -410,9 +580,10 @@ function runBatch(realPath, approvedOutput) {
     const outRoot = realOutputRoot();
     const before  = snapshot([jobRoot, outRoot], ['logs']);
 
-    // Minimal, server-built environment. The MCP caller contributes nothing.
-    // The job-facing COWORK_* names are identical on both platforms, so an
-    // approved script reads the same variables wherever it runs.
+    // Server-built environment: complete (see buildJobEnvironment), and the
+    // MCP caller contributes nothing to it. The job-facing COWORK_* names are
+    // identical on both platforms, so an approved script reads the same
+    // variables wherever it runs.
     const jobEnv = {
       COWORK_JOB_NAME:    jobName,
       COWORK_JOB_TAG:     tag,
@@ -421,27 +592,8 @@ function runBatch(realPath, approvedOutput) {
       COWORK_JOB_OUTPUT:  approvedOutput.dir,    // approved in the script, not by the caller
       COWORK_ROOT:        COWORK_ROOT
     };
-
-    const env = IS_WINDOWS ? {
-      SystemRoot:  process.env.SystemRoot || 'C:\\Windows',
-      windir:      process.env.windir || 'C:\\Windows',
-      Path:        process.env.Path || process.env.PATH || '',
-      PATHEXT:     process.env.PATHEXT || '.COM;.EXE;.BAT;.CMD',
-      TEMP:        process.env.TEMP || os.tmpdir(),
-      TMP:         process.env.TMP || os.tmpdir(),
-      USERPROFILE: process.env.USERPROFILE || '',
-      COMPUTERNAME: process.env.COMPUTERNAME || '',
-      NUMBER_OF_PROCESSORS: process.env.NUMBER_OF_PROCESSORS || '',
-      ...jobEnv
-    } : {
-      PATH:   process.env.PATH || '/usr/bin:/bin:/usr/sbin:/sbin',
-      HOME:   process.env.HOME || os.homedir(),
-      TMPDIR: process.env.TMPDIR || os.tmpdir(),
-      LANG:   process.env.LANG || 'en_US.UTF-8',
-      SHELL:  POSIX_SHELL,
-      USER:   process.env.USER || '',
-      ...jobEnv
-    };
+    const built = buildJobEnvironment(jobEnv);
+    const env   = built.env;
 
     // Windows: /d skip AutoRun registry hooks, /s treat the quoted path
     //          verbatim, /c run then terminate.
@@ -512,6 +664,8 @@ function runBatch(realPath, approvedOutput) {
         output_dir:        approvedOutput.dir,
         output_declared:   approvedOutput.declared,
         output_dir_created: approvedOutput.created,
+        line_endings:      lineEndings || 'unchanged',
+        user_path_entries: built.userPathEntries,
         exit_code:         exitCode,
         timed_out:         timedOut,
         signal:            signal || null,
@@ -537,6 +691,8 @@ function runBatch(realPath, approvedOutput) {
           `working dir : ${jobDir}`,
           `output dir  : ${approvedOutput.dir}`,
           `declared    : ${approvedOutput.declared || '(none -- Outputs root used, nothing created)'}`,
+          `line endings: ${result.line_endings}`,
+          `environment : server-built, complete; user PATH entries appended: ${result.user_path_entries}`,
           `started     : ${result.started_at}`,
           `finished    : ${result.ended_at}`,
           `duration    : ${result.duration_ms} ms`,
@@ -692,7 +848,10 @@ const TOOL = {
     'interpreter, working directory, environment variable, output directory, timeout ' +
     'override or elevation option can be supplied -- the only input is the filename. ' +
     'This response carries the current rules verbatim on the first job of a session ' +
-    'and on any job that does not exit clean.'
+    'and on any job that does not exit clean. Before running, the server rewrites the ' +
+    'script\'s line terminators to the platform convention in place (an LF-only .bat ' +
+    'becomes CRLF) and builds a complete user environment for it (profile variables and ' +
+    'the user PATH included); both are reported in the result. '
     /* PLUGIN-LESSONS:start run_batch_file */
     + 'OPERATING RULES, each learned from a real failure and regenerated from '
     + 'cowork-lessons.md - do not hand-edit: Files written through 8932 arrive LF-only and '
@@ -783,7 +942,8 @@ async function handle(msg) {
       RUNNING = true;
       let result;
       try {
-        result = await runBatch(real, approvedOutput);
+        const endings = normalizeLineEndings(real);
+        result = await runBatch(real, approvedOutput, endings);
       } catch (e) {
         return toolErr(id, `Execution failed: ${e.message}`);
       } finally {
@@ -846,7 +1006,9 @@ process.stderr.write(
   `[cowork-batch-exec] scripts: ${realJobRoot()}\n` +
   `[cowork-batch-exec] outputs: ${realOutputRoot()}\n` +
   `[cowork-batch-exec] .bat/.cmd only, relative paths only, 300s timeout, ` +
-  `5MB output caps, 1 concurrent job.\n`);
+  `5MB output caps, 1 concurrent job.\n` +
+  `[cowork-batch-exec] line endings normalised to the platform before a run; ` +
+  `job environment server-built and complete.\n`);
 
 let buf = '';
 process.stdin.setEncoding('utf8');
