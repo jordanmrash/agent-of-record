@@ -18,6 +18,10 @@ REM  auth_strategy is "none" - so every flow tool returns a clear
 REM  NOT_CONFIGURED or REFUSED message until deliberately widened
 REM  in FlowBridge\flow-bridge.config.json.
 REM
+REM  COWORK_ROOT is derived from this file's own location - the
+REM  Windows twin of posix\flow-server.sh. Optional overrides come
+REM  from cowork-env.cmd beside this file (gitignored).
+REM
 REM  Implementation: Startup\FlowBridge\flow-mcp-server.js
 REM
 REM  Uses the already-installed Node runtime. No npx. No installs.
@@ -28,6 +32,10 @@ REM  this file - matching the pattern used by fs-server.cmd (8932)
 REM  and exec-server.cmd (8933).
 REM ============================================================
 
-cd /d "C:\Users\YOURUSER\Documents\COPILOT_COWORK\Startup\FlowBridge"
+set "HERE=%~dp0"
+for %%I in ("%HERE%..") do set "COWORK_ROOT=%%~fI"
+if exist "%HERE%cowork-env.cmd" call "%HERE%cowork-env.cmd"
 
-node "C:\Users\YOURUSER\Documents\COPILOT_COWORK\Startup\FlowBridge\flow-mcp-server.js"
+cd /d "%COWORK_ROOT%\Startup\FlowBridge"
+
+node "%COWORK_ROOT%\Startup\FlowBridge\flow-mcp-server.js"

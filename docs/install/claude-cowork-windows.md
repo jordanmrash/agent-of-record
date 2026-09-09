@@ -48,7 +48,8 @@ npm install
 cd ..
 ```
 
-`<tooling root>` is fixed on Windows and yours to choose on macOS — step 3 says which.
+`<tooling root>` is yours to choose on both platforms — step 3 says what the launchers
+derive from it.
 
 Run the gate **before** installing anything: `release_check.py` must end with
 `RELEASE_CHECK: CLEAN (22 checks)`. On a fresh clone anything else means the tree is wrong
@@ -62,48 +63,50 @@ all; the browser and filesystem bridges are fetched by `npx` on their first star
 
 ## 3. Choose your folders
 
-On Windows the tooling root is **not** yours to choose. The `.cmd` launchers, `tasks.json`,
-the watchdog and the shipped jobs all carry the literal path
-`C:\Users\YOURUSER\Documents\COPILOT_COWORK`, so clone to exactly
-
-    %USERPROFILE%\Documents\COPILOT_COWORK
-
-and replace the placeholder in one pass. The script is a dry run until `--apply`:
+The tooling root is the clone, wherever you put it. Each `.cmd` launcher in `Startup\`
+derives `COWORK_ROOT` from its own location (`%~dp0`), exactly as the POSIX launchers do,
+so nothing has to be personalized for the bridges to start. The one value the repository
+cannot know is your config root, and that goes in a gitignored file beside the launchers:
 
 ```powershell
-python scripts\personalize.py --user <your account name>
-python scripts\personalize.py --user <your account name> --apply
+copy Startup\cowork-env.example.cmd Startup\cowork-env.cmd
+notepad Startup\cowork-env.cmd
 ```
 
-It rewrites `Startup\`, `CommandJobs\`, `CoworkConfig\` and `docs\bridge-facts.json`,
-prints every file it touched, and refuses a user name that is itself a placeholder. Leave
-out `--tunnel-host`: there is no tunnel in this configuration. A personalized tree fails
-`public_scan.py` by design — keep it on a local branch and never push it.
+Uncomment `set "COWORK_CONFIG_ROOT=..."` and point it at the folder this client loads
+skills from — or leave it commented to run the filesystem bridge with two roots and keep
+the corpus in `CoworkConfig\` inside the clone. `cowork-env.cmd` is refused by name in
+`public_scan.py`, so your account name cannot reach a public tree. The same file can set
+`COWORK_PW_BROWSER` and `COWORK_PW_PROFILE` for the browser bridge.
 
 | Root | Holds | Where |
 |---|---|---|
-| **Tooling root** | `Startup\` (bridges), `CommandJobs\` (approved scripts), `CommandJobs\Logs\`, `Outputs\` | `%USERPROFILE%\Documents\COPILOT_COWORK` — the clone. Create `CommandJobs`, `CommandJobs\Logs` and `Outputs` beside `Startup\` if the clone did not bring them. |
-| **Config root** | Skills, standing instructions, `cowork-memory\` | `[verify: where Claude Cowork loads skills and instructions from]`. The repo ships a complete set in `CoworkConfig\`. The Copilot host reads `<OneDrive>\Documents\Cowork`; this client may not. |
+| **Tooling root** | `Startup\` (bridges), `CommandJobs\` (approved scripts), `CommandJobs\Logs\`, `Outputs\` | The clone, wherever you put it (`COWORK_ROOT`, derived). `exec-server.cmd` creates `CommandJobs` and `Outputs` beside `Startup\` if the clone did not bring them. |
+| **Config root** | Skills, standing instructions, `cowork-memory\` | `[verify: where Claude Cowork loads skills and instructions from]`. Leave `COWORK_CONFIG_ROOT` unset to keep the corpus in the in-repo `CoworkConfig\`; set it to add that folder as the filesystem bridge's third root. The Copilot host reads `<OneDrive>\Documents\Cowork`; this client may not. |
 
-**Where each root is defined — and only there.** After personalizing, the `.cmd` launchers
-in `Startup\` are the source of truth for every server's command line.
+**Where each root is defined — and only there.** The `.cmd` launchers in `Startup\` are
+the source of truth for every server's command line.
 
-- **Executor** — `Startup\exec-server.cmd` changes directory into `CommandJobs` and runs
-  `node Startup\CommandBridge\batch-exec-server.js`. `CommandJobs` is wherever that `cd`
-  lands; a job's `REM COWORK_OUTPUT:` directive must resolve under the sibling `Outputs` or
-  the job is **refused**, never redirected. Per-run logs (`.log`, `.exit`, `.json`) go to
-  `CommandJobs\Logs\`.
-- **Filesystem** — the three directory arguments on the one command line in
-  `Startup\fs-server.cmd` are the allowed list: the tooling root, `Downloads`, and a third
-  root that `personalize.py` sets to `<OneDrive>\Documents\Cowork`. The upstream server
-  exits at start if any root does not exist, so on a machine without that folder edit the
-  third argument to your config root (or to `CoworkConfig` inside the clone) before the
-  first run.
-- **Browser** — `Startup\pw-server.cmd` drives Edge with the profile
-  `%USERPROFILE%\pw-sso-profile` and writes screenshots to `<tooling root>\playwright-output`.
-  Create the profile once and sign in to whatever the bridge will need:
-  `msedge.exe --user-data-dir="%USERPROFILE%\pw-sso-profile"`. The bridge never sees a
-  password. Use a test account until you have watched the approval flow work.
+- **Executor** — `Startup\exec-server.cmd` changes directory into `%COWORK_ROOT%\CommandJobs`
+  and runs `node %COWORK_ROOT%\Startup\CommandBridge\batch-exec-server.js`. `CommandJobs` is
+  wherever that `cd` lands; a job's `REM COWORK_OUTPUT:` directive must resolve under the
+  sibling `Outputs` or the job is **refused**, never redirected. Per-run logs (`.log`,
+  `.exit`, `.json`) go to `CommandJobs\Logs\`.
+- **Filesystem** — `Startup\fs-server.cmd` passes `"%COWORK_ROOT%"`, `"%USERPROFILE%\Downloads"`
+  and, if set and present, `"%COWORK_CONFIG_ROOT%"` to the upstream server. That is the
+  whole allowed list. If the config root is set but the folder does not exist, the launcher
+  says so on stderr and starts with two roots rather than letting the upstream server exit.
+- **Browser** — `Startup\pw-server.cmd` drives Edge (`COWORK_PW_BROWSER` to change) with the
+  profile `%USERPROFILE%\pw-sso-profile` (`COWORK_PW_PROFILE` to change) and writes
+  screenshots to `%COWORK_ROOT%\playwright-output`. Create the profile once and sign in to
+  whatever the bridge will need: `msedge.exe --user-data-dir="%USERPROFILE%\pw-sso-profile"`.
+  The bridge never sees a password. Use a test account until you have watched the approval
+  flow work.
+
+`scripts\personalize.py` is not needed for the bridges. Run it only if you install the
+shipped skills (step 7), which still cite one Windows layout; it rewrites the watchdog, the
+jobs, the connector manifests and the skills, is a dry run until `--apply`, and produces a
+tree that fails `public_scan.py` by design — keep that on a local branch and never push it.
 
 **Known gap.** The three bridge skills (`command-bridge`, `local-file-bridge`,
 `playwright-skill`) address the bridges by the Copilot connector ids
@@ -142,19 +145,19 @@ that reads `EXEC_SELFTEST: OK - 31 of 31 cases passed`. That run was proven on W
 
 **Option A — the designed path.** Point Claude Cowork at the cloned folder and ask it to
 install the bridges according to `AGENTS.md`. The install contract there is written for an
-agent: validate the checkout, install the runtime, run `personalize.py` with your account
-name (which it must ask you for, never guess), prove it with `install_check.py`. This is
-the claim v0.3 makes; running it is the test.
+agent: validate the checkout, install the runtime, write your config root into
+`Startup\cowork-env.cmd` (a value it must ask you for, never guess), prove it with
+`install_check.py`. This is the claim v0.3 makes; running it is the test.
 
 **Option B — by hand.** In the host's connector settings, add each bridge as a **stdio**
 server:
 
 | Bridge | Command | Notes |
 |---|---|---|
-| Filesystem | `%USERPROFILE%\Documents\COPILOT_COWORK\Startup\fs-server.cmd` | Allowed directories are the three arguments inside this file (step 3). |
-| Approved batch executor | `%USERPROFILE%\Documents\COPILOT_COWORK\Startup\exec-server.cmd` | One tool: `run_batch_file`. Runs `.bat`/`.cmd` only. |
-| Browser | `%USERPROFILE%\Documents\COPILOT_COWORK\Startup\pw-server.cmd` | Edge, profile `pw-sso-profile` (step 3). |
-| Power Automate | `%USERPROFILE%\Documents\COPILOT_COWORK\Startup\flow-server.cmd` | Optional. Refuses everything until configured; needs a Power Platform tenant to be useful. |
+| Filesystem | `<tooling root>\Startup\fs-server.cmd` | Allowed directories: the clone, `%USERPROFILE%\Downloads`, and `COWORK_CONFIG_ROOT` if set (step 3). |
+| Approved batch executor | `<tooling root>\Startup\exec-server.cmd` | One tool: `run_batch_file`. Runs `.bat`/`.cmd` only. |
+| Browser | `<tooling root>\Startup\pw-server.cmd` | Edge, profile `pw-sso-profile` (step 3). |
+| Power Automate | `<tooling root>\Startup\flow-server.cmd` | Optional. Refuses everything until configured; needs a Power Platform tenant to be useful. |
 
 These are the `stdio` entries in `docs/bridge-facts.json` (`pw-server.cmd`, `fs-server.cmd`,
 `exec-server.cmd`, `flow-server.cmd`). If the client cannot spawn a `.cmd` file directly,

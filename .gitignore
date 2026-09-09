@@ -87,10 +87,11 @@ autorun/
 # machine-readable output of scripts/release_check.py --json; published by CI, never committed
 release-results.json
 
-# --- POSIX bridge runtime (v0.3) -------------------------------------------
-# The operator's real paths and the watchdog's own output. cowork-env.sh is
-# also refused by scripts/public_scan.py by name, so a tracked copy fails the
-# gate rather than leaking a home directory.
+# --- bridge runtime: machine-local environment ------------------------------
+# The operator's real paths and the watchdog's own output. cowork-env.cmd
+# (Windows) and cowork-env.sh (POSIX) are also refused by scripts/public_scan.py
+# by name, so a tracked copy fails the gate rather than leaking a home directory.
+Startup/cowork-env.cmd
 Startup/posix/cowork-env.sh
 Startup/posix/watchdog/status.txt
 Startup/posix/watchdog/logs/

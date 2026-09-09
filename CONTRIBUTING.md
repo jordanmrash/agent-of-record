@@ -40,9 +40,11 @@ who runs it on a Mac every day. If that is you:
   not choose a refusal. A pull request that relaxes one on POSIX to make a Mac
   case pass will be declined, and the self-test is there so it fails first.
 - **Machine-specific values are configuration, never code.** They go in the
-  gitignored `Startup/posix/cowork-env.sh`, documented in
-  `cowork-env.example.sh`. `scripts/public_scan.py` refuses a tracked file with a
-  real home directory in it, and CI runs it.
+  gitignored `Startup/cowork-env.cmd` (Windows) or `Startup/posix/cowork-env.sh`
+  (POSIX), each documented by the `cowork-env.example.*` beside it. The launchers
+  derive their own root on both platforms and carry no `C:\Users\` or `/Users/`
+  path; `scripts/facts_check.py` fails one that does. `scripts/public_scan.py`
+  refuses a tracked file with a real home directory in it, and CI runs it.
 
 ## The rules the checks enforce
 

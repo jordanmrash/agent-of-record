@@ -3,11 +3,14 @@
 
 Asserts, in order: a dry run writes nothing; --apply removes every YOURUSER and
 YOUR-TUNNEL-HOST from the operating trees; the OneDrive folder rename lands in
-the launcher that passes it as a root; each connector package gets its own app
-id and the right port; the documentation and the skill attribution lines are
-untouched; the two tasks.json copies still match; scripts/facts_check.py is
-CLEAN on the personalized tree; and scripts/public_scan.py refuses it - a
-personalized tree must never pass the publication gate.
+the job that cites that folder; the bridge launchers and the VS Code task file
+carry no account path before or after (they derive their root, so
+personalization has nothing to do there); JSON files keep their escaped
+backslashes; each connector package gets its own app id and the right port;
+the documentation and the skill attribution lines are untouched; the two
+tasks.json copies still match; scripts/facts_check.py is CLEAN on the
+personalized tree; and scripts/public_scan.py refuses it - a personalized tree
+must never pass the publication gate.
 """
 import hashlib
 import json
@@ -96,14 +99,20 @@ def main():
         check(not grep_tree(tree, "YOURUSER", scope), "no YOURUSER remains in the operating trees")
         check(not grep_tree(tree, "YOUR-TUNNEL-HOST", scope), "no YOUR-TUNNEL-HOST remains in the operating trees")
 
-        fs = read(tree, "Startup/fs-server.cmd")
-        check("C:\\Users\\%s\\%s\\Documents\\Cowork" % (USER, ONEDRIVE) in fs,
-              "filesystem launcher passes the renamed OneDrive root")
-        check("C:\\Users\\%s\\Documents\\COPILOT_COWORK" % USER in fs, "filesystem launcher passes the tooling root")
+        close = read(tree, "CommandJobs/cowork-close.bat")
+        check("C:\\Users\\%s\\%s\\Documents\\Cowork" % (USER, ONEDRIVE) in close,
+              "the OneDrive folder rename lands in the job that cites that folder")
+        for launcher in ("exec-server.cmd", "fs-server.cmd", "pw-server.cmd", "flow-server.cmd"):
+            text = read(tree, "Startup/" + launcher)
+            check("C:\\Users\\" not in text and "%~dp0" in text,
+                  "%s derives its root; no account path before or after personalization" % launcher)
 
         tasks = read(tree, "Startup/.vscode/tasks.json")
         check(tasks == read(tree, "Startup/KnownGood/tasks.json"), "live and known-good tasks.json still identical")
-        check("C:\\\\Users\\\\%s\\\\" % USER in tasks, "tasks.json keeps JSON-escaped backslashes")
+        check("${workspaceFolder}" in tasks and "C:\\\\Users" not in tasks,
+              "tasks.json is workspace-relative on every platform and needed no personalization")
+        check("C:\\\\Users\\\\%s\\\\" % USER in read(tree, "Startup/FlowBridge/flow-bridge.config.example.json"),
+              "JSON files keep their escaped backslashes")
 
         ids = set()
         manifests_ok = True

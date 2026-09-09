@@ -4,7 +4,8 @@
     "under which name, stateful or not, and what each one reaches. scripts/facts_check.py",
     "verifies the surfaces listed below against this file. Change the manifest first,",
     "then the surfaces; the check fails until they agree.",
-    "Paths use the repository placeholder YOURUSER.",
+    "Filesystem roots are launcher-derived on both platforms: the tooling root comes from the launcher's own location (COWORK_ROOT), Downloads from the user profile, and the config root from COWORK_CONFIG_ROOT set in the gitignored Startup/cowork-env.cmd or Startup/posix/cowork-env.sh. The roots below are the Windows variable names as they appear in fs-server.cmd; the POSIX launcher passes $COWORK_ROOT, $HOME/Downloads and $COWORK_CONFIG_ROOT.",
+    "Files that still carry the repository placeholder YOURUSER (the watchdog, the connector manifests, the shipped jobs, the skills) are personalized by scripts/personalize.py; no launcher, task file or root in this manifest does.",
     "connector_id is the tool namespace the skills address; plugin_manifest is the Cowork connector package that must carry it and the port.",
     "stdio is the Windows launcher; stdio_posix is its macOS/Linux sibling under Startup/posix. facts_check.py verifies both exist and that neither hard-codes a root."
   ],
@@ -33,9 +34,9 @@
       "implementation": "upstream",
       "package": "@modelcontextprotocol/server-filesystem",
       "roots": [
-        "C:\\Users\\YOURUSER\\Documents\\COPILOT_COWORK",
-        "C:\\Users\\YOURUSER\\Downloads",
-        "C:\\Users\\YOURUSER\\OneDrive\\Documents\\Cowork"
+        "%COWORK_ROOT%",
+        "%USERPROFILE%\\Downloads",
+        "%COWORK_CONFIG_ROOT%"
       ],
       "task_label": "Cowork Filesystem Bridge (8932)",
       "connector_id": "jordan-local-filesystem-8932-v1",
