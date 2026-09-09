@@ -4,13 +4,17 @@
 
 This release demonstrates the operating foundation. It does not contain a complete public tax, audit, advisory, or bookkeeping product.
 
-## Windows-specific implementation
+## Windows-first implementation
 
-The local execution layer uses Windows batch files, PowerShell, VS Code tasks, absolute paths, and a Windows browser profile.
+The operated machine is Windows: the jobs are batch files and PowerShell, and the browser bridge drives a Windows profile. The POSIX launchers and the executor's `.sh` form are proven in a Linux container and by CI on macOS, not yet on a Mac someone uses.
 
-## Microsoft 365 and Power Platform assumptions
+## Microsoft 365 and Power Platform assumptions on the hosted route
 
-The design assumes access to Microsoft 365 Copilot Cowork, dev tunnels or an equivalent reverse proxy, Power Automate, and a tenant whose policies permit the configured behavior.
+The Copilot Cowork route assumes access to Microsoft 365 Copilot Cowork, dev tunnels or an equivalent reverse proxy, and a tenant whose policies permit custom connectors. The Claude Cowork route needs none of these and has no tenant surface at all; the Power Automate bridge is useful on either route only with a Power Platform tenant.
+
+## The Claude Cowork route is described from vendor documentation
+
+Its pages were written from Anthropic's published description of where Claude Cowork executes and how it handles memory and skills, and revised as that description changed. Nobody has run them end to end. Two facts they depend on - that shell commands run in a Linux VM rather than on the host, and that local MCP servers run only in a local desktop session - are the vendor's statements, not this repository's measurements.
 
 ## Human approval is necessary but not sufficient
 

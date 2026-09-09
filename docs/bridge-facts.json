@@ -98,6 +98,12 @@
       "CoworkConfig/Skills/gamma-tango/SKILL.md",
       "CoworkConfig/Skills/playwright-skill/SKILL.md",
       "docs/setup.md",
+      "docs/setup-macos.md",
+      "docs/install/README.md",
+      "docs/install/copilot-cowork.md",
+      "docs/install/claude-cowork.md",
+      "docs/install/claude-cowork-windows.md",
+      "docs/install/claude-cowork-mac.md",
       "CoworkConfig/README.md"
     ],
     "posix_launcher_dir": "Startup/posix"

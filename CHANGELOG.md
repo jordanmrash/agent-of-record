@@ -5,6 +5,24 @@ keeps the full commit history; each entry here summarizes one publication.
 
 ## Unreleased
 
+- **The Claude Cowork route installs only what that host lacks.** Read against
+  Anthropic's published description of Claude Cowork: in a local session its
+  agent loop is native but every shell command runs in a Linux VM isolated from
+  the host, so the approved batch executor is the only path from a session to
+  the operating system - and the one required component. Both Claude Cowork
+  pages are rewritten around that: the browser and filesystem bridges become
+  optional, the package install for `supergateway` (an HTTP wrapper only the
+  tunnel route uses) is gone, the pages state that a local desktop session is
+  required because local MCP servers do not run in a cloud session, and they
+  say what to do with skills, instructions and memory on a host that already
+  has a memory. `install_check.py --route local` reports `supergateway` as
+  skipped rather than required. Three new pages: `docs/install/README.md`
+  (choose your route, with a host-by-host feature matrix),
+  `docs/install/copilot-cowork.md` and `docs/install/claude-cowork.md` (what the
+  repository adds to each host and what that lets you do). `AGENTS.md`,
+  `docs/quickstart.md`, `docs/limitations.md`, `llms.txt`, the README picker and
+  the banners on both hosted pages point at them, and the new pages join the
+  facts check's stale-phrase surfaces.
 - **The executor normalizes script line endings** (`batch-exec-server.js` 1.3.0).
   Before an approved script runs, its line terminators are rewritten in place
   to the platform's convention: an LF-only `.bat`/`.cmd` becomes CRLF on

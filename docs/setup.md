@@ -1,7 +1,9 @@
 # Setup from zero
 
 > Using **Claude Cowork** rather than Copilot Cowork? Follow [Claude Cowork on a Windows PC](install/claude-cowork-windows.md)
-> instead - it runs on the machine, so there is no tunnel, no connector package and no watchdog.
+> instead - it runs on the machine, so there is no tunnel, no connector package and no watchdog,
+> and it installs only the executor. [What this repository adds to Copilot Cowork](install/copilot-cowork.md)
+> explains what the pieces on this page are for.
 
 This is the Windows path. For macOS or Linux, follow
 [Setup on macOS and Linux](setup-macos.md); the two share every step that is not

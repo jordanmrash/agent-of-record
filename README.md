@@ -21,15 +21,19 @@ The foundation comes first. Applied tax, accounting, workpaper, research, review
 ## Set up on your machine
 
 Pick the product you use, then your platform. Each page is complete on its own — you
-should not need to read anything else to get running.
+should not need to read anything else to get running. The two hosts start from different
+places, so each route installs a different subset of this repository;
+[Choose your route](docs/install/README.md) compares them feature by feature.
 
 ### Copilot Cowork — runs in Microsoft's cloud and reaches the bridges through a dev tunnel
 
+- [What this repository adds to Copilot Cowork](docs/install/copilot-cowork.md)
 - [Windows PC](docs/setup.md) · operated daily
 - [Mac or Linux](docs/setup-macos.md) · not yet operated
 
-### Claude Cowork — runs on your machine and starts the bridges itself; no tunnel
+### Claude Cowork — runs on your machine in a local session and starts the bridges itself; no tunnel
 
+- [What this repository adds to Claude Cowork](docs/install/claude-cowork.md)
 - [Windows PC](docs/install/claude-cowork-windows.md) · not yet operated
 - [Mac](docs/install/claude-cowork-mac.md) · not yet operated
 
@@ -112,7 +116,7 @@ See [Measured Results and Honest Boundaries](docs/measured-results.md).
 
 ## The four bridges
 
-Cowork runs in a cloud container. The bridges provide narrow, governed access to the machine and Power Platform:
+Copilot Cowork runs in a cloud container and reaches the bridges through a dev tunnel; Claude Cowork starts them on the machine as stdio servers. Either way the bridges provide narrow, governed access to the machine and Power Platform:
 
 | Port | Bridge | Purpose | Implementation |
 |---|---|---|---|
