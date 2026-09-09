@@ -56,7 +56,7 @@ exec-server.cmd no longer launches `mcp-server-commands`. That package
 accepted arbitrary command strings and amounted to unrestricted local
 execution over a Public tunnel. It now launches:
 
-  Startup\CommandBridge\batch-exec-server.js     v1.1.0
+  Startup\CommandBridge\batch-exec-server.js     v1.3.0
   Startup\CommandBridge\README.txt               full operating notes
 
 Plain Node, already installed. No npx, no installs, no dependencies.

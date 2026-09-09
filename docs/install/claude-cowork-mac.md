@@ -139,10 +139,12 @@ optional). `Startup/posix/GO.sh` belongs to the **hosted** Mac setup: it opens V
 ## 5. Check they answer
 
 Step 2 already did this. Inside `release_check.py`, `exec_bridge_selftest.py` opens a live
-session with the executor and runs 31 cases in `.sh` form — the line that reads
-`EXEC_SELFTEST: OK - 31 of 31 cases passed on POSIX`. That run was proven on Linux on
-2026-09-07; yours is the first on macOS. If it passed, the executor answers and refuses
-what it should.
+session with the executor and runs 40 cases in `.sh` form — the line that reads
+`EXEC_SELFTEST: OK - 40 of 40 cases passed on POSIX`. That run was proven on Linux on
+2026-09-09 and by CI on `macos-latest`; yours is the first on a Mac someone uses. If it
+passed, the executor answers, refuses what it should, rewrites a CRLF `.sh` to LF before
+running it, and hands jobs `HOME`, `USER` and a PATH that includes `~/.local/bin` and
+Homebrew even when launched with none of them.
 
 ## 6. Connect your agent host
 

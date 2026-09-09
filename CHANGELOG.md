@@ -5,6 +5,31 @@ keeps the full commit history; each entry here summarizes one publication.
 
 ## Unreleased
 
+- **The executor normalizes script line endings** (`batch-exec-server.js` 1.3.0).
+  Before an approved script runs, its line terminators are rewritten in place
+  to the platform's convention: an LF-only `.bat`/`.cmd` becomes CRLF on
+  Windows, where cmd.exe mis-parses LF-only files silently, and a CRLF `.sh`
+  becomes LF on POSIX, where bash rejects the CR. Nothing but the terminators
+  changes, a file that already mixes both is left alone, and the result reports
+  what happened as `line_endings`. Scripts written by the filesystem bridge
+  (LF) no longer need a separate normalizing job before their first run.
+- **The executor hands jobs a complete environment.** It is still built by the
+  server alone - the MCP caller has no parameter that reaches it - but it now
+  carries what an interactive session of the same account would: on Windows the
+  profile variables (`USERPROFILE`, `APPDATA`, `LOCALAPPDATA`, `TEMP`,
+  `HOMEDRIVE`/`HOMEPATH`, `USERNAME`, the `ProgramFiles` family) derived from
+  the account when the launching process lacks them, and the user's PATH from
+  `HKCU\Environment` appended to the machine PATH; on POSIX `HOME`, `USER`,
+  `LOGNAME` and the conventional user bin directories. A bridge started by the
+  scheduled-task watchdog had been handing its jobs empty profile variables and
+  the machine PATH only, so per-user tools had to be located by hand inside
+  every script. The result reports `user_path_entries`.
+- `scripts/exec_bridge_selftest.py` grows from 31 to 40 cases: a script written
+  in the other platform's convention runs and is reported normalized, its
+  on-disk terminators are checked, a mixed file is proven untouched, and a
+  second server started with the profile variables stripped must still hand a
+  job every one of them. Run against the 1.2.0 server, seven of the new cases
+  fail.
 - **The Windows launchers derive their root.** `Startup/*.cmd` compute
   `COWORK_ROOT` from their own location (`%~dp0`), the way `Startup/posix/*.sh`
   already did, so a clone runs from any directory without personalization.

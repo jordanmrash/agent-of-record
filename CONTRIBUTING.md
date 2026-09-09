@@ -25,7 +25,7 @@ who runs it on a Mac every day. If that is you:
 
 - **Your branch, your evidence.** The gate runs on `macos-latest` in CI for every
   pull request, and `scripts/exec_bridge_selftest.py` starts the real command
-  bridge and tries thirty-one ways out of it in the platform's own script
+  bridge and tries forty ways out of it in the platform's own script
   language. A green macOS run is the claim "this works on a Mac", made by a
   machine rather than a person.
 - **Commit `install-results.json` from a real install** when you have one. It is
