@@ -27,6 +27,8 @@ That arc supports the repository's positioning: a public-accounting practitioner
 | 2026-08-12 | [Configuring a Private AI Workstation at Home](https://www.linkedin.com/pulse/configuring-private-ai-workstation-home-jordan-rash-cpa-aot2c/) | System-level comparison of local and hosted AI | Demonstrates infrastructure literacy and measured claims |
 | 2026-08-16 | [There Is No Such Thing as a Self-Building AI Tool](https://www.linkedin.com/pulse/thing-self-building-ai-tool-jordan-rash-cpa-vgqrc) | Ten-move build method: reference, scope, rules, tests, limits, ownership | Provides the build doctrine behind the skills |
 | 2026-08-21 | [I Taught My AI Assistant to Remember Its Own Mistakes. It Forgot to Load.](https://www.linkedin.com/pulse/i-taught-my-ai-assistant-remember-its-own-mistakes-forgot-rash-cpa-opwbc) | Learning architecture, failed retrieval, and comparison with agent research | Direct precursor to routed lessons and behavioral verification |
+| 2026-08 | *Sometimes it's about the journey, not the destination* | Building a Cowork skill as a method: intake, hardening, validation testing | The skill design standard and the self-test discipline behind every checker |
+| 2026-08 | *Nobody Argues With a Speed Bump* | Control in AI design: a refusal that is not negotiable at call time | The refusal contract of the approved batch executor |
 
 ## Editorial strengths
 

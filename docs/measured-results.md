@@ -54,10 +54,16 @@ Preserving these results is part of the evidence. A learning system that deletes
 - The figures describe this snapshot, not a benchmark against other agent systems.
 - The tests show internal consistency and specific behavior; they do not establish suitability for a particular professional engagement.
 
-## Near-term measurement targets
+## Measurement targets
+
+Two of the original five have shipped: the cross-surface facts check for bridge
+ports, roots and launchers (`scripts/facts_check.py`, v0.2.0) and one
+consolidated self-test runner whose results CI publishes for both platforms
+(`scripts/release_check.py --json`, v0.2.0 and v0.3.0). Still open:
 
 1. Behavioral verdicts for at least ten high-cost or high-risk rules.
-2. A shared cross-surface facts check for bridge ports, roots, and fallback policy.
-3. One consolidated self-test runner with published CI results.
-4. A common control contract for applied accounting skills.
-5. Synthetic demonstrations that expose normal, boundary, and failure behavior.
+2. A common control contract for applied accounting skills (v0.4).
+3. Synthetic demonstrations that expose normal, boundary, and failure behavior;
+   the control-loop example covers the normal and failure cases today.
+4. An `install_check.py` result from a machine other than the author's, on
+   either route, committed under `docs/evidence/`.

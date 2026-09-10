@@ -1,9 +1,33 @@
 # Changelog
 
-All notable changes to the published snapshot. The private working repository
-keeps the full commit history; each entry here summarizes one publication.
+All notable changes to the published repository. Through 0.3.0 each entry
+summarized one rebuilt snapshot; from 0.3.0 `main` keeps its history and each
+entry summarizes a release.
 
-## Unreleased
+## 0.3.1 - 2026-09-10
+
+Documentation. The pages that still described one host describe both routes,
+the counts agree with the shipped corpus, and the release metadata matches
+`main` before the repository is linked publicly.
+
+- **Both routes on every architecture page.** The README diagram and its Host
+  and Install rows, the `docs/architecture.md` system view and the opening of
+  `SECURITY.md` now state the hosted route (Copilot Cowork reaching the bridges
+  through a dev tunnel) and the local route (Claude Cowork starting the servers
+  as stdio processes) side by side, and the executor's file types read
+  `.bat`/`.cmd` on Windows and `.sh` on POSIX wherever they are named.
+- `CoworkConfig/README.md` counted 126 shipped lesson entries; the shipped
+  corpus has 123, as the README and `docs/measured-results.md` say.
+- `docs/measured-results.md` no longer lists as future targets the facts check
+  and the consolidated CI runner, both shipped in 0.2.0.
+- `dream-cycle` carries the attribution block every other skill carries, as
+  `CONTRIBUTING.md` promises for all of them.
+- `GitHubSetup/README.template.md`, a stale copy of the README whose
+  root-relative links did not resolve from its folder, is reduced to a note plus
+  the one table `facts_check.py` still reads from it: `README.md` is edited on
+  `main` directly.
+- The published-writing lists name the two newest articles.
+- `CITATION.cff` 0.3.1.
 
 - **The Claude Cowork route installs only what that host lacks.** Read against
   Anthropic's published description of Claude Cowork: in a local session its

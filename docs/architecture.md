@@ -4,20 +4,25 @@
 
 ```mermaid
 flowchart LR
-    subgraph Cloud["Microsoft 365 cloud"]
-        C[Cowork session]
+    subgraph Hosted["Hosted route - Copilot Cowork"]
+        C1[Session in Microsoft's cloud]
         SK[Skills and instructions]
         MEM[Pointer memory]
     end
 
-    subgraph Tunnel["Public reverse tunnel"]
+    subgraph Tunnel["Dev tunnel - hosted route only"]
         G1[8931]
         G2[8932]
         G3[8933]
         G4[8934]
     end
 
-    subgraph Machine["Windows machine"]
+    subgraph Local["Local route - Claude Cowork"]
+        C2[Local desktop session]
+        VM[Linux VM where its shell and code run, sealed from the host]
+    end
+
+    subgraph Machine["The machine - Windows or macOS"]
         PW[Signed-in browser]
         FS[Allowed filesystem roots]
         JOB[Approved batch files]
@@ -27,16 +32,28 @@ flowchart LR
         GIT[Local working repository]
     end
 
-    C --> SK
-    C --> MEM
-    C --> G1 --> PW
-    C --> G2 --> FS
-    C --> G3 --> JOB
+    C1 --> SK
+    C1 --> MEM
+    C1 --> G1 --> PW
+    C1 --> G2 --> FS
+    C1 --> G3 --> JOB
+    C1 --> G4 --> FLOW
+    C2 --> VM
+    C2 -->|stdio| JOB
+    C2 -.->|stdio, optional| PW
+    C2 -.->|stdio, optional| FS
     JOB --> LOG
-    C --> G4 --> FLOW
     FS --> DEEP
     FS --> GIT
 ```
+
+Two routes reach the same machine. The hosted route needs everything in the
+tunnel column, because the session runs in a cloud that cannot see the machine.
+The local route needs none of it: the session starts the servers itself as stdio
+processes, and its own shell runs inside a virtual machine that cannot reach the
+host, which is why the approved batch executor is the one component that route
+requires. [Choose your route](install/README.md) states the difference host by
+host; the trust boundaries below are the same on both.
 
 ## Why four bridges remain separate
 
@@ -69,7 +86,7 @@ It does not accept a command, arguments, interpreter, working directory, environ
 Controls include:
 
 - Canonical containment under `CommandJobs`.
-- `.bat` and `.cmd` file types only.
+- `.bat` and `.cmd` on Windows, `.sh` on POSIX; no other file type.
 - Fixed timeout and output caps.
 - One concurrent job.
 - Closed standard input and hidden process window.

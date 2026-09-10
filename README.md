@@ -6,9 +6,9 @@
 |---|---|
 | **Status** | v0.3 - portable. Windows and macOS, with a contributor on the macOS side. `main` keeps its history from this release; changes arrive by pull request and the gate runs on both platforms in CI. Interfaces may still change between minor versions. |
 | **Platform** | Windows and macOS/Linux. The local layer is VS Code tasks over per-platform launchers - PowerShell and batch files on Windows, shell scripts under `Startup/posix/` elsewhere. The command bridge is one implementation with one refusal set, proven on whichever platform runs the gate. |
-| **Host** | The four bridges are standard MCP servers. Microsoft 365 Copilot Cowork is the client this repository was built and operated against; it is reached through a dev tunnel only because that client is cloud-hosted. Any MCP client that can start a local process can use the two own-code servers directly. |
+| **Host** | The four bridges are standard MCP servers. Microsoft 365 Copilot Cowork is the client this repository was built and operated against; it is reached through a dev tunnel only because that client is cloud-hosted. Any MCP client that can start a local process can use the two own-code servers directly; Claude Cowork, in a local desktop session, does exactly that with no tunnel - a route that is documented and not yet operated. |
 | **Runs without the host** | `python examples/synthetic-control-loop/run.py` - the control loop end to end, no tenant, no tunnel, no network. |
-| **Install** | [Setup from zero](docs/setup.md) (Windows) or [Setup on macOS and Linux](docs/setup-macos.md) - a bare machine to four reachable bridges and an installed configuration, with `scripts/install_check.py` proving it by completing a real MCP handshake against each bridge. `scripts/personalize.py` replaces every placeholder in one pass; each bridge ships its connector package under `Startup/Plugins/`. |
+| **Install** | [Choose your route](docs/install/README.md), then your platform: [Setup from zero](docs/setup.md) (Copilot Cowork, Windows), [Setup on macOS and Linux](docs/setup-macos.md), or the [Claude Cowork pages](docs/install/claude-cowork.md) - a bare machine to reachable bridges and an installed configuration, with `scripts/install_check.py` proving it by completing a real MCP handshake against each bridge. On the hosted route `scripts/personalize.py` replaces every placeholder in one pass and each bridge ships its connector package under `Startup/Plugins/`. |
 
 Professional work is adopting AI faster than it is developing the controls, operating models, and institutional knowledge needed to use it reliably.
 
@@ -72,7 +72,7 @@ This repository makes those questions concrete.
 
 ```mermaid
 flowchart TB
-    P[Accountable professional] --> C[Microsoft 365 Copilot Cowork]
+    P[Accountable professional] --> C[Agent host - Copilot Cowork in the cloud, or Claude Cowork on the machine]
 
     C --> S[Professional skills]
     C --> M[Governed memory]
@@ -193,6 +193,8 @@ Each applied skill is expected to define its inputs, evidence, deterministic cal
 
 The repository is the implementation behind a longer body of practitioner writing that began with tax-software process design and progressed into governed agents, memory, local infrastructure, and behavioral learning.
 
+- *Nobody Argues With a Speed Bump*
+- *Sometimes it's about the journey, not the destination*
 - [I Taught My AI Assistant to Remember Its Own Mistakes. It Forgot to Load.](https://www.linkedin.com/pulse/i-taught-my-ai-assistant-remember-its-own-mistakes-forgot-rash-cpa-opwbc)
 - [There Is No Such Thing as a Self-Building AI Tool](https://www.linkedin.com/pulse/thing-self-building-ai-tool-jordan-rash-cpa-vgqrc)
 - [Configuring a Private AI Workstation at Home](https://www.linkedin.com/pulse/configuring-private-ai-workstation-home-jordan-rash-cpa-aot2c/)
