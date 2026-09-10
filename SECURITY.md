@@ -3,9 +3,11 @@
 ## What this repository exposes
 
 Two of the four bridges are own code and run with the signed-in user's
-privileges on a real machine behind a public dev tunnel:
+privileges on a real machine. On the Copilot Cowork route they sit behind a
+public dev tunnel; on the Claude Cowork route the host starts them as local
+stdio processes and there is no tunnel:
 
-- **8933 approved batch executor** - runs a `.bat`/`.cmd` that already exists
+- **8933 approved batch executor** - runs a `.bat`/`.cmd` (Windows) or `.sh` (POSIX) that already exists
   under `CommandJobs`, by relative path only. The boundary is the folder and
   the file type, not the script contents: anything able to write into
   `CommandJobs` can cause execution on the next call. Treat write access to

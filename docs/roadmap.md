@@ -45,6 +45,9 @@ Released 2026-09-07.
 - Portable was pulled forward ahead of the applied-work contract because a
   contributor on a second platform needed it first. The contract, and the two
   verification items carried from v0.2, move to v0.4 unchanged.
+- 0.3.1: documentation release ahead of the first public link - both routes on
+  every architecture page, counts reconciled to the shipped corpus, attribution
+  completed, release metadata matched to `main`. Shipped 2026-09-10.
 
 ## v0.4: Applied-work contract
 

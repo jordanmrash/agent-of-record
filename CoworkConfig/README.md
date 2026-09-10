@@ -47,7 +47,7 @@ near-duplicate entry; `lesson_check.py` refuses an entry with no evidence tag.
 
 ## Starting with an empty corpus
 
-The shipped `cowork-lessons.md` (126 entries), the two memory files and the
+The shipped `cowork-lessons.md` (123 entries), the two memory files and the
 ledger are one operator's record. They cite his machine, his measurements and
 his decisions, with dates. Read them to see what a corpus looks like after
 weeks of daily use; do not operate under them, because an agent that loads
