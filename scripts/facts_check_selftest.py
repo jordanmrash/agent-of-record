@@ -101,8 +101,8 @@ CASES = [
     # only live lines, so a fixture that edits a comment proves nothing.
     ("a POSIX launcher starts the wrong server",
      lambda t: edit(t, "Startup/posix/flow-server.sh",
-                    'exec node "$COWORK_ROOT/Startup/FlowBridge/flow-mcp-server.js"',
-                    'exec node "$COWORK_ROOT/Startup/FlowBridge/some-other-server.js"'),
+                    'exec "$NODE_BIN" "$COWORK_ROOT/Startup/FlowBridge/flow-mcp-server.js"',
+                    'exec "$NODE_BIN" "$COWORK_ROOT/Startup/FlowBridge/some-other-server.js"'),
      r"does not start Startup/FlowBridge/flow-mcp-server\.js"),
     ("a POSIX launcher hard-codes a root instead of deriving it",
      lambda t: edit(t, "Startup/posix/pw-server.sh",
