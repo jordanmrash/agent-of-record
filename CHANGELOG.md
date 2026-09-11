@@ -4,6 +4,41 @@ All notable changes to the published repository. Through 0.3.0 each entry
 summarized one rebuilt snapshot; from 0.3.0 `main` keeps its history and each
 entry summarizes a release.
 
+## 0.3.2 - 2026-09-11
+
+Installable on a Mac in one command, and every POSIX launcher finds its own
+runtime rather than assuming the caller's PATH holds one.
+
+- **`Startup/posix/install-mac.sh`** - one command from the macOS Terminal:
+  it places the tree, installs Node without sudo when it is missing and pins
+  it in `cowork-env.sh`, creates the folders and sets the execute bits, runs
+  `release_check.py` and `install_check.py` in a real Terminal rather than an
+  agent's shell, completes an MCP handshake under a deliberately minimal PATH,
+  registers the executor in `claude_desktop_config.json` behind a dated backup,
+  and prints the steps only a person can do. `--verify` reads the desktop app's
+  own MCP logs and says whether the server was started; `--register` rewrites
+  only the config entry; `--replace` refreshes an existing tree while keeping
+  `CommandJobs`, `Outputs` and `cowork-env.sh`.
+- **Every POSIX launcher resolves its runtime.** A desktop app that starts a
+  launcher as a child process hands it a minimal PATH, which on macOS holds no
+  node, so `exec node` or a bare `npx` died with a command-not-found that only
+  the host's per-server log recorded. `exec-server.sh`, `pw-server.sh`,
+  `fs-server.sh` and `flow-server.sh` now prepend the folders node is installed
+  in, honour `COWORK_NODE` from `cowork-env.sh`, resolve `npx` beside a pinned
+  node, and exit 127 with a message naming the fix. The facts-check fixture for
+  a launcher pointed at the wrong server re-anchors on the new exec line.
+- **The Mac page says what the first run measured.** The executor, packaged as
+  a plugin because the Connectors dialog takes a remote URL only, installed and
+  enabled and never connected in a cloud chat, and the cause is not isolated
+  because nothing in that run executed on macOS itself. The page now names the
+  three routes that do accept a local stdio server, says to validate in the
+  machine's own Terminal because an agent's shell is a Linux VM that proves the
+  repository rather than the host, and keeps its `not yet operated` status.
+- `docs/install/claude-cowork-mac-quickstart.md`, the short version of that
+  page, and `docs/install/claude-cowork-mac-first-run.md`, the record of the
+  run itself.
+- `CITATION.cff` 0.3.2.
+
 ## 0.3.1 - 2026-09-10
 
 Documentation. The pages that still described one host describe both routes,
