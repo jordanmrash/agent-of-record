@@ -1,0 +1,120 @@
+# Claude Cowork on a Mac: the short version
+
+> **Status: not yet operated on a Mac someone uses.** The installer on this page was
+> exercised end to end against a stand-in copy of the tree in a Linux container, and
+> the launcher it ships was proven to start, refuse and report under a minimal PATH
+> there. The first run on a real Mac is yours. Whatever happens, send it back (step 5).
+
+One download, one command in Terminal, then a short list of clicks that only you can do.
+The long form of this page, with every design decision and every refusal the executor
+makes, is [claude-cowork-mac.md](claude-cowork-mac.md). You do not need it to install.
+
+## Before you start
+
+- A Mac, Apple silicon or Intel, macOS 13 or later.
+- The Claude desktop app installed and signed in. Cowork works in it.
+- About ten minutes. Nothing here needs an administrator password.
+
+## 1. Get the files
+
+Either download one file:
+
+1. Open the repository's **Releases** page and, under the newest release, click
+   **Source code (zip)**.
+2. In Finder, open Downloads and double-click the zip. You get a folder named
+   `agent-of-record-<version>`.
+
+Or, if you already use git, clone it:
+
+```bash
+git clone https://github.com/jordanmrash/agent-of-record.git ~/Documents/agent-of-record
+```
+
+## 2. Run the installer
+
+Open Terminal (Spotlight, type `Terminal`) and paste one line. For the download:
+
+```bash
+bash ~/Downloads/agent-of-record-*/Startup/posix/install-mac.sh
+```
+
+For a clone:
+
+```bash
+bash ~/Documents/agent-of-record/Startup/posix/install-mac.sh
+```
+
+It puts the tree at `~/Documents/agent-of-record`, checks for git, python3 and node
+(and fetches node into your home folder if the Mac has none), creates the job and
+output folders, runs the repository's own release gate and install check **on the Mac
+itself**, starts the executor the way the desktop app will and completes a handshake
+with it, and registers the executor in the Claude desktop app's own configuration file
+(keeping a dated backup). Every line it prints starts with `PASS`, `WARN` or `STOP`.
+
+Two things can interrupt it, and both are one click:
+
+- **A dialog offers to install the Command Line Tools.** Click Install, wait for it to
+  finish, then paste the same line again.
+- **It says Claude Desktop is not installed.** Install the app, open it once, then run
+  `bash ~/Documents/agent-of-record/Startup/posix/install-mac.sh --register`.
+
+It ends with a numbered list headed **THINGS ONLY YOU CAN DO**. The same list is saved
+at `~/Documents/agent-of-record/Outputs/agent-of-record-next-steps.txt`.
+
+## 3. The things only you can do
+
+1. Quit Claude completely (Claude menu, Quit Claude, or Cmd+Q) and open it again. It
+   reads its configuration only at launch.
+2. Start a **new** Cowork chat **in the desktop app** (choose Cowork in the message
+   box). A chat started on the web cannot reach this Mac.
+3. Click the **+** at the bottom of the message box, then **Connectors**. You should see
+   `cowork-batch-exec` with one tool, `run_batch_file`.
+4. Ask Claude: *Use run_batch_file to run hello-mac.sh*. Approve it when asked. The
+   result should name `~/Documents/agent-of-record/Outputs/Executor Test/result.txt`.
+5. The first time a job controls another application (AppleScript), macOS asks for
+   permission once. Click OK.
+
+## 4. If the connector is not there
+
+```bash
+bash ~/Documents/agent-of-record/Startup/posix/install-mac.sh --verify
+```
+
+This reads the desktop app's own log files and tells you which of two things happened:
+the app started the launcher and it died (the lines it prints say why, usually node or
+a path), or the app never tried to start it at all. Either way, copy that output into
+step 5. Do not edit the executor to get past it; a refusal is the control working.
+
+## 5. Send it back
+
+Open a pull request or an issue on the repository with:
+
+- the `RELEASE_CHECK:` and `INSTALL_CHECK:` lines from the installer's log
+  (`~/Documents/agent-of-record/CommandJobs/Logs/install-mac-<stamp>.log`),
+- the output of `--verify`, pass or fail,
+- your macOS version and the Claude desktop app version (Claude menu, About).
+
+Do **not** attach `install-results.json`. It names your machine; paste the summary
+lines instead. The status line at the top of this page changes only when a run like
+yours comes back.
+
+## Where things are
+
+| What | Where |
+|---|---|
+| The tree (tooling root) | `~/Documents/agent-of-record` |
+| Jobs the executor may run | `~/Documents/agent-of-record/CommandJobs/*.sh` |
+| What jobs produce | `~/Documents/agent-of-record/Outputs/` |
+| Installer and executor logs | `~/Documents/agent-of-record/CommandJobs/Logs/` |
+| Your machine's settings (gitignored) | `~/Documents/agent-of-record/Startup/posix/cowork-env.sh` |
+| The entry the installer wrote | `~/Library/Application Support/Claude/claude_desktop_config.json` |
+| What the desktop app logged | `~/Library/Logs/Claude/mcp.log` and `mcp-server-cowork-batch-exec.log` |
+
+## What the installer refuses to do
+
+- No `sudo`. If node is missing it goes into `~/.local/node`, checked against the
+  published checksum, never into a system folder.
+- No `curl | bash`. You download a file you can read, then run it.
+- Nothing outside the tooling root is written, except the Claude desktop app's
+  configuration file, and that is backed up with a date stamp first.
+- It never edits a check to make a run pass. A `STOP` line is a finding to report.

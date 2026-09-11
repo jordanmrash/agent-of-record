@@ -1,25 +1,39 @@
 # Claude Cowork on a Mac
 
-> **Status: not yet operated.** Written 2026-09-08 from the published files and revised
-> 2026-09-09 against Anthropic's published description of how Claude Cowork executes;
-> nobody has run this page end to end on a Mac. The POSIX launchers and the executor's
-> `.sh` form were proven in a Linux container and by CI on `macos-latest`; a Mac someone
-> uses has not been exercised. Steps marked *expected* describe what the design says should
-> happen. If you run it, open a pull request with your `install_check.py` result and any
-> correction — that is how this page becomes operated.
+> **Status: not yet operated.** Written 2026-09-08 from the published files, revised
+> 2026-09-09 against Anthropic's published description of how Claude Cowork executes, and
+> corrected 2026-09-11 after the first run on a Mac someone uses. That run stopped one step
+> short: the executor was registered and never connected (the note below says what is known;
+> [the first-run record](claude-cowork-mac-first-run.md) is the evidence). The POSIX
+> launchers and the executor's `.sh` form were proven in a Linux container and by CI on
+> `macos-latest`. Steps marked *expected* describe what the design says should happen. If
+> you run it, open a pull request with your `install_check.py` result and any correction —
+> that is how this page becomes operated. **If you just want it installed, use
+> [the short version](claude-cowork-mac-quickstart.md); this page is the long form.**
 
-> **A local desktop session is required.** Anthropic's *Claude Cowork architecture
-> overview* (read 2026-09-09) says sessions run in the cloud by default, that local
-> execution remains available for existing desktop deployments, and that local MCP
-> servers do not run in a cloud session. Every bridge on this page is a local MCP server.
-> A cloud session will follow every step and find no executor. On a managed device, the
-> MDM key `isLocalDevMcpEnabled` set to false disables local MCP servers outright.
-> `[verify: how the desktop app labels a local session, and whether a new install can
-> start one]`
+> **Where the executor runs, and what reaches it.** Anthropic's *Claude Cowork architecture
+> overview* says sessions run in the cloud by default, that local execution remains
+> available for existing desktop deployments, that local MCP servers do not run *in* a cloud
+> session, and that on a managed device the MDM key `isLocalDevMcpEnabled` set to false
+> disables them outright. Its page on surfaces says local connectors and plugins with local
+> MCP servers work *through the desktop app*, the same bridge a cloud session uses to reach
+> connected folders and the browser, and that the session has to be started in the desktop
+> app. Every bridge on this page is a local MCP server. On the first run (desktop app
+> 1.52386.0, a personal account, a fresh install) no local-session label or toggle was found
+> in the app; the chat was a cloud session bridged to the Mac; the executor, uploaded as a
+> plugin because the Connectors dialog takes a remote URL only, installed and enabled but
+> never connected; and the cause was not isolated, because nothing in that run executed on
+> macOS itself. Two suspects remain: the launcher was spawned with the minimal PATH a desktop
+> app hands its children and could not find `node` (this version of `exec-server.sh` finds
+> it and says so when it cannot), or plugin-bundled local servers need a session type a
+> fresh install does not offer. **Validate in the macOS Terminal, never in a Cowork chat: the
+> Cowork shell is a Linux VM, and a `PASS` there proves the repository, not the Mac.** The
+> Cowork sandbox also cannot reach github.com or the npm registry (its proxy answers 403),
+> so clone or download on the host.
 
-**How this configuration connects.** Claude Cowork runs on this machine. It starts each
-registered bridge itself as a stdio process and talks to it directly. There is no tunnel,
-nothing to make public, and nothing that has to keep running between sessions.
+**How this configuration connects.** The Claude desktop app on this machine starts each
+registered bridge as a stdio child process and brokers the session's calls to it. There is
+no tunnel, nothing to make public, and nothing that has to keep running between sessions.
 
 **Why this page installs one bridge, not four.** Claude Cowork already reads and writes
 the folders you connect, fetches the web, remembers across sessions and runs shell
@@ -38,9 +52,9 @@ you do is in [What this repository adds to Claude Cowork](claude-cowork.md).
 | Need | Notes |
 |---|---|
 | macOS 13 or later | Apple silicon or Intel. Every path is `$HOME`-relative; nothing requires root. |
-| Claude Cowork desktop app, in a **local** session | Able to add stdio MCP servers (see the note above). |
+| Claude desktop app, installed and signed in | Cowork runs in it. A stdio server is registered in its configuration file, not in the Connectors dialog (step 6). |
 | Git | Ships with the Xcode Command Line Tools: `xcode-select --install` |
-| Node.js 20 LTS or later | Runs the executor. `node --version` |
+| Node.js 20 LTS or later | Runs the executor. `node --version`. `install-mac.sh` fetches it into `~/.local/node`, without sudo, if the Mac has none. |
 | Python 3.10 or later | The scripts are invoked as `python`. On macOS that name may be missing — either alias it (`alias python=python3`) or substitute `python3` wherever this page says `python`. |
 | A Chromium browser | **Optional** — only if you register the browser bridge: Chrome by default, `COWORK_PW_BROWSER` to change. |
 | GitHub CLI | **Optional** — only for opening the pull request at the end. |
@@ -59,6 +73,11 @@ chmod +x Startup/posix/*.sh
 ```
 
 `<tooling root>` is yours to choose — step 3 says what the launchers derive from it.
+
+`Startup/posix/install-mac.sh` does steps 2, 3, 5, 9 and the by-hand half of step 6 in one
+run from the macOS Terminal, then prints the short list of things only you can do;
+[the short version](claude-cowork-mac-quickstart.md) is built around it. The rest of this
+page says what each step does and why.
 
 Run the gate **before** anything else: `release_check.py` must end with
 `RELEASE_CHECK: CLEAN (22 checks)`. On a fresh clone anything else means the tree is wrong
@@ -150,12 +169,30 @@ install the executor according to `AGENTS.md`. The install contract there is wri
 agent, and the launchers derive their own paths, so the agent should not need to be told
 where anything is. This is the claim v0.3 makes; running it is the test.
 
-**Option B — by hand.** In the host's connector settings, add the executor as a **stdio**
-server whose command is the launcher, and any optional bridge you want:
+**Option B — by hand.** The desktop app's Customize › Connectors › Add dialog takes a
+**remote URL only**; it has no field for a local command, so the executor cannot be
+registered there. Three routes do accept a local stdio server:
+
+1. **The configuration file**, which is what `install-mac.sh` writes. Settings › Developer ›
+   Edit Config opens `~/Library/Application Support/Claude/claude_desktop_config.json`. Add
+   the launcher under `mcpServers` with `command` `/bin/bash`, the launcher's absolute path
+   as its one argument, and an `env.PATH` that contains your `node` directory, then quit the
+   app completely and reopen it. Absolute paths, never `${HOME}`.
+2. **A plugin** uploaded under Customize › Plugins whose `.mcp.json` declares a `stdio`
+   server. Operated on the first run: it installs and enables, and in a cloud chat it did
+   not connect; the status note above says what is and is not known about why.
+3. **A desktop extension** (`.mcpb`) via Settings › Extensions › Advanced settings › Install
+   Extension.
+
+Registration is a step the person does on this host: a Cowork session has no tool that
+edits the app's configuration or its plugin list, which bounds Option A. Afterwards, in a
+Cowork chat started in the desktop app, the **+** button › Connectors lists the servers
+actually connected; `~/Library/Logs/Claude/mcp.log` and `mcp-server-<name>.log` say why one
+did not start, and `install-mac.sh --verify` reads them for you. The launchers to register:
 
 | Bridge | Command | Register it? |
 |---|---|---|
-| Approved batch executor | `<clone>/Startup/posix/exec-server.sh` | **Yes.** One tool: `run_batch_file`. Runs `.sh` only. Plain `node`, no dependencies, fetches nothing at start. |
+| Approved batch executor | `<clone>/Startup/posix/exec-server.sh` | **Yes.** One tool: `run_batch_file`. Runs `.sh` only. Plain `node`, no dependencies, fetches nothing at start. Finds `node` under the minimal PATH a desktop app passes (`COWORK_NODE` in `cowork-env.sh` wins) and says so on stderr when it cannot. |
 | Browser | `<clone>/Startup/posix/pw-server.sh` | Optional — a signed-in browser profile with traces to disk. Uses `npx -y`, so its **first** start downloads a package and needs the network. |
 | Filesystem | `<clone>/Startup/posix/fs-server.sh` | Optional — only for tool parity with the hosted route. Connect the clone as a folder instead and the host's own file tools cover it. |
 | Power Automate | `<clone>/Startup/posix/flow-server.sh` | Optional — needs a Power Platform tenant; refuses everything until configured. |
@@ -181,12 +218,14 @@ the wrong thing to operate under.
 
 **Skills.** Claude Cowork takes a `SKILL.md` you upload as your own skill (Customize ›
 Skills), or one delivered by a plugin; skills installed from its directory are view-only.
-Upload `self-improvement` first — its scripts are host-agnostic and the corpus depends on
-them — then whichever bridge skill matches a bridge you registered. The shipped skills
-address the bridges by the Copilot host's connector ids and describe `.bat` jobs on a
-Windows layout; read `.bat` as `.sh`. Their host-adapter sections are issue #6 work, so
-until then read them as reference. `[verify: the uploader tolerates the skills' `cowork:`
-and `metadata:` frontmatter keys; where it caps a description]`
+The corpus depends on `self-improvement`, and its *scripts* are host-agnostic, but its
+SKILL.md is not: the prose names OneDrive paths, `.bat` jobs, `C:\Users\YOURUSER` and the
+8932 bridge, so uploading it as-is hands the host wrong operating instructions. The bridge
+skills have the same problem, addressing the bridges by the Copilot host's connector ids
+and describing `.bat` jobs on a Windows layout. Their host-adapter sections are issue #6
+work, `self-improvement` included; until then read all of them as reference and upload
+none. `[verify: the uploader tolerates the skills' `cowork:` and `metadata:` frontmatter
+keys; where it caps a description]`
 
 **Instructions.** `copilot-instructions.md` is the Copilot host's file and has no
 equivalent here *(expected)*. It carries the lessons digest, and that digest is also
@@ -222,7 +261,12 @@ stdio MCP server and completes a handshake — not a test that a file exists —
 runtime, enforces the 1024-character cap on skill descriptions, and runs the corpus checks.
 `--route local` records `supergateway` as skipped rather than required: this route never
 starts it. Each `FAIL` line names its own remedy. Read the JSON before deciding anything
-works: a bridge that starts but fails its handshake is not installed.
+works: a bridge that starts but fails its handshake is not installed. Run it from the macOS
+Terminal, not from a Cowork chat: on the first run it came back `CLEAN` inside the agent's
+Linux VM while the executor had never started on the Mac, because that shell is not the
+Mac. `install-mac.sh` runs it in the right place and logs to `CommandJobs/Logs/`, then
+starts the executor the way the desktop app does, with a minimal PATH, and completes a
+handshake with it.
 
 Do not commit `install-results.json`. It names your machine, and `.gitignore` excludes it
 at the repo root. A redacted, committable form is planned (issue #6, deliverable 6);
@@ -258,7 +302,7 @@ until it exists, paste the result into your pull-request description instead.
 - **macOS asks before a script controls another application** *(expected, not measured)*.
   The first `osascript` that targets an application triggers an Automation permission
   prompt in System Settings › Privacy & Security, attributed to the process that launched
-  the bridge — the Claude desktop app in a local session. A job cannot answer it; grant it
+  the bridge — the Claude desktop app. A job cannot answer it; grant it
   once by hand, per target application. UI scripting needs Accessibility permission the
   same way, and an application must be able to run in your logged-in session.
 - `public_scan.py` refuses a tree containing `Startup/posix/cowork-env.sh` or a
@@ -269,3 +313,7 @@ until it exists, paste the result into your pull-request description instead.
   executor is the only host path, which is the point of registering it.
 - No Microsoft 365 surface. Skills that assume mail, calendar, Teams or SharePoint tools
   will not find them here.
+- `install-mac.sh` never uses `sudo` or `curl | bash`, writes nothing outside the tooling
+  root except the desktop app's own configuration file (backed up with a date stamp first),
+  and never edits a check to make a run pass. If it stops, the `STOP` line is a finding to
+  report.
