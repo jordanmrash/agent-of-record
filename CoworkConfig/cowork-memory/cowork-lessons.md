@@ -1433,20 +1433,6 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 - **Evidence:** measured - both controls run live on 2026-09-03 against the same rule; the asking control passed and the watching control failed, changing the verdict from INERT to EFFECTIVE.
 - **Hits:** 1
 - **Distinct-from:** `nightly-constant-reported-as-a-measurement` - that one is a number nothing writes. This one is a number that IS computed, from arms that are not comparable.
-## Contradictions — stored memories that proved wrong
-
-### The 8933 environment is PARTIALLY stripped — PATH is intact
-- **Pattern-Key:** bridge-8933-env-partially-stripped
-- **Supersedes key:** bridge-8933-stripped-environment
-- **Date:** 2026-08-20
-- **Trigger:** contradiction
-- **Rule:** 8933 does not inherit a working directory, so start every job with `cd /d <repo>`. PATH is intact and bare interpreter names resolve; only user-profile variables are empty.
-- **Delivered-to:** command-bridge
-- **Failed:** Generalizing the 2026-08-18 finding ("the 8933 environment is stripped") to PATH, and flagging a job that used bare `powershell.exe` as broken. It was not broken.
-- **Why:** The original finding was about USER-PROFILE variables — `%LOCALAPPDATA%` expanded to empty. That is still true. PATH was never tested, and the word "stripped" was carried across to it.
-- **Worked:** A read-only probe: `echo %PATH%`, `where powershell.exe`, and a bare `powershell.exe -NoProfile -Command` invocation. All three passed — System32, PowerShell, Git, node and Python all resolve. So bare interpreter names are fine; hard-coded absolute paths remain necessary only for anything under a user profile. What 8933 does NOT inherit is the WORKING DIRECTORY, which is why `cd /d <repo>` stays mandatory at the top of every job.
-- **Evidence:** measured — probe output read
-- **See also:** bridge-8933-arg-name, bridge-8933-user-path-not-inherited
 
 ### `where <tool>` in an 8933 job misses every per-user installed tool
 - **Pattern-Key:** bridge-8933-user-path-not-inherited
@@ -1479,6 +1465,87 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 - **Distinct-from:** verification-scoped-away-from-the-risk - there a check's SCOPE excludes the failure it was written to catch. Here the scope is exactly right and the check runs on exactly the right data; what fails is the INDEPENDENCE of the control it compares against.
 - **Dispositioned:** 2026-09-01 close, by a different session from the one that wrote this entry, derived from its own Why line rather than independent diagnosis - the author should confirm. RESOLVED 2026-09-03 (DC-2026-09-03-POINTER-007): the two See-also keys were dangling and are now repointed by SUBSTANCE - `lesson-check-clean-clusters-were-false` was a memory key, never a Pattern-Key, and its substance is `verifier-warns-on-proxy-not-the-defect`; `gate-selftest-needs-negative-control` resolves to `verifier-ignores-structural-diff`. The same dangling name was also cited in the Distinct-from of `enforcer-encodes-the-superseded-rule`, which lesson_check does not validate, and was corrected in the same pass.
 - **See also:** verifier-warns-on-proxy-not-the-defect, verifier-ignores-structural-diff
+
+### Renaming a client is not sanitizing its data
+- **Pattern-Key:** git-renaming-is-not-sanitizing
+- **Date:** 2026-08-31
+- **Trigger:** near-miss
+- **Rule:** Before stripping a client name, check whether the CONTENT is also client-specific. If the file's substance is the client's work product, renaming is concealment rather than sanitization - stop and put the decision to the owner.
+- **Delivered-to:** git-bridge
+- **Hits:** 1
+- **Failed:** Nothing shipped, which is the only reason this is a near-miss. Seven occurrences of one client name were genericized across three memory files - correctly, because there the name was decoration on lessons about process. The next move, already queued and about to run, was to apply the identical treatment to 41 occurrences of a SECOND client name in `je-builder`, `alteryx-to-python` and `cowork-alteryx-conversion.md`.
+- **Why:** The two cases are indistinguishable to a grep and are opposites in substance. In the first, deleting the name lost nothing - the lesson taught a process and the client was incidental. In the second the files ARE the engagement's work product: account-code mappings and legal-entity structure, not a client name that merely appears in them. Removing the header word leaves every mapping in place while making the tree READ as sanitized, so the next audit returns a clean grep and the exposure becomes invisible. A cosmetic fix to a disclosure problem is worse than no fix, because it retires the signal that would have prompted a real one.
+- **Worked:** Stopped before editing and put three options to Jordan - leave it as engagement work in its sanctioned location, split the generic taxonomy from an engagement-local mappings file, or rebuild the mappings as illustrative examples. The test to apply: is the name DECORATION on generic content, or the LABEL on client content? Decoration can be genericized freely; a label is the owner's call.
+- **Evidence:** measured - 41 occurrences located across 3 skills and 1 memory file by scoped findstr, with the file and line of each; none edited
+- **See also:** git-deletion-does-not-sanitize-history, cleanup-quarantine-instead-of-delete
+
+### A recursive scan of the OneDrive tree is a download, not a search
+- **Pattern-Key:** onedrive-recursive-scan-hydrates-tree
+- **Date:** 2026-09-01
+- **Trigger:** failure
+- **Rule:** Never recurse the Cowork tree to READ file CONTENTS - not in a PC job, and not as a session-side grep of the `/mnt/user-config/` mount, which is the same tree and hydrates the same way. Scope to named files or one folder. Walking metadata is cheap; opening contents is the download.
+- **Delivered-to:** local-file-bridge
+- **Hits:** 2
+- **Promotion:** COMPLETE - the second hit was answered by WIDENING the wording, not by adding a digest line. **Correcting what this line said when it was first written on 2026-09-01:** the rule is NOT in the always-on block. `digest-tiers.txt` classes it ENFORCED via `job_lint/onedrive-recursive` and deliberately holds it out of turn-1 context because a check is believed to refuse the mistake. It reaches a session through `lesson_gate.py preflight --surface files`, which is where it was in fact printed minutes before the hit. It was read and still missed, so the defect was the SCOPE of the sentence, not its reach - another copy would have changed nothing.
+- **Promoted-to:** digest-tiers.txt (ENFORCED tier, enforcer `job_lint/onedrive-recursive`); delivered per-surface by `lesson_gate.py preflight --surface files`, not by the always-on block
+- **Failed:** `Get-ChildItem -LiteralPath $root -Recurse -File -Include *.md,*.py,*.json,*.txt | Select-String` over `Documents\Cowork`, to find client-name occurrences. Ran 301,919 ms, was killed by the 300s job cap, and returned empty stdout - no answer at all after five minutes. **Hit 2, 2026-09-01, from the session side:** a recursive content grep from `/mnt/user-config` across `--include=*.md`, asked to confirm that every surface naming the gate receipt path agreed. Same tree, same hydration, no job involved - it was still running when the 90s wait expired and had to be killed unfinished.
+- **Why:** OneDrive files can be cloud-only placeholders. Enumerating and reading them forces hydration, so an operation that reads like local I/O becomes a download of every matched file in the tree. Nothing in the command signals this, and the cost scales with the size of the tree rather than the number of matches.
+- **Worked:** Named the three files already known to carry the term and used `findstr /n /i /c:`. 636 ms. Two later scans scoped to one skill folder ran in 561 ms and 1,375 ms. When the target set is genuinely unknown, walk one folder at a time rather than the root. Hit 2 was answered by grepping the three named files that actually state the path - the gamma-tango SKILL.md, the self-improvement SKILL.md and copilot-instructions.md - which returned at once. The target set was known the whole time; the recursion was laziness, not discovery.
+- **Evidence:** measured - 301,919 ms timeout with empty output, against 636 ms for the same question asked of named files. Hit 2 measured the same shape from the other side: the recursive content grep over the mount was killed unfinished past 90s, while the scoped three-file grep answered the identical question immediately
+- **See also:** onedrive-user-mount-read-lag, onedrive-cloud-to-laptop-lag
+
+### A checker that never ran exits non-zero exactly like one that found something
+- **Pattern-Key:** verifier-usage-error-reads-as-finding
+- **Date:** 2026-08-31
+- **Trigger:** failure
+- **Rule:** A job that calls a checker must prove the checker RAN, not merely that it exited non-zero. Assert its expected output appears - a usage, path or import error is indistinguishable from a real finding on the exit code alone.
+- **Delivered-to:** dream-cycle
+- **Hits:** 1
+- **Failed:** The genericize job ended with `python lesson_check.py` and no path argument. argparse printed `error: the following arguments are required: path` and exited 2. The guard behaved exactly as designed, reported `COWORK_RESULT: FAIL lesson-check-failed`, and instructed a restore from the pre-edit copies - when the edit had in fact succeeded and had already been verified three ways.
+- **Why:** Testing the exit code is right, and was the fix applied to two standing jobs the day before. But an exit code has two states and three causes: the corpus is bad, the corpus is clean, or the checker never executed. Collapsing the first and third produces a false alarm that points at the data when the defect is in the call.
+- **Worked:** Read the usage line, confirmed from the job's own earlier assertions that the edits were sound - 0 occurrences on re-read, line counts unchanged in all three files - then ran the standing `2026-08-30-preclose-verify.bat`, which invokes the checker with correct arguments. Exit 0, 91 entries, FAIL 0 WARN 0.
+- **Evidence:** measured - argparse exit 2 with a usage message, against exit 0 and a full report from the same checker called correctly minutes later
+- **See also:** verifier-pipe-masks-the-exit-code, cowork-close-reports-ok-on-failed-commit
+
+### A job that snapshots before mutating destroys its own rollback on re-run
+- **Pattern-Key:** artifact-rollback-overwritten-on-rerun
+- **Date:** 2026-08-31
+- **Trigger:** near-miss
+- **Rule:** Guard a job's pre-edit snapshot with an existence check. A job that copies originals aside and then mutates them is safe only on its FIRST run - re-running it overwrites the rollback with the already-mutated content.
+- **Hits:** 1
+- **Failed:** Nothing was lost, but the obvious recovery was the destructive one. After the genericize job failed on its final check, the instinct was to fix the argument and re-run it. That job's first action copies the three target files into `pre-edit\`. A re-run would have overwritten those originals with the already-edited versions, leaving no way back.
+- **Why:** The mutation itself is idempotent - replacing a token that is now absent changes nothing - and that masks the fact that the SNAPSHOT step is not. Judging a job safe to re-run from the safety of its main action skips the setup that runs before it.
+- **Worked:** Did not re-run it. Ran a separate verification job instead, leaving the pre-edit copies intact. The durable fix is an `if not exist` guard around the snapshot copy, so the first run's originals always win.
+- **Evidence:** inferred from the job text - the copy is unconditional and precedes the replacement, so a second run would overwrite the originals; deliberately not executed twice to confirm it
+- **See also:** cleanup-quarantine-instead-of-delete, artifact-deletion-reverts-after-verified-absent
+
+### Deadness is a property of the reference graph, not of the file
+- **Pattern-Key:** artifact-deadness-needs-consumer-grep
+- **Date:** 2026-08-31
+- **Trigger:** near-miss
+- **Rule:** Before moving or deleting a file, grep the files that would REFERENCE it and record the count. A filename-and-timestamp audit proves nothing about whether a file is dead.
+- **Hits:** 1
+- **Failed:** A filename-and-mtime audit listed `intercompany-eliminations\MANUAL INPUTS.xlsx` as dead residue and it reached the approved quarantine list. Reading `intercompany-eliminations\SKILL.md` showed Rule 2 names that exact file as one of two REQUIRED upfront build inputs. Quarantining it would have broken a working skill silently - the failure would have surfaced only at the next build, far from the cause.
+- **Why:** An audit that inspects only the candidate can never see its consumer, so a load-bearing input and abandoned residue score identically. Age and an unreferenced-looking name are properties of the file; being dead is a property of what points at it.
+- **Worked:** Grepped each candidate's owning `SKILL.md` for the candidate's filename before moving anything, and recorded the count. Three superseded drafts scored 0 references and were moved; `MANUAL INPUTS.xlsx` scored a required-input citation and stayed. The cleanup job then asserted its presence both BEFORE and AFTER the move, with a hard abort either way, so the guard survives the next run of the same job.
+- **Evidence:** measured - 0 references for `SS_SKILL v1.md`, `SS_SKILL v2.md` and the pre-approved-batch-executor draft; a required-input citation for `MANUAL INPUTS.xlsx`
+- **Distinct-from:** agent-recommends-edit-without-reading-file - that lesson says read the file you are about to CHANGE, and the file to read is the file you are acting on. Here you can read the candidate file completely, end to end, and still be wrong, because the evidence that it is load-bearing lives in a DIFFERENT file - the consumer that references it. Same instinct, different search target: one says read your subject, this one says find who depends on your subject. Kept separate on that basis, but they are close enough that if a third instance of either appears it should be logged as a hit on whichever it matches, not as a fourth key.
+- **See also:** agent-recommends-edit-without-reading-file, prune-list-counts-drift-from-names, cleanup-quarantine-instead-of-delete
+
+## Contradictions — stored memories that proved wrong
+
+### The 8933 environment is PARTIALLY stripped — PATH is intact
+- **Pattern-Key:** bridge-8933-env-partially-stripped
+- **Supersedes key:** bridge-8933-stripped-environment
+- **Date:** 2026-08-20
+- **Trigger:** contradiction
+- **Rule:** 8933 does not inherit a working directory, so start every job with `cd /d <repo>`. PATH is intact and bare interpreter names resolve; only user-profile variables are empty.
+- **Delivered-to:** command-bridge
+- **Failed:** Generalizing the 2026-08-18 finding ("the 8933 environment is stripped") to PATH, and flagging a job that used bare `powershell.exe` as broken. It was not broken.
+- **Why:** The original finding was about USER-PROFILE variables — `%LOCALAPPDATA%` expanded to empty. That is still true. PATH was never tested, and the word "stripped" was carried across to it.
+- **Worked:** A read-only probe: `echo %PATH%`, `where powershell.exe`, and a bare `powershell.exe -NoProfile -Command` invocation. All three passed — System32, PowerShell, Git, node and Python all resolve. So bare interpreter names are fine; hard-coded absolute paths remain necessary only for anything under a user profile. What 8933 does NOT inherit is the WORKING DIRECTORY, which is why `cd /d <repo>` stays mandatory at the top of every job.
+- **Evidence:** measured — probe output read
+- **See also:** bridge-8933-arg-name, bridge-8933-user-path-not-inherited
 
 ### Two memory stores exist and drift apart silently
 - **Pattern-Key:** memory-two-stores-drift
@@ -1611,72 +1678,6 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 - **Worked:** Read the job with `read_text_file` before relying on the stored scope, and let the commit stat prove it. Commit ac6d9ec carried all four scripts - `lesson_brief.py`, `lesson_brief_selftest.py`, `lesson_check.py`, `lesson_check_selftest.py` - 8 files, 245 insertions, and `git status --short` empty afterwards. Corrected the memory in the same pass, keeping the half still true (the PC's local OneDrive copy can lag a cloud write, and robocopy exit 0 means nothing was copied) and deleting the half that is not.
 - **Evidence:** measured - the robocopy line read verbatim from the job before the run, and all four scripts present in the commit stat afterwards
 - **See also:** git-repo-clean-not-dirty, onedrive-cloud-to-laptop-lag, bridge-devtunnel-declared-dead-without-reprobe
-
-### Renaming a client is not sanitizing its data
-- **Pattern-Key:** git-renaming-is-not-sanitizing
-- **Date:** 2026-08-31
-- **Trigger:** near-miss
-- **Rule:** Before stripping a client name, check whether the CONTENT is also client-specific. If the file's substance is the client's work product, renaming is concealment rather than sanitization - stop and put the decision to the owner.
-- **Delivered-to:** git-bridge
-- **Hits:** 1
-- **Failed:** Nothing shipped, which is the only reason this is a near-miss. Seven occurrences of one client name were genericized across three memory files - correctly, because there the name was decoration on lessons about process. The next move, already queued and about to run, was to apply the identical treatment to 41 occurrences of a SECOND client name in `je-builder`, `alteryx-to-python` and `cowork-alteryx-conversion.md`.
-- **Why:** The two cases are indistinguishable to a grep and are opposites in substance. In the first, deleting the name lost nothing - the lesson taught a process and the client was incidental. In the second the files ARE the engagement's work product: account-code mappings and legal-entity structure, not a client name that merely appears in them. Removing the header word leaves every mapping in place while making the tree READ as sanitized, so the next audit returns a clean grep and the exposure becomes invisible. A cosmetic fix to a disclosure problem is worse than no fix, because it retires the signal that would have prompted a real one.
-- **Worked:** Stopped before editing and put three options to Jordan - leave it as engagement work in its sanctioned location, split the generic taxonomy from an engagement-local mappings file, or rebuild the mappings as illustrative examples. The test to apply: is the name DECORATION on generic content, or the LABEL on client content? Decoration can be genericized freely; a label is the owner's call.
-- **Evidence:** measured - 41 occurrences located across 3 skills and 1 memory file by scoped findstr, with the file and line of each; none edited
-- **See also:** git-deletion-does-not-sanitize-history, cleanup-quarantine-instead-of-delete
-
-### A recursive scan of the OneDrive tree is a download, not a search
-- **Pattern-Key:** onedrive-recursive-scan-hydrates-tree
-- **Date:** 2026-09-01
-- **Trigger:** failure
-- **Rule:** Never recurse the Cowork tree to READ file CONTENTS - not in a PC job, and not as a session-side grep of the `/mnt/user-config/` mount, which is the same tree and hydrates the same way. Scope to named files or one folder. Walking metadata is cheap; opening contents is the download.
-- **Delivered-to:** local-file-bridge
-- **Hits:** 2
-- **Promotion:** COMPLETE - the second hit was answered by WIDENING the wording, not by adding a digest line. **Correcting what this line said when it was first written on 2026-09-01:** the rule is NOT in the always-on block. `digest-tiers.txt` classes it ENFORCED via `job_lint/onedrive-recursive` and deliberately holds it out of turn-1 context because a check is believed to refuse the mistake. It reaches a session through `lesson_gate.py preflight --surface files`, which is where it was in fact printed minutes before the hit. It was read and still missed, so the defect was the SCOPE of the sentence, not its reach - another copy would have changed nothing.
-- **Promoted-to:** digest-tiers.txt (ENFORCED tier, enforcer `job_lint/onedrive-recursive`); delivered per-surface by `lesson_gate.py preflight --surface files`, not by the always-on block
-- **Failed:** `Get-ChildItem -LiteralPath $root -Recurse -File -Include *.md,*.py,*.json,*.txt | Select-String` over `Documents\Cowork`, to find client-name occurrences. Ran 301,919 ms, was killed by the 300s job cap, and returned empty stdout - no answer at all after five minutes. **Hit 2, 2026-09-01, from the session side:** a recursive content grep from `/mnt/user-config` across `--include=*.md`, asked to confirm that every surface naming the gate receipt path agreed. Same tree, same hydration, no job involved - it was still running when the 90s wait expired and had to be killed unfinished.
-- **Why:** OneDrive files can be cloud-only placeholders. Enumerating and reading them forces hydration, so an operation that reads like local I/O becomes a download of every matched file in the tree. Nothing in the command signals this, and the cost scales with the size of the tree rather than the number of matches.
-- **Worked:** Named the three files already known to carry the term and used `findstr /n /i /c:`. 636 ms. Two later scans scoped to one skill folder ran in 561 ms and 1,375 ms. When the target set is genuinely unknown, walk one folder at a time rather than the root. Hit 2 was answered by grepping the three named files that actually state the path - the gamma-tango SKILL.md, the self-improvement SKILL.md and copilot-instructions.md - which returned at once. The target set was known the whole time; the recursion was laziness, not discovery.
-- **Evidence:** measured - 301,919 ms timeout with empty output, against 636 ms for the same question asked of named files. Hit 2 measured the same shape from the other side: the recursive content grep over the mount was killed unfinished past 90s, while the scoped three-file grep answered the identical question immediately
-- **See also:** onedrive-user-mount-read-lag, onedrive-cloud-to-laptop-lag
-
-### A checker that never ran exits non-zero exactly like one that found something
-- **Pattern-Key:** verifier-usage-error-reads-as-finding
-- **Date:** 2026-08-31
-- **Trigger:** failure
-- **Rule:** A job that calls a checker must prove the checker RAN, not merely that it exited non-zero. Assert its expected output appears - a usage, path or import error is indistinguishable from a real finding on the exit code alone.
-- **Delivered-to:** dream-cycle
-- **Hits:** 1
-- **Failed:** The genericize job ended with `python lesson_check.py` and no path argument. argparse printed `error: the following arguments are required: path` and exited 2. The guard behaved exactly as designed, reported `COWORK_RESULT: FAIL lesson-check-failed`, and instructed a restore from the pre-edit copies - when the edit had in fact succeeded and had already been verified three ways.
-- **Why:** Testing the exit code is right, and was the fix applied to two standing jobs the day before. But an exit code has two states and three causes: the corpus is bad, the corpus is clean, or the checker never executed. Collapsing the first and third produces a false alarm that points at the data when the defect is in the call.
-- **Worked:** Read the usage line, confirmed from the job's own earlier assertions that the edits were sound - 0 occurrences on re-read, line counts unchanged in all three files - then ran the standing `2026-08-30-preclose-verify.bat`, which invokes the checker with correct arguments. Exit 0, 91 entries, FAIL 0 WARN 0.
-- **Evidence:** measured - argparse exit 2 with a usage message, against exit 0 and a full report from the same checker called correctly minutes later
-- **See also:** verifier-pipe-masks-the-exit-code, cowork-close-reports-ok-on-failed-commit
-
-### A job that snapshots before mutating destroys its own rollback on re-run
-- **Pattern-Key:** artifact-rollback-overwritten-on-rerun
-- **Date:** 2026-08-31
-- **Trigger:** near-miss
-- **Rule:** Guard a job's pre-edit snapshot with an existence check. A job that copies originals aside and then mutates them is safe only on its FIRST run - re-running it overwrites the rollback with the already-mutated content.
-- **Hits:** 1
-- **Failed:** Nothing was lost, but the obvious recovery was the destructive one. After the genericize job failed on its final check, the instinct was to fix the argument and re-run it. That job's first action copies the three target files into `pre-edit\`. A re-run would have overwritten those originals with the already-edited versions, leaving no way back.
-- **Why:** The mutation itself is idempotent - replacing a token that is now absent changes nothing - and that masks the fact that the SNAPSHOT step is not. Judging a job safe to re-run from the safety of its main action skips the setup that runs before it.
-- **Worked:** Did not re-run it. Ran a separate verification job instead, leaving the pre-edit copies intact. The durable fix is an `if not exist` guard around the snapshot copy, so the first run's originals always win.
-- **Evidence:** inferred from the job text - the copy is unconditional and precedes the replacement, so a second run would overwrite the originals; deliberately not executed twice to confirm it
-- **See also:** cleanup-quarantine-instead-of-delete, artifact-deletion-reverts-after-verified-absent
-
-### Deadness is a property of the reference graph, not of the file
-- **Pattern-Key:** artifact-deadness-needs-consumer-grep
-- **Date:** 2026-08-31
-- **Trigger:** near-miss
-- **Rule:** Before moving or deleting a file, grep the files that would REFERENCE it and record the count. A filename-and-timestamp audit proves nothing about whether a file is dead.
-- **Hits:** 1
-- **Failed:** A filename-and-mtime audit listed `intercompany-eliminations\MANUAL INPUTS.xlsx` as dead residue and it reached the approved quarantine list. Reading `intercompany-eliminations\SKILL.md` showed Rule 2 names that exact file as one of two REQUIRED upfront build inputs. Quarantining it would have broken a working skill silently - the failure would have surfaced only at the next build, far from the cause.
-- **Why:** An audit that inspects only the candidate can never see its consumer, so a load-bearing input and abandoned residue score identically. Age and an unreferenced-looking name are properties of the file; being dead is a property of what points at it.
-- **Worked:** Grepped each candidate's owning `SKILL.md` for the candidate's filename before moving anything, and recorded the count. Three superseded drafts scored 0 references and were moved; `MANUAL INPUTS.xlsx` scored a required-input citation and stayed. The cleanup job then asserted its presence both BEFORE and AFTER the move, with a hard abort either way, so the guard survives the next run of the same job.
-- **Evidence:** measured - 0 references for `SS_SKILL v1.md`, `SS_SKILL v2.md` and the pre-approved-batch-executor draft; a required-input citation for `MANUAL INPUTS.xlsx`
-- **Distinct-from:** agent-recommends-edit-without-reading-file - that lesson says read the file you are about to CHANGE, and the file to read is the file you are acting on. Here you can read the candidate file completely, end to end, and still be wrong, because the evidence that it is load-bearing lives in a DIFFERENT file - the consumer that references it. Same instinct, different search target: one says read your subject, this one says find who depends on your subject. Kept separate on that basis, but they are close enough that if a third instance of either appears it should be logged as a hit on whichever it matches, not as a fourth key.
-- **See also:** agent-recommends-edit-without-reading-file, prune-list-counts-drift-from-names, cleanup-quarantine-instead-of-delete
 
 ## Open questions
 
