@@ -18,9 +18,14 @@ Exit codes:
 
 import argparse
 import json
+import os
 import re
 import sys
 from collections import defaultdict
+
+# lesson_brief lives beside this file and owns the tier predicate. Importing it
+# is deliberate: see digest_findings below.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 REQUIRED = ["Pattern-Key", "Date", "Trigger", "Failed", "Why", "Worked", "Evidence"]
 VALID_TRIGGERS = {"failure", "correction", "better-approach", "contradiction",
@@ -122,6 +127,19 @@ def check(text):
             add("FAIL", "misfiled_unknown",
                 f"Worked is UNKNOWN but it sits under '{e['section']}'.", e)
 
+        # The complement of the two checks above: a RESOLVED entry parked under Open
+        # questions, or a non-contradiction filed under Contradictions. Both are what
+        # "append at the end of the file" produces. Added 2026-09-08 after 4 + 7 such
+        # entries were found in a corpus this checker had passed clean.
+        if sec.startswith("open questions") and worked and not re.match(r"\s*\**UNKNOWN\b", worked, re.I):
+            add("FAIL", "misfiled_failure",
+                f"Worked is a real fix but it sits under '{e['section']}'. "
+                "Open questions holds only unresolved entries - move it to Failures.", e)
+        if sec.startswith("contradictions") and trig and trig != "contradiction":
+            add("FAIL", "misfiled_failure",
+                f"Trigger is '{trig}' but it sits under '{e['section']}'. "
+                "Only contradiction entries belong there - move it to Failures.", e)
+
         ev = f.get("Evidence", "")
         if ev and not re.search(r"measured|inferred|mixed|unverified|reported", ev, re.I):
             add("WARN", "evidence_unlabelled",
@@ -207,6 +225,80 @@ def check(text):
     return findings, entries
 
 
+# ---------------------------------------------------------------------------
+# Digest freshness - TIER-AWARE since 2026-09-11.
+#
+# The block carries the ALWAYS-ON tier only: repeats plus pins, minus anything
+# an automated check already enforces. The original check required EVERY
+# authored Rule to appear in it, which was correct until the 2026-08-31
+# tiering and reports `authored - always-on` missing every run afterwards - 71
+# of 109 on the corpus the day this was fixed, arithmetic that does not change
+# however current the digest is. Bare lesson_check exited 0 on the same bytes.
+#
+# The tier predicate is CALLED from lesson_brief.select_alwayson, never copied
+# here, so a future change to the tiering cannot leave this check behind. That
+# is the whole point: see lesson enforcer-encodes-the-superseded-rule, whose
+# third hit is this defect.
+# ---------------------------------------------------------------------------
+
+def digest_findings(entries, dtext, tiers_path=None):
+    """FAIL findings about the digest block. Separated from main() so the
+    selftest can drive it - it had no negative control for three weeks because
+    it lived inline and check() never saw it."""
+    out = []
+
+    def fail(code, message):
+        out.append({"level": "FAIL", "code": code, "message": message,
+                    "key": None, "line": None})
+
+    m = re.search(r"LESSON-DIGEST:BEGIN(.*?)LESSON-DIGEST:END", dtext, re.S)
+    if not m:
+        fail("digest_missing",
+             "No LESSON-DIGEST block found in the instructions file. "
+             "Regenerate it with digest_apply.py.")
+        return out
+    block = m.group(1)
+
+    try:
+        import lesson_brief
+    except ImportError as exc:
+        fail("digest_tiers_unavailable",
+             f"cannot import lesson_brief, which owns the tier predicate: {exc}. "
+             "This check cannot run - that is not the same as the digest being "
+             "clean.")
+        return out
+
+    path = tiers_path or lesson_brief.DEFAULT_TIERS
+    if not os.path.isfile(path):
+        fail("digest_tiers_missing",
+             f"no tiers file at {path}, so the always-on set cannot be "
+             "computed. Refusing to guess: with no PIN/ENFORCED data the set "
+             "is repeats-only, which is a DIFFERENT set, not the full one.")
+        return out
+
+    pins, enforced = lesson_brief.read_tiers(path)
+    adapted = []
+    for e in entries:
+        f = e["fields"]
+        hm = re.match(r"\s*(\d+)", f.get("Hits", ""))
+        adapted.append({"key": f.get("Pattern-Key"),
+                        "rule": f.get("Rule", "").strip(),
+                        "hits": int(hm.group(1)) if hm else 1})
+    ruled, keep = lesson_brief.select_alwayson(adapted, pins, enforced)
+
+    missing = [a["key"] for a in keep
+               if a["rule"][:60].rstrip() and a["rule"][:60].rstrip() not in block]
+    if missing:
+        fail("digest_stale",
+             f"{len(missing)} ALWAYS-ON Rule(s) are not in the instructions "
+             f"digest, so a rule that recurred or was pinned is not loading: "
+             f"{', '.join(m for m in missing[:5])}"
+             + (" ..." if len(missing) > 5 else "")
+             + f". {len(keep)} always-on of {len(ruled)} authored. "
+               "Regenerate with digest_apply.py.")
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("path")
@@ -237,32 +329,7 @@ def main():
                              "key": None, "line": None})
         else:
             import re as _re
-            m = _re.search(r"LESSON-DIGEST:BEGIN(.*?)LESSON-DIGEST:END", dtext, _re.S)
-            if not m:
-                findings.append({"level": "FAIL", "code": "digest_missing",
-                                 "message": "No LESSON-DIGEST block found in the "
-                                            "instructions file. Generate it with "
-                                            "lesson_brief.py --digest.",
-                                 "key": None, "line": None})
-            else:
-                block = m.group(1)
-                missing = []
-                for e in entries:
-                    rule = e["fields"].get("Rule", "").strip()
-                    if not rule:
-                        continue
-                    probe = rule[:60].rstrip()
-                    if probe and probe not in block:
-                        missing.append(e["fields"].get("Pattern-Key"))
-                if missing:
-                    findings.append({
-                        "level": "FAIL", "code": "digest_stale",
-                        "message": f"{len(missing)} authored Rule(s) are NOT in the "
-                                   f"instructions digest, so they load only if someone "
-                                   f"opens the archive: {', '.join(missing[:5])}"
-                                   + (" ..." if len(missing) > 5 else "")
-                                   + ". Regenerate with lesson_brief.py --digest.",
-                        "key": None, "line": None})
+            findings.extend(digest_findings(entries, dtext))
     fails = [f for f in findings if f["level"] == "FAIL"]
     warns = [f for f in findings if f["level"] == "WARN"]
     infos = [f for f in findings if f["level"] == "INFO"]
