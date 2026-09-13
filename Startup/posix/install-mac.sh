@@ -36,7 +36,9 @@
 # ============================================================
 set -euo pipefail
 
-SERVER_KEY="cowork-batch-exec"
+SERVER_KEY="aor-batch-exec"      # must not begin with "cowork"; that prefix is
+                                 # reserved by Claude Desktop and the entry is
+                                 # refused from Cowork/Code sessions at startup
 NODE_LINE_DEFAULT="v24.x"        # nodejs.org release line to fetch if the Mac has no node
 MIN_NODE_MAJOR=20
 MIN_PY_MINOR=10                  # 3.10
