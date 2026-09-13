@@ -4,6 +4,35 @@ All notable changes to the published repository. Through 0.3.0 each entry
 summarized one rebuilt snapshot; from 0.3.0 `main` keeps its history and each
 entry summarizes a release.
 
+## Unreleased
+
+Three bridges on a Mac, not one; the filesystem bridge pinned to a release this
+client can actually call; and the reserved-name entry the 0.3.2 installer left
+behind is retired on upgrade.
+
+- **Upgrading from 0.3.2 on a Mac.** The 0.3.2 installer registered the executor
+  under the name `cowork-batch-exec`. Claude Desktop reserves the `cowork` prefix
+  and refuses that entry at every launch, and because `install-mac.sh` merges
+  into `claude_desktop_config.json` rather than replacing it, upgrading alone left
+  the dead entry in place. `install-mac.sh --register` now retires it when it
+  points at an agent-of-record launcher, prints what it removed, and keeps the
+  dated backup it always took. A `cowork-batch-exec` that is not this
+  repository's is left alone with a warning. If you registered by hand, remove
+  the key yourself. The names are now `aor-batch-exec`, `aor-filesystem` and
+  `aor-playwright`.
+- **`install-mac.sh` registers all three bridges**, not only the executor, and
+  `--verify` reads the desktop app's logs for all three names. Before this a Mac
+  user who followed the quickstart ended up with one connector and no sign the
+  other two existed.
+- **`fs-server.sh` pins `@modelcontextprotocol/server-filesystem@2025.8.21`.**
+  Measured across twelve published releases: from 2025.11.25 onward the package
+  declares draft-07 output schemas on all 14 tools, and Claude Cowork supports
+  JSON Schema 2020-12 only, so an unpinned bridge handshakes, advertises 14 tools
+  and fails every call. 2025.8.21 is the last release with no output schemas and
+  carries the same 14 tools. `COWORK_FS_SERVER_VERSION` overrides the pin;
+  `docs/bridge-facts.json` records it as `posix_package_pin`. The Windows
+  launcher stays unpinned: the hosted route accepts draft-07.
+
 ## 0.3.2 - 2026-09-11
 
 Installable on a Mac in one command, and every POSIX launcher finds its own

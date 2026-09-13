@@ -331,6 +331,21 @@ if os.path.exists(cfg_path) and os.path.getsize(cfg_path) > 0:
         sys.stderr.write("claude_desktop_config.json is not a JSON object; not touching it.\n")
         sys.exit(3)
 servers = data.setdefault("mcpServers", {})
+# The installer before this release registered the executor as "cowork-batch-exec".
+# Claude Desktop reserves the "cowork" prefix and refuses that entry at every launch,
+# and because this merge keeps what it finds, an upgrade alone would leave it there
+# forever. Retire it when it is ours - an agent-of-record launcher, wherever the tree
+# lives now - and leave any other server of that name alone, saying so.
+LEGACY_KEY = "cowork-batch-exec"
+retired = None
+legacy = servers.get(LEGACY_KEY)
+if isinstance(legacy, dict):
+    legacy_args = legacy.get("args") or []
+    legacy_target = str(legacy_args[0]).replace("\\", "/") if legacy_args else ""
+    if legacy_target.endswith("/Startup/posix/exec-server.sh"):
+        retired = servers.pop(LEGACY_KEY)
+    else:
+        print(f"WARN  mcpServers.{LEGACY_KEY} exists but is not this repository's launcher; left alone: {legacy_target or legacy}")
 def build(launcher):
     return {
         "command": "/bin/bash",
@@ -343,7 +358,7 @@ def build(launcher):
     }
 wanted = {k: build(launcher) for k, launcher in launchers.items()}
 changed = [k for k, entry in wanted.items() if servers.get(k) != entry]
-if not changed:
+if not changed and retired is None:
     for k in wanted:
         print(f"      mcpServers.{k} already points at /bin/bash {wanted[k]['args'][0]} (unchanged)")
     sys.exit(10)
@@ -354,6 +369,9 @@ with open(cfg_path, "w", encoding="utf-8") as f:
 for k in wanted:
     verb = "wrote" if k in changed else "kept "
     print(f"      {verb} mcpServers.{k} -> /bin/bash {wanted[k]['args'][0]}")
+if retired is not None:
+    print(f"      retired mcpServers.{LEGACY_KEY}: the pre-upgrade name, which Claude Desktop refuses "
+          f"(reserved prefix); it pointed at {(retired.get('args') or [''])[0]}")
 PYEOF
   local rc=$?
   if [ $rc -eq 10 ]; then
