@@ -42,7 +42,7 @@ macOS itself. Nothing it does natively can run `osascript`, open an application,
 a preference on the Mac. The approved batch executor is the only path from a session to
 the host's `/bin/bash`, so it is the one required component, and with it come the job
 conventions, the release gate and the lessons machinery. The browser and filesystem
-bridges are optional here; the Power Automate bridge needs a tenant. What each part lets
+bridges are registered alongside it by `install-mac.sh`; the Power Automate bridge needs a tenant. What each part lets
 you do is in [What this repository adds to Claude Cowork](claude-cowork.md).
 
 ---
@@ -115,7 +115,7 @@ cp Startup/posix/cowork-env.example.sh Startup/posix/cowork-env.sh
 
 | Variable | Default | Sets |
 |---|---|---|
-| `COWORK_CONFIG_ROOT` | unset | Where the executor's operating-rules reminder reads the live corpus, and the filesystem bridge's third root if you register that bridge. If set but missing, `fs-server.sh` warns and starts with two roots. |
+| `COWORK_CONFIG_ROOT` | unset | Where the executor's operating-rules reminder reads the live corpus, and the filesystem bridge's third root. If set but missing, `fs-server.sh` warns and starts with two roots. |
 | `COWORK_PW_BROWSER` | `chrome` | `msedge`, `chromium` or `webkit` also work — browser bridge only. |
 | `COWORK_PW_PROFILE` | `$HOME/pw-sso-profile` | The browser bridge's persistent profile; created if absent. Sign in once with a test account. |
 | `COWORK_ROOT` | derived | Only to point the bridges at a different tree. |
@@ -130,10 +130,10 @@ cp Startup/posix/cowork-env.example.sh Startup/posix/cowork-env.sh
   (`#`, not `REM`, on POSIX) must resolve under `Outputs/` or the job is **refused**, never
   redirected. Jobs run as `/bin/bash <script>` with `HOME`, `USER` and a PATH that includes
   `~/.local/bin` and Homebrew; per-run logs go to `CommandJobs/Logs/`.
-- **Filesystem** (optional) — `fs-server.sh` passes `"$COWORK_ROOT"`, `"$HOME/Downloads"`
+- **Filesystem** (registered by the installer) — `fs-server.sh` passes `"$COWORK_ROOT"`, `"$HOME/Downloads"`
   and, if set and present, `"$COWORK_CONFIG_ROOT"` to the upstream server. That is the
   whole allowed list.
-- **Browser** (optional) — `pw-server.sh` runs `@playwright/mcp` with the browser and
+- **Browser** (registered by the installer) — `pw-server.sh` runs `@playwright/mcp` with the browser and
   profile above and writes to `$COWORK_ROOT/playwright-output`.
 
 ## 4. Start the bridges
@@ -192,9 +192,9 @@ did not start, and `install-mac.sh --verify` reads them for you. The launchers t
 
 | Bridge | Command | Register it? |
 |---|---|---|
-| Approved batch executor | `<clone>/Startup/posix/exec-server.sh` | **Yes.** One tool: `run_batch_file`. Runs `.sh` only. Plain `node`, no dependencies, fetches nothing at start. Finds `node` under the minimal PATH a desktop app passes (`COWORK_NODE` in `cowork-env.sh` wins) and says so on stderr when it cannot. |
-| Browser | `<clone>/Startup/posix/pw-server.sh` | Optional — a signed-in browser profile with traces to disk. Uses `npx -y`, so its **first** start downloads a package and needs the network. |
-| Filesystem | `<clone>/Startup/posix/fs-server.sh` | Optional — only for tool parity with the hosted route. Connect the clone as a folder instead and the host's own file tools cover it. |
+| Approved batch executor | `<clone>/Startup/posix/exec-server.sh` | **Yes** — registered as `aor-batch-exec`. One tool: `run_batch_file`. Runs `.sh` only. Plain `node`, no dependencies, fetches nothing at start. Finds `node` under the minimal PATH a desktop app passes (`COWORK_NODE` in `cowork-env.sh` wins) and says so on stderr when it cannot. |
+| Browser | `<clone>/Startup/posix/pw-server.sh` | **Yes** — registered as `aor-playwright`. A signed-in browser profile with traces to disk. Uses `npx -y`, so its **first** start downloads a package and needs the network. |
+| Filesystem | `<clone>/Startup/posix/fs-server.sh` | **Yes** — registered as `aor-filesystem`, pinned to `@modelcontextprotocol/server-filesystem@2025.8.21`. Measured 2026-09-13: every release from 2025.11.25 onward declares draft-07 output schemas on all 14 tools, and this client supports 2020-12 only, so an unpinned `npx -y` gives you a bridge that handshakes, lists 14 tools and fails every call. |
 | Power Automate | `<clone>/Startup/posix/flow-server.sh` | Optional — needs a Power Platform tenant; refuses everything until configured. |
 
 `docs/bridge-facts.json` records the `stdio_posix` entry for each bridge; the commands

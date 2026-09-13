@@ -83,7 +83,8 @@ at `~/agent-of-record/Outputs/agent-of-record-next-steps.txt`.
 2. Start a **new** Cowork chat **in the desktop app** (choose Cowork in the message
    box). A chat started on the web cannot reach this Mac.
 3. Click the **+** at the bottom of the message box, then **Connectors**. You should see
-   `aor-batch-exec` with one tool, `run_batch_file`.
+   three connectors: `aor-batch-exec` with one tool, `run_batch_file`; `aor-filesystem`;
+   and `aor-playwright`.
 4. Ask Claude: *Use run_batch_file to run hello-mac.sh*. Approve it when asked. The
    result should name `~/agent-of-record/Outputs/Executor Test/result.txt`.
 5. The first time a job controls another application (AppleScript), macOS asks for

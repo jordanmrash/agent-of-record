@@ -33,6 +33,7 @@
       "stateful": false,
       "implementation": "upstream",
       "package": "@modelcontextprotocol/server-filesystem",
+      "posix_package_pin": "2025.8.21",
       "roots": [
         "%COWORK_ROOT%",
         "%USERPROFILE%\\Downloads",

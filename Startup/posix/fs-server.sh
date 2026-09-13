@@ -66,4 +66,21 @@ if [ -n "${COWORK_CONFIG_ROOT:-}" ]; then
   fi
 fi
 
-exec "$NPX_BIN" -y @modelcontextprotocol/server-filesystem "${ROOTS[@]}"
+# Pinned, deliberately, and measured rather than assumed.
+#
+#   On 2026-09-13 every published release was asked for its tool list over stdio and
+#   its outputSchema dialect read. @modelcontextprotocol/server-filesystem declares
+#   draft-07 output schemas on ALL 14 tools from 2025.11.25 onward - 2025.11.25,
+#   2025.12.18, 2026.1.14, 2026.7.4, 2026.7.10 and 2026.8.31. Claude Cowork supports
+#   JSON Schema 2020-12 only, so with any of those this bridge starts, handshakes,
+#   advertises all 14 tools, and EVERY call fails. The handshake passing is what makes
+#   it dangerous: nothing looks wrong until a tool is used.
+#
+#   2025.8.21 is the last release with no output schemas at all, and it carries the
+#   same 14 tools. The Windows sibling (Startup/fs-server.cmd) is deliberately NOT
+#   pinned: the hosted Copilot route accepts draft-07 and is in daily use unpinned.
+#
+#   Unpin when upstream ships 2020-12 - and re-measure before believing it.
+FS_SERVER_VERSION="${COWORK_FS_SERVER_VERSION:-2025.8.21}"
+
+exec "$NPX_BIN" -y "@modelcontextprotocol/server-filesystem@${FS_SERVER_VERSION}" "${ROOTS[@]}"
