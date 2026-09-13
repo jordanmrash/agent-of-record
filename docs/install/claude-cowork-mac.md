@@ -227,6 +227,17 @@ work, `self-improvement` included; until then read all of them as reference and 
 none. `[verify: the uploader tolerates the skills' `cowork:` and `metadata:` frontmatter
 keys; where it caps a description]`
 
+**Building the skill plugin.** The repository now builds the artifact Claude Cowork
+installs: `python3 scripts/build_plugin.py --list` shows what would ship and what would
+stop the build; `python3 scripts/build_plugin.py` writes
+`Outputs/Skills Plugin/agent-of-record-skills.plugin`, a zip of
+`.claude-plugin/plugin.json` plus `skills/<name>/SKILL.md`, which you open and accept in
+the app. `CoworkConfig/plugin/.claude-plugin/plugin.json` is the source of truth for
+which skills ship and on which platforms. `--strict` fails the build while any skill
+declared for macOS still carries Windows-only text (`cd /d`, `reg query`, `C:\Users`,
+`.bat`, `devtunnel`, a bridge port); today that is eight of the eleven, so until that
+text is fixed the built plugin is for inspection, not installation.
+
 **Instructions.** `copilot-instructions.md` is the Copilot host's file and has no
 equivalent here *(expected)*. It carries the lessons digest, and that digest is also
 regenerated into every skill's `SKILL-LESSONS` block — which is how the rules reach this

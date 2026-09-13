@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json.schemastore.org/claude-plugin.json",
+  "name": "agent-of-record-skills",
+  "version": "0.4.0",
+  "description": "The agent-of-record skill set: bridge operation, memory, self-improvement and authoring skills for Claude Cowork on macOS and Windows.",
+  "author": {
+    "name": "Jordan Rash",
+    "url": "https://github.com/jordanmrash/agent-of-record"
+  },
+  "homepage": "https://github.com/jordanmrash/agent-of-record",
+  "license": "SEE LICENSE IN LICENSE",
+  "keywords": [
+    "cowork",
+    "mcp",
+    "bridges",
+    "agent-of-record"
+  ],
+  "_comment_skills": "Source of truth for what ships. Each entry names a directory under CoworkConfig/Skills/. 'platforms' is enforced by scripts/build_plugin.py --strict: a skill listed for macos that still contains Windows-only text fails the build.",
+  "skills": [
+    {
+      "name": "myvoice",
+      "platforms": [
+        "windows",
+        "macos"
+      ]
+    },
+    {
+      "name": "not-a-robot",
+      "platforms": [
+        "windows",
+        "macos"
+      ]
+    },
+    {
+      "name": "skill-menu",
+      "platforms": [
+        "windows",
+        "macos"
+      ]
+    },
+    {
+      "name": "persistent-memory",
+      "platforms": [
+        "windows",
+        "macos"
+      ]
+    },
+    {
+      "name": "self-improvement",
+      "platforms": [
+        "windows",
+        "macos"
+      ]
+    },
+    {
+      "name": "dream-cycle",
+      "platforms": [
+        "windows",
+        "macos"
+      ]
+    },
+    {
+      "name": "gamma-tango",
+      "platforms": [
+        "windows",
+        "macos"
+      ]
+    },
+    {
+      "name": "playwright-skill",
+      "platforms": [
+        "windows",
+        "macos"
+      ]
+    },
+    {
+      "name": "git-bridge",
+      "platforms": [
+        "windows",
+        "macos"
+      ]
+    },
+    {
+      "name": "command-bridge",
+      "platforms": [
+        "windows",
+        "macos"
+      ]
+    },
+    {
+      "name": "local-file-bridge",
+      "platforms": [
+        "windows",
+        "macos"
+      ]
+    }
+  ]
+}
