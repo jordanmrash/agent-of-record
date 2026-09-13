@@ -13,7 +13,22 @@ makes, is [claude-cowork-mac.md](claude-cowork-mac.md). You do not need it to in
 
 - A Mac, Apple silicon or Intel, macOS 13 or later.
 - The Claude desktop app installed and signed in. Cowork works in it.
-- About ten minutes. Nothing here needs an administrator password.
+- **Python 3.10 or later.** macOS ships 3.9.6, which the installer refuses, so unless
+  you have installed a newer one for something else you will need to. Check with
+  `python3 --version`. The quickest route is the installer from
+  [python.org](https://www.python.org/downloads/macos/) — note that its `.pkg` **does**
+  ask for an administrator password. If you would rather not give one, use a user-local
+  tool instead (`uv python install 3.12`, or `brew install python@3.12` on an existing
+  Homebrew), which does not.
+- About ten minutes. Nothing else here needs an administrator password.
+
+> **Do not put the tree in `~/Documents`, `~/Desktop` or `~/Downloads`.** macOS privacy
+> controls cover those folders, and the Claude desktop app starts the executor as a
+> child process that gets the app's permissions rather than yours. A tree there can
+> install cleanly and then fail at run time with `Operation not permitted`, while the
+> same script run from Terminal works — Terminal has its own grant. Nothing in that
+> failure names the cause. The installer defaults to `~/agent-of-record` and refuses a
+> protected folder unless you pass `--allow-protected-root`.
 
 ## 1. Get the files
 
@@ -27,7 +42,7 @@ Either download one file:
 Or, if you already use git, clone it:
 
 ```bash
-git clone https://github.com/jordanmrash/agent-of-record.git ~/Documents/agent-of-record
+git clone https://github.com/jordanmrash/agent-of-record.git ~/agent-of-record
 ```
 
 ## 2. Run the installer
@@ -41,10 +56,10 @@ bash ~/Downloads/agent-of-record-*/Startup/posix/install-mac.sh
 For a clone:
 
 ```bash
-bash ~/Documents/agent-of-record/Startup/posix/install-mac.sh
+bash ~/agent-of-record/Startup/posix/install-mac.sh
 ```
 
-It puts the tree at `~/Documents/agent-of-record`, checks for git, python3 and node
+It puts the tree at `~/agent-of-record`, checks for git, python3 and node
 (and fetches node into your home folder if the Mac has none), creates the job and
 output folders, runs the repository's own release gate and install check **on the Mac
 itself**, starts the executor the way the desktop app will and completes a handshake
@@ -56,10 +71,10 @@ Two things can interrupt it, and both are one click:
 - **A dialog offers to install the Command Line Tools.** Click Install, wait for it to
   finish, then paste the same line again.
 - **It says Claude Desktop is not installed.** Install the app, open it once, then run
-  `bash ~/Documents/agent-of-record/Startup/posix/install-mac.sh --register`.
+  `bash ~/agent-of-record/Startup/posix/install-mac.sh --register`.
 
 It ends with a numbered list headed **THINGS ONLY YOU CAN DO**. The same list is saved
-at `~/Documents/agent-of-record/Outputs/agent-of-record-next-steps.txt`.
+at `~/agent-of-record/Outputs/agent-of-record-next-steps.txt`.
 
 ## 3. The things only you can do
 
@@ -68,16 +83,16 @@ at `~/Documents/agent-of-record/Outputs/agent-of-record-next-steps.txt`.
 2. Start a **new** Cowork chat **in the desktop app** (choose Cowork in the message
    box). A chat started on the web cannot reach this Mac.
 3. Click the **+** at the bottom of the message box, then **Connectors**. You should see
-   `cowork-batch-exec` with one tool, `run_batch_file`.
+   `aor-batch-exec` with one tool, `run_batch_file`.
 4. Ask Claude: *Use run_batch_file to run hello-mac.sh*. Approve it when asked. The
-   result should name `~/Documents/agent-of-record/Outputs/Executor Test/result.txt`.
+   result should name `~/agent-of-record/Outputs/Executor Test/result.txt`.
 5. The first time a job controls another application (AppleScript), macOS asks for
    permission once. Click OK.
 
 ## 4. If the connector is not there
 
 ```bash
-bash ~/Documents/agent-of-record/Startup/posix/install-mac.sh --verify
+bash ~/agent-of-record/Startup/posix/install-mac.sh --verify
 ```
 
 This reads the desktop app's own log files and tells you which of two things happened:
@@ -90,7 +105,7 @@ step 5. Do not edit the executor to get past it; a refusal is the control workin
 Open a pull request or an issue on the repository with:
 
 - the `RELEASE_CHECK:` and `INSTALL_CHECK:` lines from the installer's log
-  (`~/Documents/agent-of-record/CommandJobs/Logs/install-mac-<stamp>.log`),
+  (`~/agent-of-record/CommandJobs/Logs/install-mac-<stamp>.log`),
 - the output of `--verify`, pass or fail,
 - your macOS version and the Claude desktop app version (Claude menu, About).
 
@@ -102,13 +117,13 @@ yours comes back.
 
 | What | Where |
 |---|---|
-| The tree (tooling root) | `~/Documents/agent-of-record` |
-| Jobs the executor may run | `~/Documents/agent-of-record/CommandJobs/*.sh` |
-| What jobs produce | `~/Documents/agent-of-record/Outputs/` |
-| Installer and executor logs | `~/Documents/agent-of-record/CommandJobs/Logs/` |
-| Your machine's settings (gitignored) | `~/Documents/agent-of-record/Startup/posix/cowork-env.sh` |
+| The tree (tooling root) | `~/agent-of-record` |
+| Jobs the executor may run | `~/agent-of-record/CommandJobs/*.sh` |
+| What jobs produce | `~/agent-of-record/Outputs/` |
+| Installer and executor logs | `~/agent-of-record/CommandJobs/Logs/` |
+| Your machine's settings (gitignored) | `~/agent-of-record/Startup/posix/cowork-env.sh` |
 | The entry the installer wrote | `~/Library/Application Support/Claude/claude_desktop_config.json` |
-| What the desktop app logged | `~/Library/Logs/Claude/mcp.log` and `mcp-server-cowork-batch-exec.log` |
+| What the desktop app logged | `~/Library/Logs/Claude/mcp.log` and `mcp-server-aor-batch-exec.log` |
 
 ## What the installer refuses to do
 

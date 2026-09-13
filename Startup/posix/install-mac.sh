@@ -31,6 +31,9 @@
 #                                     logs and say whether the executor connected
 #      install-mac.sh --register      only rewrite the Claude Desktop entry
 #      install-mac.sh --root DIR      use DIR as the tooling root
+#                                     (default ~/agent-of-record; NOT ~/Documents,
+#                                     which macOS privacy controls put out of the
+#                                     desktop app's reach -- see --allow-protected-root)
 #      install-mac.sh --replace       refresh an existing tooling root from
 #                                     this download (keeps jobs, outputs, env)
 # ============================================================
@@ -44,14 +47,20 @@ MIN_NODE_MAJOR=20
 MIN_PY_MINOR=10                  # 3.10
 
 MODE="install"
-TARGET_ROOT="${HOME}/Documents/agent-of-record"
+# NOT ~/Documents. That is a TCC-protected location: the desktop app spawns the
+# executor as a child process, children inherit the app's TCC grants, and the app
+# has none for Documents, so /bin/bash cannot read the launcher and the install is
+# dead on arrival. See check_root_reachable below.
+TARGET_ROOT="${HOME}/agent-of-record"
 REPLACE="no"
+ALLOW_PROTECTED="no"
 while [ $# -gt 0 ]; do
   case "$1" in
     --verify)   MODE="verify" ;;
     --register) MODE="register" ;;
     --root)     shift; TARGET_ROOT="${1:?--root needs a directory}" ;;
     --replace)  REPLACE="yes" ;;
+    --allow-protected-root) ALLOW_PROTECTED="yes" ;;
     -h|--help)  sed -n '2,40p' "$0"; exit 0 ;;
     *) echo "unknown option: $1 (try --help)" >&2; exit 64 ;;
   esac
@@ -106,6 +115,63 @@ looks_like_repo "$SRC_ROOT" || {
 }
 
 canon() { (cd "$1" 2>/dev/null && pwd -P) || printf '%s' "$1"; }
+
+# ---------- the tooling root has to be reachable BY THE DESKTOP APP ----------
+# The app starts the executor as a child process, and that child is subject to
+# macOS privacy controls for Documents, Desktop and Downloads. Terminal holds
+# its own grant, so a tree in one of those folders looks fine from a shell and
+# passes every check here -- and then the app's child cannot read exec-server.sh
+# and reports only "Operation not permitted", with nothing naming the cause.
+# Observed on macOS 26.6.2 with the tree at ~/Documents/agent-of-record.
+#
+# Runs BEFORE any placement: refusing after rsync has already copied the tree
+# into the protected folder is not refusing.
+check_root_reachable() {
+  local want="$1" p parent home
+  if [ -d "$want" ]; then
+    p="$(cd "$want" && pwd -P)"
+  else
+    parent="$(dirname "$want")"
+    while [ ! -d "$parent" ] && [ "$parent" != "/" ]; do parent="$(dirname "$parent")"; done
+    p="$(cd "$parent" 2>/dev/null && pwd -P)/$(basename "$want")"
+  fi
+  home="$(cd "$HOME" && pwd -P)"
+  case "${p#$home/}" in
+    Documents|Desktop|Downloads|Documents/*|Desktop/*|Downloads/*) ;;
+    *) return 0 ;;
+  esac
+  if [ "$ALLOW_PROTECTED" = "yes" ]; then
+    echo "WARN  $p is in a folder macOS protects; continuing because --allow-protected-root was given." >&2
+    return 0
+  fi
+  cat >&2 <<EOF
+STOP  the tooling root would be $p
+      ~/Documents, ~/Desktop and ~/Downloads are covered by macOS privacy
+      controls. The Claude desktop app starts the executor as a child process,
+      and that child gets the app's permissions, not yours -- so a tree here can
+      install cleanly and then fail at run time with "Operation not permitted",
+      while the same script run from Terminal works, because Terminal has its
+      own grant. Nothing in that failure names the cause.
+
+      Install somewhere unprotected instead:
+          bash "$0" --root "\$HOME/agent-of-record"
+
+      Already installed under one of these? Move the tree and re-register:
+          mv "$p" "\$HOME/agent-of-record"
+          bash "\$HOME/agent-of-record/Startup/posix/install-mac.sh" --register
+
+      To override -- only if you have granted the Claude app access to that
+      folder in System Settings > Privacy & Security > Files and Folders:
+          --allow-protected-root
+EOF
+  exit 70
+}
+
+if [ "$MODE" = "install" ]; then
+  check_root_reachable "$TARGET_ROOT"
+else
+  check_root_reachable "$SRC_ROOT"
+fi
 
 ROOT="$SRC_ROOT"
 if [ "$MODE" = "install" ]; then
