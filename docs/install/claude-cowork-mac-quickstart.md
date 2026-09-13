@@ -110,9 +110,11 @@ Open a pull request or an issue on the repository with:
 - the output of `--verify`, pass or fail,
 - your macOS version and the Claude desktop app version (Claude menu, About).
 
-Do **not** attach `install-results.json`. It names your machine; paste the summary
-lines instead. The status line at the top of this page changes only when a run like
-yours comes back.
+`install-results.json` is safe to attach: its `host` block carries only the OS name,
+release, machine type and Python version, and the checker replaces your home folder and
+config root with placeholders before writing it. `docs/evidence/README.md` says where it
+goes and how to name it. The status line at the top of this page changes only when a run
+like yours comes back.
 
 ## Where things are
 

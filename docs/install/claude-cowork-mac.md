@@ -279,9 +279,11 @@ Mac. `install-mac.sh` runs it in the right place and logs to `CommandJobs/Logs/`
 starts the executor the way the desktop app does, with a minimal PATH, and completes a
 handshake with it.
 
-Do not commit `install-results.json`. It names your machine, and `.gitignore` excludes it
-at the repo root. A redacted, committable form is planned (issue #6, deliverable 6);
-until it exists, paste the result into your pull-request description instead.
+`install-results.json` is written to be committed: its `host` block carries only the OS
+name, release, machine type and Python version, and the checker replaces your home
+folder and config root with `<home>` and `<config-root>` before writing. The root-level
+filename is gitignored so a private run never lands by accident; copy it into
+`docs/evidence/` under the name that folder's README gives and open a pull request.
 
 ## 10. What this setup refuses to do
 

@@ -128,7 +128,10 @@ const DIRECTIVE_RE = IS_WINDOWS
   ? /^\s*(?:REM|::)\s*COWORK_OUTPUT\s*[:=]\s*(.+?)\s*$/i
   : /^\s*#\s*COWORK_OUTPUT\s*[:=]\s*(.+?)\s*$/i;
 
-const SERVER_NAME      = 'cowork-batch-exec';
+/* The name the server gives itself in serverInfo and on stderr. Matches the
+ * SERVER_KEY install-mac.sh registers; the old value collided with the prefix
+ * Claude Desktop reserves, and a config entry under it is refused at launch. */
+const SERVER_NAME      = 'aor-batch-exec';
 const SERVER_VERSION   = '1.3.0';
 const DEFAULT_PROTOCOL = '2025-06-18';
 
@@ -1018,17 +1021,17 @@ try {
   realJobRoot();
   realOutputRoot();
 } catch (e) {
-  process.stderr.write(`[cowork-batch-exec] FATAL: required root unavailable: ${e.message}\n`);
+  process.stderr.write(`[${SERVER_NAME}] FATAL: required root unavailable: ${e.message}\n`);
   process.exit(1);
 }
 
 process.stderr.write(
-  `[cowork-batch-exec] v${SERVER_VERSION} ready. Tool: run_batch_file\n` +
-  `[cowork-batch-exec] scripts: ${realJobRoot()}\n` +
-  `[cowork-batch-exec] outputs: ${realOutputRoot()}\n` +
-  `[cowork-batch-exec] ${ALLOWED_EXT_TEXT} only, relative paths only, 300s timeout, ` +
+  `[${SERVER_NAME}] v${SERVER_VERSION} ready. Tool: run_batch_file\n` +
+  `[${SERVER_NAME}] scripts: ${realJobRoot()}\n` +
+  `[${SERVER_NAME}] outputs: ${realOutputRoot()}\n` +
+  `[${SERVER_NAME}] ${ALLOWED_EXT_TEXT} only, relative paths only, 300s timeout, ` +
   `5MB output caps, 1 concurrent job.\n` +
-  `[cowork-batch-exec] line endings normalised to the platform before a run; ` +
+  `[${SERVER_NAME}] line endings normalised to the platform before a run; ` +
   `job environment server-built and complete.\n`);
 
 let buf = '';

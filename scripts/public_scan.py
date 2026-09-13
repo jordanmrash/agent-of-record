@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import os
 import re
+import subprocess
 import sys
 from pathlib import Path
 
@@ -70,18 +71,58 @@ PROHIBITED_NAMES = {
 }
 
 
-def iter_files() -> list[Path]:
+def git_listed(root: Path) -> list[Path] | None:
+    """Every file git would let into a commit: tracked, plus untracked and not
+    ignored. None when git is unavailable or this is not a repository (a release
+    zip), in which case the caller walks the tree instead."""
+    try:
+        out = subprocess.run(
+            ["git", "-C", str(root), "ls-files", "-z", "--cached", "--others", "--exclude-standard"],
+            capture_output=True, check=False,
+        )
+    except OSError:
+        return None
+    if out.returncode != 0:
+        return None
+    return [root / p for p in out.stdout.decode("utf-8", "replace").split("\0") if p]
+
+
+def iter_files(targets: list[Path]) -> tuple[list[Path], str]:
+    """The files to scan and how they were chosen.
+
+    Before this the scan walked the whole tree, gitignored paths included, so a
+    run was refused on hits inside CommandJobs/Logs/*.json - files no commit
+    could carry - and the positional arguments were read by nobody. Now: the
+    git-listed set when git answers, else a walk; then narrowed to any paths
+    given on the command line."""
+    listed = git_listed(ROOT)
+    if listed is None:
+        mode = "walked (git unavailable)"
+        candidates = list(ROOT.rglob("*"))
+    else:
+        mode = "git-listed (ignored paths skipped)"
+        candidates = listed
     files: list[Path] = []
-    for path in ROOT.rglob("*"):
+    wanted = [t.resolve() for t in targets]
+    for path in candidates:
         if not path.is_file() or ".git" in path.parts or "__pycache__" in path.parts:
             continue
+        if wanted:
+            resolved = path.resolve()
+            if not any(resolved == w or w in resolved.parents for w in wanted):
+                continue
         files.append(path)
-    return files
+    return files, mode
 
 
 def main() -> int:
     findings: list[str] = []
-    files = iter_files()
+    targets = [ROOT / a if not Path(a).is_absolute() else Path(a) for a in sys.argv[1:]]
+    for t in targets:
+        if not t.exists():
+            print(f"PUBLIC_SCAN: path not found: {t}")
+            return 2
+    files, mode = iter_files(targets)
 
     for path in files:
         rel = path.relative_to(ROOT)
@@ -95,7 +136,8 @@ def main() -> int:
                 line = text.count("\n", 0, match.start()) + 1
                 findings.append(f"{label}: {rel}:{line}")
 
-    print(f"scanned {len(files)} files")
+    print(f"scanned {len(files)} files, {mode}"
+          + (f", under {', '.join(str(t.relative_to(ROOT)) if t.is_relative_to(ROOT) else str(t) for t in targets)}" if targets else ""))
     if findings:
         print(f"{len(findings)} finding(s):")
         for finding in findings:

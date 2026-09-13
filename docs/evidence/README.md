@@ -12,9 +12,18 @@ says a step works, a file here should show that it did.
 
 ## Contributing one
 
-1. Run `python scripts/install_check.py --json install-results.json` on the
-   installed machine. The root-level filename is gitignored so a private run
-   never lands by accident.
+1. Run the checker on the installed machine, naming the route the host uses:
+
+   ```bash
+   python3 scripts/install_check.py --route local --json install-results.json   # Claude Cowork, Mac or Windows
+   python  scripts/install_check.py --json install-results.json                 # Copilot Cowork on Windows (hosted)
+   ```
+
+   `--route` defaults to `hosted`, which needs the pinned supergateway, so a
+   Claude Cowork install checked without the flag reports
+   `FAIL supergateway installed` and writes a file with `"clean": false` -
+   a record of a failing install that never failed. The root-level filename is
+   gitignored so a private run never lands by accident.
 2. Read it. The `host` block names your OS and Python. The checker has already
    replaced your Cowork folder path with `<config-root>` and your home directory
    with `<home>` wherever either appeared, because the file is written to be
