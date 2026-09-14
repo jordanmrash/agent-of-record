@@ -35,14 +35,15 @@
 registered bridge as a stdio child process and brokers the session's calls to it. There is
 no tunnel, nothing to make public, and nothing that has to keep running between sessions.
 
-**Why this page installs one bridge, not four.** Claude Cowork already reads and writes
+**What this page installs, and why.** Claude Cowork already reads and writes
 the folders you connect, fetches the web, remembers across sessions and runs shell
 commands — in a Linux virtual machine under Apple's Virtualization framework, never on
 macOS itself. Nothing it does natively can run `osascript`, open an application, or change
 a preference on the Mac. The approved batch executor is the only path from a session to
 the host's `/bin/bash`, so it is the one required component, and with it come the job
 conventions, the release gate and the lessons machinery. The browser and filesystem
-bridges are optional here; the Power Automate bridge needs a tenant. What each part lets
+bridges are registered alongside it by `install-mac.sh`. The fourth bridge in this repository, Power Automate,
+is Copilot Cowork on Windows only and has no place on this route. What each part lets
 you do is in [What this repository adds to Claude Cowork](claude-cowork.md).
 
 ---
@@ -80,7 +81,7 @@ run from the macOS Terminal, then prints the short list of things only you can d
 page says what each step does and why.
 
 Run the gate **before** anything else: `release_check.py` must end with
-`RELEASE_CHECK: CLEAN (22 checks)`. On a fresh clone anything else means the tree is wrong
+`RELEASE_CHECK: CLEAN (24 checks)`. On a fresh clone anything else means the tree is wrong
 before you have changed a single file — stop and open an issue with the output rather
 than working around it. Do not adjust a check to make it pass.
 
@@ -115,7 +116,7 @@ cp Startup/posix/cowork-env.example.sh Startup/posix/cowork-env.sh
 
 | Variable | Default | Sets |
 |---|---|---|
-| `COWORK_CONFIG_ROOT` | unset | Where the executor's operating-rules reminder reads the live corpus, and the filesystem bridge's third root if you register that bridge. If set but missing, `fs-server.sh` warns and starts with two roots. |
+| `COWORK_CONFIG_ROOT` | unset | Where the executor's operating-rules reminder reads the live corpus, and the filesystem bridge's third root. If set but missing, `fs-server.sh` warns and starts with two roots. |
 | `COWORK_PW_BROWSER` | `chrome` | `msedge`, `chromium` or `webkit` also work — browser bridge only. |
 | `COWORK_PW_PROFILE` | `$HOME/pw-sso-profile` | The browser bridge's persistent profile; created if absent. Sign in once with a test account. |
 | `COWORK_ROOT` | derived | Only to point the bridges at a different tree. |
@@ -130,10 +131,10 @@ cp Startup/posix/cowork-env.example.sh Startup/posix/cowork-env.sh
   (`#`, not `REM`, on POSIX) must resolve under `Outputs/` or the job is **refused**, never
   redirected. Jobs run as `/bin/bash <script>` with `HOME`, `USER` and a PATH that includes
   `~/.local/bin` and Homebrew; per-run logs go to `CommandJobs/Logs/`.
-- **Filesystem** (optional) — `fs-server.sh` passes `"$COWORK_ROOT"`, `"$HOME/Downloads"`
+- **Filesystem** (registered by the installer) — `fs-server.sh` passes `"$COWORK_ROOT"`, `"$HOME/Downloads"`
   and, if set and present, `"$COWORK_CONFIG_ROOT"` to the upstream server. That is the
   whole allowed list.
-- **Browser** (optional) — `pw-server.sh` runs `@playwright/mcp` with the browser and
+- **Browser** (registered by the installer) — `pw-server.sh` runs `@playwright/mcp` with the browser and
   profile above and writes to `$COWORK_ROOT/playwright-output`.
 
 ## 4. Start the bridges
@@ -192,10 +193,9 @@ did not start, and `install-mac.sh --verify` reads them for you. The launchers t
 
 | Bridge | Command | Register it? |
 |---|---|---|
-| Approved batch executor | `<clone>/Startup/posix/exec-server.sh` | **Yes.** One tool: `run_batch_file`. Runs `.sh` only. Plain `node`, no dependencies, fetches nothing at start. Finds `node` under the minimal PATH a desktop app passes (`COWORK_NODE` in `cowork-env.sh` wins) and says so on stderr when it cannot. |
-| Browser | `<clone>/Startup/posix/pw-server.sh` | Optional — a signed-in browser profile with traces to disk. Uses `npx -y`, so its **first** start downloads a package and needs the network. |
-| Filesystem | `<clone>/Startup/posix/fs-server.sh` | Optional — only for tool parity with the hosted route. Connect the clone as a folder instead and the host's own file tools cover it. |
-| Power Automate | `<clone>/Startup/posix/flow-server.sh` | Optional — needs a Power Platform tenant; refuses everything until configured. |
+| Approved batch executor | `<clone>/Startup/posix/exec-server.sh` | **Yes** — registered as `aor-batch-exec`. One tool: `run_batch_file`. Runs `.sh` only. Plain `node`, no dependencies, fetches nothing at start. Finds `node` under the minimal PATH a desktop app passes (`COWORK_NODE` in `cowork-env.sh` wins) and says so on stderr when it cannot. |
+| Browser | `<clone>/Startup/posix/pw-server.sh` | **Yes** — registered as `aor-playwright`. A signed-in browser profile with traces to disk. Uses `npx -y`, so its **first** start downloads a package and needs the network. |
+| Filesystem | `<clone>/Startup/posix/fs-server.sh` | **Yes** — registered as `aor-filesystem`, pinned to `@modelcontextprotocol/server-filesystem@2025.8.21`. Measured 2026-09-13: every release from 2025.11.25 onward declares draft-07 output schemas on all 14 tools, and this client supports 2020-12 only, so an unpinned `npx -y` gives you a bridge that handshakes, lists 14 tools and fails every call. |
 
 `docs/bridge-facts.json` records the `stdio_posix` entry for each bridge; the commands
 above should match it exactly. If they do not, the facts file wins and this page is wrong.
@@ -206,7 +206,7 @@ The repo ships a complete configuration under `CoworkConfig/`:
 
 ```
 CoworkConfig/
-  Skills/<skill-name>/SKILL.md      eleven skills, the three bridge skills among them
+  Skills/<skill-name>/SKILL.md      ten skills, the three bridge skills among them
   copilot-instructions.md           standing instructions (the Copilot host's filename)
   cowork-memory/cowork-lessons.md   the lessons corpus, beside the memory files
   README.md                         which files are generated from which
@@ -216,16 +216,17 @@ Start with an **empty** corpus, as `CoworkConfig/README.md` describes. The shipp
 and memory files are one operator's record of one machine — the right thing to read and
 the wrong thing to operate under.
 
-**Skills.** Claude Cowork takes a `SKILL.md` you upload as your own skill (Customize ›
-Skills), or one delivered by a plugin; skills installed from its directory are view-only.
-The corpus depends on `self-improvement`, and its *scripts* are host-agnostic, but its
-SKILL.md is not: the prose names OneDrive paths, `.bat` jobs, `C:\Users\YOURUSER` and the
-8932 bridge, so uploading it as-is hands the host wrong operating instructions. The bridge
-skills have the same problem, addressing the bridges by the Copilot host's connector ids
-and describing `.bat` jobs on a Windows layout. Their host-adapter sections are issue #6
-work, `self-improvement` included; until then read all of them as reference and upload
-none. `[verify: the uploader tolerates the skills' `cowork:` and `metadata:` frontmatter
-keys; where it caps a description]`
+**Skills.** Build the repository's plugin; do not upload individual `SKILL.md` files:
+
+```bash
+python3 scripts/build_plugin.py --strict --platform macos
+```
+
+Open `Outputs/Skills Plugin/agent-of-record-skills-macos.plugin` in Claude, accept it,
+restart the app, and confirm `ListSkills` returns all ten repository skills. The same ten
+skills ship on Windows and macOS; each skill states the platform-specific launcher, path or
+job-script shape in the same instructions. A directory copy into `~/.claude/skills/` does
+nothing.
 
 **Instructions.** `copilot-instructions.md` is the Copilot host's file and has no
 equivalent here *(expected)*. It carries the lessons digest, and that digest is also
@@ -246,9 +247,9 @@ does.
 ## 8. Keep them running
 
 *Expected:* nothing to do. The host owns each bridge's lifetime, so there is no watchdog
-to install and no port to monitor. `Startup/posix/watchdog/install-launchd.sh` exists for
-the **hosted** Mac setup, where the bridges must stay up for a tunnel; do not install it
-here. If a bridge misbehaves, end the session and start a new one.
+to install and no port to monitor. The repository has no POSIX watchdog: Claude Cowork
+owns each stdio child's lifetime, while the hosted watchdog is Copilot Cowork on Windows
+only. If a bridge misbehaves, end the session and start a new one.
 
 ## 9. Prove it
 
@@ -256,7 +257,8 @@ here. If a bridge misbehaves, end the session and start a new one.
 python scripts/install_check.py --route local --config-root "<config root>" --json install-results.json
 ```
 
-`INSTALL_CHECK: CLEAN` is the finish line. The check starts each own-code bridge as a real
+`INSTALL_CHECK: CLEAN` is the finish line, and the servers section opens with
+`bridges in scope: 3 of 4` - the three this route has. The check starts each own-code bridge as a real
 stdio MCP server and completes a handshake — not a test that a file exists — checks the
 runtime, enforces the 1024-character cap on skill descriptions, and runs the corpus checks.
 `--route local` records `supergateway` as skipped rather than required: this route never
@@ -268,9 +270,11 @@ Mac. `install-mac.sh` runs it in the right place and logs to `CommandJobs/Logs/`
 starts the executor the way the desktop app does, with a minimal PATH, and completes a
 handshake with it.
 
-Do not commit `install-results.json`. It names your machine, and `.gitignore` excludes it
-at the repo root. A redacted, committable form is planned (issue #6, deliverable 6);
-until it exists, paste the result into your pull-request description instead.
+`install-results.json` is written to be committed: its `host` block carries only the OS
+name, release, machine type and Python version, and the checker replaces your home
+folder and config root with `<home>` and `<config-root>` before writing. The root-level
+filename is gitignored so a private run never lands by accident; copy it into
+`docs/evidence/` under the name that folder's README gives and open a pull request.
 
 ## 10. What this setup refuses to do
 

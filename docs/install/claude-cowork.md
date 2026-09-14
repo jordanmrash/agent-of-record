@@ -86,8 +86,9 @@ traces and screenshots to disk. Register it if you automate a site you are signe
 file tools the hosted route uses so shared skills and jobs behave identically; the host's
 own file tools cover ordinary work once the clone is a connected folder.
 
-**Optional — the Power Automate bridge.** Needs a Power Platform tenant; refuses every call
-until an environment is allowed in its configuration. Safe to leave out.
+**Not on this host — Power Automate.** The fourth bridge in this repository administers
+Power Platform flows and is Copilot Cowork on Windows only: this host cannot reach a tenant,
+and the bridge has no POSIX launcher. Nothing on this route registers it.
 
 **Not applicable here.** The dev tunnel, `supergateway`, the Ports panel, the connector
 packages, the watchdog, the personalizer, the pointer-tier memory conventions written for
@@ -96,9 +97,14 @@ reaches this host through the generated blocks in the skills instead.
 
 ## Skills on this host
 
-The shipped skills are written to the Copilot host: they address the bridges by that
-host's connector ids and describe OneDrive paths and `.bat` jobs. Their scripts work here;
-their prose is being given host-adapter sections (issue #6). Until then, install the
-`self-improvement` machinery and an empty corpus first, register the executor, and treat
-the bridge skills as reference rather than instruction. Whether the uploader tolerates the
-skills' extra frontmatter keys and where it caps a description are `[verify]`.
+Build the same ten-skill plugin for either platform:
+
+```bash
+python3 scripts/build_plugin.py --strict --platform macos     # Mac
+python  scripts\build_plugin.py --strict --platform windows  # Windows
+```
+
+Open the resulting `.plugin`, accept it, restart Claude, and confirm `ListSkills` returns
+all ten. Each `SKILL.md` is one portable instruction set: where a mechanism differs, the
+Windows and macOS forms are stated together. Do not copy the directory into
+`~/.claude/skills/`; that is not an installation.

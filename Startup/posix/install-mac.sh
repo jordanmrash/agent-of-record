@@ -17,7 +17,7 @@
 #       so the result is about the Mac and not about a sandbox
 #    6. starts the executor the way the desktop app will (a minimal
 #       PATH) and completes a real MCP handshake with it
-#    7. registers the executor in Claude Desktop's own config file,
+#    7. registers all three bridges in Claude Desktop's own config file,
 #       keeping a dated backup of that file
 #    8. drops a first job, hello-mac.sh, into CommandJobs/
 #    9. prints the short list of things only you can do, and saves it
@@ -29,27 +29,42 @@
 #      install-mac.sh                 full run (safe to repeat)
 #      install-mac.sh --verify        after you reopen Claude: read its MCP
 #                                     logs and say whether the executor connected
-#      install-mac.sh --register      only rewrite the Claude Desktop entry
+#      install-mac.sh --register      only rewrite the Claude Desktop entries
 #      install-mac.sh --root DIR      use DIR as the tooling root
+#                                     (default ~/agent-of-record; NOT ~/Documents,
+#                                     which macOS privacy controls put out of the
+#                                     desktop app's reach -- see --allow-protected-root)
 #      install-mac.sh --replace       refresh an existing tooling root from
 #                                     this download (keeps jobs, outputs, env)
 # ============================================================
 set -euo pipefail
 
-SERVER_KEY="cowork-batch-exec"
+SERVER_KEY="aor-batch-exec"      # must not begin with "cowork"; that prefix is
+                                 # reserved by Claude Desktop and the entry is
+                                 # refused from Cowork/Code sessions at startup
+FS_KEY="aor-filesystem"          # the other two bridges are registered as well: a Mac
+PW_KEY="aor-playwright"          # user who follows the quickstart should end up with
+                                 # three connectors, not one. Same "aor-" prefix, same
+                                 # reserved-name rule.
 NODE_LINE_DEFAULT="v24.x"        # nodejs.org release line to fetch if the Mac has no node
 MIN_NODE_MAJOR=20
 MIN_PY_MINOR=10                  # 3.10
 
 MODE="install"
-TARGET_ROOT="${HOME}/Documents/agent-of-record"
+# NOT ~/Documents. That is a TCC-protected location: the desktop app spawns the
+# executor as a child process, children inherit the app's TCC grants, and the app
+# has none for Documents, so /bin/bash cannot read the launcher and the install is
+# dead on arrival. See check_root_reachable below.
+TARGET_ROOT="${HOME}/agent-of-record"
 REPLACE="no"
+ALLOW_PROTECTED="no"
 while [ $# -gt 0 ]; do
   case "$1" in
     --verify)   MODE="verify" ;;
     --register) MODE="register" ;;
     --root)     shift; TARGET_ROOT="${1:?--root needs a directory}" ;;
     --replace)  REPLACE="yes" ;;
+    --allow-protected-root) ALLOW_PROTECTED="yes" ;;
     -h|--help)  sed -n '2,40p' "$0"; exit 0 ;;
     *) echo "unknown option: $1 (try --help)" >&2; exit 64 ;;
   esac
@@ -104,6 +119,63 @@ looks_like_repo "$SRC_ROOT" || {
 }
 
 canon() { (cd "$1" 2>/dev/null && pwd -P) || printf '%s' "$1"; }
+
+# ---------- the tooling root has to be reachable BY THE DESKTOP APP ----------
+# The app starts the executor as a child process, and that child is subject to
+# macOS privacy controls for Documents, Desktop and Downloads. Terminal holds
+# its own grant, so a tree in one of those folders looks fine from a shell and
+# passes every check here -- and then the app's child cannot read exec-server.sh
+# and reports only "Operation not permitted", with nothing naming the cause.
+# Observed on macOS 26.6.2 with the tree at ~/Documents/agent-of-record.
+#
+# Runs BEFORE any placement: refusing after rsync has already copied the tree
+# into the protected folder is not refusing.
+check_root_reachable() {
+  local want="$1" p parent home
+  if [ -d "$want" ]; then
+    p="$(cd "$want" && pwd -P)"
+  else
+    parent="$(dirname "$want")"
+    while [ ! -d "$parent" ] && [ "$parent" != "/" ]; do parent="$(dirname "$parent")"; done
+    p="$(cd "$parent" 2>/dev/null && pwd -P)/$(basename "$want")"
+  fi
+  home="$(cd "$HOME" && pwd -P)"
+  case "${p#$home/}" in
+    Documents|Desktop|Downloads|Documents/*|Desktop/*|Downloads/*) ;;
+    *) return 0 ;;
+  esac
+  if [ "$ALLOW_PROTECTED" = "yes" ]; then
+    echo "WARN  $p is in a folder macOS protects; continuing because --allow-protected-root was given." >&2
+    return 0
+  fi
+  cat >&2 <<EOF
+STOP  the tooling root would be $p
+      ~/Documents, ~/Desktop and ~/Downloads are covered by macOS privacy
+      controls. The Claude desktop app starts the executor as a child process,
+      and that child gets the app's permissions, not yours -- so a tree here can
+      install cleanly and then fail at run time with "Operation not permitted",
+      while the same script run from Terminal works, because Terminal has its
+      own grant. Nothing in that failure names the cause.
+
+      Install somewhere unprotected instead:
+          bash "$0" --root "\$HOME/agent-of-record"
+
+      Already installed under one of these? Move the tree and re-register:
+          mv "$p" "\$HOME/agent-of-record"
+          bash "\$HOME/agent-of-record/Startup/posix/install-mac.sh" --register
+
+      To override -- only if you have granted the Claude app access to that
+      folder in System Settings > Privacy & Security > Files and Folders:
+          --allow-protected-root
+EOF
+  exit 70
+}
+
+if [ "$MODE" = "install" ]; then
+  check_root_reachable "$TARGET_ROOT"
+else
+  check_root_reachable "$SRC_ROOT"
+fi
 
 ROOT="$SRC_ROOT"
 if [ "$MODE" = "install" ]; then
@@ -235,11 +307,17 @@ register_claude() {
     cp -p "$CLAUDE_CFG" "$CLAUDE_CFG.bak-$STAMP"
     info "backed up the existing config to $(basename "$CLAUDE_CFG").bak-$STAMP"
   fi
-  AOR_ROOT="$ROOT" AOR_KEY="$SERVER_KEY" AOR_NODE="$node_bin" AOR_NODE_DIR="$node_dir" AOR_CFG="$CLAUDE_CFG" \
+  AOR_ROOT="$ROOT" AOR_KEY="$SERVER_KEY" AOR_FS_KEY="$FS_KEY" AOR_PW_KEY="$PW_KEY" \
+  AOR_NODE="$node_bin" AOR_NODE_DIR="$node_dir" AOR_CFG="$CLAUDE_CFG" \
   "$PY" - <<'PYEOF'
 import json, os, sys
 cfg_path = os.environ["AOR_CFG"]
-root, key, node, node_dir = (os.environ[k] for k in ("AOR_ROOT", "AOR_KEY", "AOR_NODE", "AOR_NODE_DIR"))
+root, node, node_dir = (os.environ[k] for k in ("AOR_ROOT", "AOR_NODE", "AOR_NODE_DIR"))
+launchers = {
+    os.environ["AOR_KEY"]:    "exec-server.sh",
+    os.environ["AOR_FS_KEY"]: "fs-server.sh",
+    os.environ["AOR_PW_KEY"]: "pw-server.sh",
+}
 data = {}
 if os.path.exists(cfg_path) and os.path.getsize(cfg_path) > 0:
     with open(cfg_path, encoding="utf-8") as f:
@@ -253,23 +331,47 @@ if os.path.exists(cfg_path) and os.path.getsize(cfg_path) > 0:
         sys.stderr.write("claude_desktop_config.json is not a JSON object; not touching it.\n")
         sys.exit(3)
 servers = data.setdefault("mcpServers", {})
-entry = {
-    "command": "/bin/bash",
-    "args": [os.path.join(root, "Startup", "posix", "exec-server.sh")],
-    "env": {
-        "PATH": f"{node_dir}:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin",
-        "COWORK_NODE": node,
-        "HOME": os.environ.get("HOME", ""),
-    },
-}
-if servers.get(key) == entry:
-    print(f"      mcpServers.{key} already points at /bin/bash {entry['args'][0]} (unchanged)")
+# The installer before this release registered the executor as "cowork-batch-exec".
+# Claude Desktop reserves the "cowork" prefix and refuses that entry at every launch,
+# and because this merge keeps what it finds, an upgrade alone would leave it there
+# forever. Retire it when it is ours - an agent-of-record launcher, wherever the tree
+# lives now - and leave any other server of that name alone, saying so.
+LEGACY_KEY = "cowork-batch-exec"
+retired = None
+legacy = servers.get(LEGACY_KEY)
+if isinstance(legacy, dict):
+    legacy_args = legacy.get("args") or []
+    legacy_target = str(legacy_args[0]).replace("\\", "/") if legacy_args else ""
+    if legacy_target.endswith("/Startup/posix/exec-server.sh"):
+        retired = servers.pop(LEGACY_KEY)
+    else:
+        print(f"WARN  mcpServers.{LEGACY_KEY} exists but is not this repository's launcher; left alone: {legacy_target or legacy}")
+def build(launcher):
+    return {
+        "command": "/bin/bash",
+        "args": [os.path.join(root, "Startup", "posix", launcher)],
+        "env": {
+            "PATH": f"{node_dir}:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin",
+            "COWORK_NODE": node,
+            "HOME": os.environ.get("HOME", ""),
+        },
+    }
+wanted = {k: build(launcher) for k, launcher in launchers.items()}
+changed = [k for k, entry in wanted.items() if servers.get(k) != entry]
+if not changed and retired is None:
+    for k in wanted:
+        print(f"      mcpServers.{k} already points at /bin/bash {wanted[k]['args'][0]} (unchanged)")
     sys.exit(10)
-servers[key] = entry
+servers.update(wanted)
 with open(cfg_path, "w", encoding="utf-8") as f:
     json.dump(data, f, indent=2)
     f.write("\n")
-print(f"      wrote mcpServers.{key} -> /bin/bash {entry['args'][0]}")
+for k in wanted:
+    verb = "wrote" if k in changed else "kept "
+    print(f"      {verb} mcpServers.{k} -> /bin/bash {wanted[k]['args'][0]}")
+if retired is not None:
+    print(f"      retired mcpServers.{LEGACY_KEY}: the pre-upgrade name, which Claude Desktop refuses "
+          f"(reserved prefix); it pointed at {(retired.get('args') or [''])[0]}")
 PYEOF
   local rc=$?
   if [ $rc -eq 10 ]; then
@@ -350,18 +452,20 @@ PYEOF
 
 # ---------- verify mode: read what the desktop app logged ------------------
 verify_logs() {
-  local logdir="$HOME/Library/Logs/Claude"
+  local logdir="$HOME/Library/Logs/Claude" k
+  local keys_re="$SERVER_KEY|$FS_KEY|$PW_KEY"
   say ""
-  say "What Claude Desktop logged about $SERVER_KEY:"
+  say "What Claude Desktop logged about $SERVER_KEY, $FS_KEY and $PW_KEY:"
   if [ ! -d "$logdir" ]; then
     warn "no $logdir yet. Open the Claude desktop app, start a Cowork chat in it, then run --verify again."
     return 1
   fi
   local hits
   # files that mention the server by name, plus the per-server log the app names after it
-  hits="$( { grep -il "$SERVER_KEY" "$logdir"/mcp*.log 2>/dev/null; ls "$logdir"/mcp-server-*"$SERVER_KEY"*.log 2>/dev/null; } | sort -u || true)"
+  hits="$( { grep -ilE "$keys_re" "$logdir"/mcp*.log 2>/dev/null
+             for k in "$SERVER_KEY" "$FS_KEY" "$PW_KEY"; do ls "$logdir"/mcp-server-*"$k"*.log 2>/dev/null; done; } | sort -u || true)"
   if [ -z "$hits" ]; then
-    warn "no MCP log mentions $SERVER_KEY. The app has not tried to start it."
+    warn "no MCP log mentions $SERVER_KEY, $FS_KEY or $PW_KEY. The app has not tried to start them."
     info "Check: is the entry in $CLAUDE_CFG (run --register), did you fully quit and reopen Claude,"
     info "and was the Cowork chat started in the desktop app itself, not on the web."
     return 1
@@ -369,14 +473,14 @@ verify_logs() {
   local f
   for f in $hits; do
     say "--- $f (last 30 lines mentioning the server or an error)"
-    grep -inE "$SERVER_KEY|error|ENOENT|spawn|exit|not found|connected|initializ" "$f" | tail -30 | tee -a "$LOG"
+    grep -inE "$keys_re|error|ENOENT|spawn|exit|not found|connected|initializ" "$f" | tail -30 | tee -a "$LOG"
   done
   if grep -qiE "ENOENT|not found|exit code [1-9]|exited|spawn .* failed|exiting early" $hits 2>/dev/null; then
     warn "the launcher was started and died. The lines above say why (usually node or a wrong path)."
     return 1
   fi
   if grep -qiE "connected|initialized|tools/list" $hits 2>/dev/null; then
-    pass "the desktop app started the executor and talked to it"
+    pass "the desktop app started a registered bridge and talked to it"
     return 0
   fi
   warn "the app mentions the server but neither a clean connection nor a spawn error is visible. Read the lines above."
@@ -513,7 +617,7 @@ register_claude "$NODE_BIN" || true
 
 # ---------- what only the person can do -----------------------------------
 manual "In Claude, start a NEW Cowork chat on this Mac (choose Cowork in the message box). It has to be started in the desktop app, not on the web."
-manual "Click the + at the bottom of the message box, then Connectors. You should see $SERVER_KEY with one tool, run_batch_file. If you do not, run:  bash \"$ROOT/Startup/posix/install-mac.sh\" --verify"
+manual "Click the + at the bottom of the message box, then Connectors. You should see three: $SERVER_KEY with one tool, run_batch_file; $FS_KEY; and $PW_KEY. If you do not, run:  bash \"$ROOT/Startup/posix/install-mac.sh\" --verify"
 manual "Ask Claude: \"Use run_batch_file to run hello-mac.sh\" and approve it. The result should list $ROOT/Outputs/Executor Test/result.txt"
 manual "The first time a job controls another app (AppleScript), macOS will ask for permission once. Click OK."
 manual "Send back what happened, pass or fail: the INSTALL_CHECK line from this log and the --verify output, as a pull request or an issue on the repository."

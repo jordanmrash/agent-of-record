@@ -27,6 +27,10 @@ __pycache__/
 working/
 scratch/
 
+# ------------------------------------------------------------------- macOS --
+# Finder metadata. Appears the moment a Mac opens the folder.
+.DS_Store
+
 # --------------------------------------------------------------- credentials --
 # Nothing credential-shaped, ever. Belt and braces: the scan checks content too,
 # because a token in a .py file would sail past every pattern below.
@@ -93,6 +97,4 @@ release-results.json
 # by name, so a tracked copy fails the gate rather than leaking a home directory.
 Startup/cowork-env.cmd
 Startup/posix/cowork-env.sh
-Startup/posix/watchdog/status.txt
-Startup/posix/watchdog/logs/
 /install-results.json

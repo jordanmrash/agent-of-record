@@ -128,7 +128,10 @@ const DIRECTIVE_RE = IS_WINDOWS
   ? /^\s*(?:REM|::)\s*COWORK_OUTPUT\s*[:=]\s*(.+?)\s*$/i
   : /^\s*#\s*COWORK_OUTPUT\s*[:=]\s*(.+?)\s*$/i;
 
-const SERVER_NAME      = 'cowork-batch-exec';
+/* The name the server gives itself in serverInfo and on stderr. Matches the
+ * SERVER_KEY install-mac.sh registers; the old value collided with the prefix
+ * Claude Desktop reserves, and a config entry under it is refused at launch. */
+const SERVER_NAME      = 'aor-batch-exec';
 const SERVER_VERSION   = '1.3.0';
 const DEFAULT_PROTOCOL = '2025-06-18';
 
@@ -185,7 +188,8 @@ class RejectError extends Error {
  *   colons in any position    -> blocks alternate data streams (file.bat:ads)
  *   shell metacharacters      (& | < > ^ " ' ` * ? newline tab)
  *   .. traversal, textual and post-canonicalisation
- *   extensions other than .bat / .cmd, checked on the CANONICAL path
+ *   extensions outside ALLOWED_EXT (.bat/.cmd on Windows, .sh on POSIX),
+ *                             checked on the CANONICAL path
  *   nonexistent paths, directories, non-regular files
  *   symlinks/junctions whose real target escapes CommandJobs
  *   anything inside CommandJobs\Logs
@@ -835,22 +839,43 @@ function reminderBlock(why) {
   }
 }
 
+/* Everything below is text a MODEL reads to decide how to call this tool, so it
+ * has to describe the platform the server is actually running on. The POSIX port
+ * changed the enforcement -- ALLOWED_EXT, DIRECTIVE_RE, POSIX_SHELL -- but left
+ * this text Windows-only, which told an agent on a Mac that its .sh job would be
+ * refused and pointed it at `cd /d` and `reg query`. Derive the wording from the
+ * same constants the checks use so the two cannot drift again. */
+/* ALLOWED_EXT_TEXT joins with "and", which is right for a refusal ("only .bat
+ * and .cmd may be executed") but wrong for naming one file, so the prose form
+ * is separate. */
+const FILE_KIND      = IS_WINDOWS ? '.bat or .cmd'           : '.sh';
+const JOBS_HINT      = IS_WINDOWS ? 'COPILOT_COWORK\\CommandJobs' : '<tooling root>/CommandJobs';
+const OUTPUTS_HINT   = IS_WINDOWS ? 'COPILOT_COWORK\\Outputs'     : '<tooling root>/Outputs';
+const DIRECTIVE_HINT = IS_WINDOWS ? 'REM COWORK_OUTPUT: <path>'   : '# COWORK_OUTPUT: <path>';
+const JOB_OUTPUT_VAR = IS_WINDOWS ? '%COWORK_JOB_OUTPUT%'         : '$COWORK_JOB_OUTPUT';
+const NORMALIZE_HINT = IS_WINDOWS ? 'an LF-only .bat becomes CRLF' : 'a CRLF .sh becomes LF';
+const EXAMPLE_FILE   = IS_WINDOWS ? 'reconcile-q3.bat'            : 'reconcile-q3.sh';
+const EXAMPLE_NESTED = IS_WINDOWS ? 'jobs\\\\reconcile-q3.bat'    : 'jobs/reconcile-q3.sh';
+const REFUSED_HINT   = IS_WINDOWS
+  ? 'Absolute, drive-qualified, UNC and environment-variable paths are rejected.'
+  : 'Absolute paths, ~ expansion and environment-variable paths are rejected.';
+
 const TOOL = {
   name: 'run_batch_file',
-  title: 'Run an approved batch file',
+  title: IS_WINDOWS ? 'Run an approved batch file' : 'Run an approved job script',
   description:
-    'Execute an existing .bat or .cmd file already present under ' +
-    'COPILOT_COWORK\\CommandJobs. Write the batch file first (filesystem bridge), ' +
-    'then pass its RELATIVE name here. Deliverables belong under COPILOT_COWORK\\Outputs; ' +
-    'the script declares its own destination with a "REM COWORK_OUTPUT: <path>" line, ' +
-    'which is exposed to it as %COWORK_JOB_OUTPUT%. Returns stdout, stderr, exit code, ' +
+    `Execute an existing ${FILE_KIND} file already present under ` +
+    `${JOBS_HINT}. Write the script first (filesystem bridge), ` +
+    `then pass its RELATIVE name here. Deliverables belong under ${OUTPUTS_HINT}; ` +
+    `the script declares its own destination with a "${DIRECTIVE_HINT}" line, ` +
+    `which is exposed to it as ${JOB_OUTPUT_VAR}. Returns stdout, stderr, exit code, ` +
     'timing, and the files created or modified. No command, arguments, executable, ' +
     'interpreter, working directory, environment variable, output directory, timeout ' +
     'override or elevation option can be supplied -- the only input is the filename. ' +
     'This response carries the current rules verbatim on the first job of a session ' +
     'and on any job that does not exit clean. Before running, the server rewrites the ' +
-    'script\'s line terminators to the platform convention in place (an LF-only .bat ' +
-    'becomes CRLF) and builds a complete user environment for it (profile variables and ' +
+    `script's line terminators to the platform convention in place (${NORMALIZE_HINT}) ` +
+    'and builds a complete user environment for it (profile variables and ' +
     'the user PATH included); both are reported in the result. '
     /* PLUGIN-LESSONS:start run_batch_file */
     + 'OPERATING RULES, each learned from a real failure and regenerated from '
@@ -872,9 +897,8 @@ const TOOL = {
       file: {
         type: 'string',
         description:
-          'Relative filename or relative path of an existing .bat/.cmd under CommandJobs, ' +
-          'e.g. "reconcile-q3.bat" or "jobs\\\\reconcile-q3.bat". Absolute, drive-qualified, ' +
-          'UNC and environment-variable paths are rejected.'
+          `Relative filename or relative path of an existing ${FILE_KIND} file under ` +
+          `CommandJobs, e.g. "${EXAMPLE_FILE}" or "${EXAMPLE_NESTED}". ${REFUSED_HINT}`
       }
     },
     required: ['file'],
@@ -997,17 +1021,17 @@ try {
   realJobRoot();
   realOutputRoot();
 } catch (e) {
-  process.stderr.write(`[cowork-batch-exec] FATAL: required root unavailable: ${e.message}\n`);
+  process.stderr.write(`[${SERVER_NAME}] FATAL: required root unavailable: ${e.message}\n`);
   process.exit(1);
 }
 
 process.stderr.write(
-  `[cowork-batch-exec] v${SERVER_VERSION} ready. Tool: run_batch_file\n` +
-  `[cowork-batch-exec] scripts: ${realJobRoot()}\n` +
-  `[cowork-batch-exec] outputs: ${realOutputRoot()}\n` +
-  `[cowork-batch-exec] .bat/.cmd only, relative paths only, 300s timeout, ` +
+  `[${SERVER_NAME}] v${SERVER_VERSION} ready. Tool: run_batch_file\n` +
+  `[${SERVER_NAME}] scripts: ${realJobRoot()}\n` +
+  `[${SERVER_NAME}] outputs: ${realOutputRoot()}\n` +
+  `[${SERVER_NAME}] ${ALLOWED_EXT_TEXT} only, relative paths only, 300s timeout, ` +
   `5MB output caps, 1 concurrent job.\n` +
-  `[cowork-batch-exec] line endings normalised to the platform before a run; ` +
+  `[${SERVER_NAME}] line endings normalised to the platform before a run; ` +
   `job environment server-built and complete.\n`);
 
 let buf = '';

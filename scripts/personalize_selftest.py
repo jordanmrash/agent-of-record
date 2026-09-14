@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Proof that personalize.py does what its docstring says, on a throwaway copy.
+"""Proof that copilot/personalize.py does what its docstring says, on a throwaway copy.
 
 Asserts, in order: a dry run writes nothing; --apply removes every YOURUSER and
 YOUR-TUNNEL-HOST from the operating trees; the OneDrive folder rename lands in
@@ -81,7 +81,7 @@ def main():
 
     tree = make_copy()
     try:
-        script = os.path.join(tree, "scripts", "personalize.py")
+        script = os.path.join(tree, "scripts", "copilot", "personalize.py")
         before = tree_hashes(tree)
         rc, out = run(tree, script, "--user", USER, "--tunnel-host", HOST, "--onedrive-folder", ONEDRIVE)
         check(rc == 0 and "dry run" in out, "dry run exits 0 and says so")

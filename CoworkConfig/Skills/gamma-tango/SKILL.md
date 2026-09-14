@@ -129,6 +129,7 @@ Jordan's PC.
    through the 8933 command bridge. Report the branch, the working-tree state, and the
    last commit — this is the baseline the CLOSE commit will be measured against.
 4. **Report** in four short lines: memory loaded, lessons applied, git baseline, ready.
+Platform counterpart: On macOS under Claude Cowork, the same step uses an approved `.sh` job through the `aor-batch-exec` stdio server; no Copilot connector id or bridge port is used.
 
 ## CLOSE routine
 
@@ -270,3 +271,4 @@ empty `Rules:` line is a defect in the run, not a tidy result.
 - **Never fabricate a lesson or a memory entry** to make the routine look complete. "Nothing
   new" is a correct result.
 - **No secrets** in memory files, lesson entries, or commit messages.
+Platform counterpart: On macOS under Claude Cowork, the same step uses an approved `.sh` job through the `aor-batch-exec` stdio server; no Copilot connector id or bridge port is used.

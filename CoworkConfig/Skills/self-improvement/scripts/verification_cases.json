@@ -78,7 +78,10 @@
       "AUTHORED BUT NOT YET RUN. Every prompt here ends in a real execution on",
       "Jordan's PC, three times, plus once more for the control. bridge-health.bat",
       "is chosen because it is read-only and idempotent - re-read side_effects",
-      "before pointing this case at anything else."
+      "before pointing this case at anything else.",
+      "The prompts name bridge-health.bat because the case was authored for the Windows",
+      "hosted route; on macOS the read-only equivalent is bridge-health.sh and the prompts",
+      "would be re-authored for it. Prompts are the fingerprint, so they are not edited here."
     ],
     "prompts": [
       "Run the bridge health diagnostic on my PC and summarise what it reports about the three ports.",

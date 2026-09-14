@@ -103,12 +103,12 @@ cannot reach a public tree.
 ## 4. Personalize the tree
 
 The watchdog, the shipped jobs and the skills carry `YOURUSER`, and the
-connector packages carry `YOUR-TUNNEL-HOST`. `scripts/personalize.py` replaces
+connector packages carry `YOUR-TUNNEL-HOST`. `scripts/copilot/personalize.py` replaces
 them in one pass and is a dry run until you add `--apply`:
 
 ```powershell
-python scripts\personalize.py --user <account> --onedrive-folder "OneDrive - Contoso"
-python scripts\personalize.py --user <account> --onedrive-folder "OneDrive - Contoso" --apply
+python scripts\copilot\personalize.py --user <account> --onedrive-folder "OneDrive - Contoso"
+python scripts\copilot\personalize.py --user <account> --onedrive-folder "OneDrive - Contoso" --apply
 ```
 
 Leave out `--onedrive-folder` when yours is plain `OneDrive`. Leave out
@@ -168,7 +168,7 @@ account here until you trust the approval flow.
 Now finish personalizing:
 
 ```powershell
-python scripts\personalize.py --user <account> --onedrive-folder "OneDrive - Contoso" --tunnel-host <tunnel-host> --apply
+python scripts\copilot\personalize.py --user <account> --onedrive-folder "OneDrive - Contoso" --tunnel-host <tunnel-host> --apply
 ```
 
 Add `--tunnel-domain <region>.devtunnels.ms` if the region is not `use`. The

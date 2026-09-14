@@ -173,23 +173,17 @@
       "label": "Cowork Power Automate Bridge (8934)",
       "type": "shell",
       "command": "node",
+      // 8934 is Copilot Cowork on Windows only (docs/bridge-facts.json: products,
+      // platforms). The Windows variant below starts the bridge; on macOS and Linux
+      // this task prints one line and exits, and there is no POSIX launcher for it.
       "args": [
+        "-e", "console.log('8934 Power Automate: Windows only - nothing to start on this platform')"
+      ],
+      "windows": { "args": [
         "${workspaceFolder}\\node_modules\\supergateway\\dist\\index.js",
         "--port", "8934",
         "--outputTransport", "streamableHttp",
         "--stdio", "${workspaceFolder}\\flow-server.cmd"
-      ],
-      "osx": { "args": [
-        "${workspaceFolder}/node_modules/supergateway/dist/index.js",
-        "--port", "8934",
-        "--outputTransport", "streamableHttp",
-        "--stdio", "${workspaceFolder}/posix/flow-server.sh"
-      ] },
-      "linux": { "args": [
-        "${workspaceFolder}/node_modules/supergateway/dist/index.js",
-        "--port", "8934",
-        "--outputTransport", "streamableHttp",
-        "--stdio", "${workspaceFolder}/posix/flow-server.sh"
       ] },
       "isBackground": true,
       "presentation": {

@@ -13,7 +13,7 @@ lessons corpus with no way to start empty. This snapshot closes those four gaps.
 - `docs/setup.md`: from a bare Windows PC to four reachable bridges and an
   installed configuration, in twelve steps, each stated from the files in the
   tree rather than from memory. Tenant-dependent steps say so.
-- `scripts/personalize.py`: replaces `YOURUSER`, the OneDrive folder name,
+- `scripts/copilot/personalize.py`: replaces `YOURUSER`, the OneDrive folder name,
   `YOUR-TUNNEL-HOST` and the shared placeholder app id across `Startup/`,
   `CommandJobs/`, `CoworkConfig/` and `docs/bridge-facts.json`; dry run by
   default; leaves the documentation, the publishing tooling and the skill

@@ -2,16 +2,16 @@
 
 > Using **Claude Cowork** rather than Copilot Cowork? Follow [Claude Cowork on a Mac](install/claude-cowork-mac.md)
 > instead - it runs on the machine, so there is no tunnel, no connector package and no launchd job,
-> and it installs only the executor. [What this repository adds to Copilot Cowork](install/copilot-cowork.md)
+> and its installer registers the executor, the filesystem bridge and the browser bridge. [What this repository adds to Copilot Cowork](install/copilot-cowork.md)
 > explains what the pieces on this page are for.
 
-This guide takes a Mac with nothing installed to four running bridges that a
+This guide takes a Mac with nothing installed to three running bridges that a
 Copilot Cowork or Claude Cowork session can call, with the skills, the lessons
 corpus and the memory files in place. [`docs/setup.md`](setup.md) is the Windows
 path; this is its sibling, and the two differ in fewer places than you would
 expect.
 
-Read [`SECURITY.md`](../SECURITY.md) first. Two of the four bridges - the
+Read [`SECURITY.md`](../SECURITY.md) first. Two of the three bridges - the
 filesystem bridge and the command bridge - act on the machine with your
 authority over a public tunnel. This guide does not make that safe; it makes it
 narrow and reviewable. Use a test account and a test folder until you have
@@ -28,7 +28,6 @@ Only these. Everything else in `docs/setup.md` applies unchanged.
 | Output directive | `REM COWORK_OUTPUT: ...` | `# COWORK_OUTPUT: ...` |
 | Job shell | `cmd.exe /d /s /c` | `/bin/bash <script>` |
 | Local paths | launchers derive them; overrides in `Startup/cowork-env.cmd` | launchers derive them; overrides in `Startup/posix/cowork-env.sh` |
-| Watchdog | Task Scheduler, `_watchdog-install.ps1` | `launchd`, `Startup/posix/watchdog/` |
 | Playwright browser | `msedge` | `chrome` by default, `COWORK_PW_BROWSER` to change |
 
 The command bridge enforces the **same refusal set on both**, and
@@ -41,7 +40,7 @@ rather than shipping.
 | Need | Why | Check |
 |---|---|---|
 | macOS 13+ or a current Linux | Every path is `$HOME`-relative; nothing requires root | `uname -a` |
-| Node.js 20 LTS or later | Runs supergateway and the two own-code servers | `node --version` |
+| Node.js 20 LTS or later | Runs supergateway and the own-code executor | `node --version` |
 | Python 3.10 or later | The gate, the checkers, the lesson tooling | `python3 --version` |
 | Git | The local repository and the publishing tooling | `git --version` |
 | Visual Studio Code, signed in for dev tunnels | Auto-starts the bridges and forwards the ports | Accounts menu shows a signed-in account |
@@ -49,8 +48,7 @@ rather than shipping.
 | Cowork, and permission to add a custom app | The connector packages are uploaded as custom apps; many tenants restrict this | Ask your administrator before step 6 |
 
 Internet access is needed at first start: the two upstream servers are fetched
-by `npx` on demand. Nothing in `Startup/CommandBridge/` or `Startup/FlowBridge/`
-downloads anything.
+by `npx` on demand. Nothing in `Startup/CommandBridge/` downloads anything.
 
 ## 2. Clone and validate
 
@@ -107,9 +105,10 @@ name is not something to publish.
 ## 5. First start and the tunnel host
 
 1. Run `Startup/posix/GO.sh`, or open the `Startup` folder in VS Code yourself.
-   Allow automatic tasks if prompted; the four bridge tasks start in the
-   terminal panel. VS Code picks the `osx` or `linux` task variant on its own.
-2. Open the **Ports** panel. The four ports forward automatically. Set each one
+   Allow automatic tasks if prompted; three bridge tasks start in the terminal
+   panel and the fourth, Power Automate, prints one line and exits - it is
+   Windows-only. VS Code picks the `osx` or `linux` task variant on its own.
+2. Open the **Ports** panel. Three ports forward automatically. Set each one
    to **Public**: right-click, Port Visibility, Public. This does not persist
    across restarts, and nothing on the machine can do it for you - the watchdog
    restarts a dead listener but cannot change visibility.
@@ -119,8 +118,8 @@ name is not something to publish.
 Then verify the endpoints answer, locally and through the tunnel:
 
 ```bash
-lsof -nP -iTCP:8931-8934 -sTCP:LISTEN
-for p in 8931 8932 8933 8934; do
+lsof -nP -iTCP:8931-8933 -sTCP:LISTEN
+for p in 8931 8932 8933; do
   printf '%s ' "$p"; curl -s -o /dev/null -w '%{http_code}\n' -m 5 "http://127.0.0.1:$p/mcp"
 done
 ```
@@ -142,27 +141,16 @@ for d in */; do (cd "$d" && zip -q -r "../${d%/}.zip" .); done
 cd ../..
 ```
 
+Skip the Power Automate package: that bridge is Windows-only, and its port is not
+forwarded from a Mac.
+
 Keep the connector ids as shipped; they are the tool namespaces the skills
 address, and `scripts/facts_check.py` fails if a manifest drifts from them.
 
 Start a **new** Cowork session afterwards. Connectors register at session start,
 and a session that began before the upload will not see them.
 
-## 7. Install the watchdog
-
-```bash
-bash Startup/posix/watchdog/install-launchd.sh
-```
-
-This installs a `launchd` agent that probes the four ports every two minutes and
-starts a listener only on a port that refuses connections. It never kills
-anything, and it will not restart the same port twice inside its cooldown
-window. Like its Windows counterpart it cannot restore tunnel visibility, and it
-cannot help when VS Code itself is closed.
-
-To remove it: `bash Startup/posix/watchdog/install-launchd.sh --uninstall`.
-
-## 8. Install the Cowork configuration
+## 7. Install the Cowork configuration
 
 ```bash
 COWORK="$HOME/Library/CloudStorage/OneDrive-Example/Documents/Cowork"   # yours
@@ -209,6 +197,6 @@ repository describes.
 - **Making the executor safe.** A `.sh` under `CommandJobs` runs as you. The
   control point is reading the proposed file before approving it. Treat write
   access to `CommandJobs` as execute access, as `SECURITY.md` says.
-- **Power Automate on a Mac.** The 8934 bridge starts and refuses by default the
-  same way it does on Windows. Its usefulness depends on tenant policy, not on
-  this repository.
+- **Power Automate.** That bridge is Copilot Cowork on Windows only; it has no
+  POSIX launcher and no place on a Mac. Flow administration from a Mac is not
+  something this repository offers.

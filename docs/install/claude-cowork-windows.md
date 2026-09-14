@@ -19,13 +19,14 @@
 registered bridge itself as a stdio process and talks to it directly. There is no tunnel,
 nothing to make public, and nothing that has to keep running between sessions.
 
-**Why this page installs one bridge, not four.** Claude Cowork already reads and writes
+**Why this page installs one bridge of three.** Claude Cowork already reads and writes
 the folders you connect, fetches the web, remembers across sessions and runs shell
 commands — in a Linux virtual machine, never on Windows. Nothing it does natively can run
 a `.bat`, read the registry, or drive a Windows application. The approved batch executor
 is the only path from a session to `cmd.exe`, so it is the one required component, and
 with it come the job conventions, the release gate and the lessons machinery. The browser
-and filesystem bridges are optional here; the Power Automate bridge needs a tenant. What
+and filesystem bridges are optional here. The fourth bridge in this repository, Power Automate,
+is Copilot Cowork only and not part of this route. What
 each part lets you do is in [What this repository adds to Claude Cowork](claude-cowork.md).
 
 ---
@@ -57,7 +58,7 @@ python scripts/release_check.py
 `<tooling root>` is yours to choose — step 3 says what the launchers derive from it.
 
 Run the gate **before** anything else: `release_check.py` must end with
-`RELEASE_CHECK: CLEAN (22 checks)`. On a fresh clone anything else means the tree is wrong
+`RELEASE_CHECK: CLEAN (24 checks)`. On a fresh clone anything else means the tree is wrong
 before you have changed a single file — stop and open an issue with the output rather
 than working around it. Do not adjust a check to make it pass.
 
@@ -150,7 +151,6 @@ server, and any optional bridge you want:
 | Approved batch executor | `<tooling root>\Startup\exec-server.cmd` | **Yes.** One tool: `run_batch_file`. Runs `.bat`/`.cmd` only. Plain `node`, no dependencies, fetches nothing at start. |
 | Browser | `<tooling root>\Startup\pw-server.cmd` | Optional — a signed-in Edge profile with traces to disk. Uses `npx -y`, so its **first** start downloads a package and needs the network. |
 | Filesystem | `<tooling root>\Startup\fs-server.cmd` | Optional — only for tool parity with the hosted route. Connect the clone as a folder instead and the host's own file tools cover it. |
-| Power Automate | `<tooling root>\Startup\flow-server.cmd` | Optional — needs a Power Platform tenant; refuses everything until configured. |
 
 These are the `stdio` entries in `docs/bridge-facts.json`; the commands above should match
 it exactly, and if they do not, the facts file wins and this page is wrong. If the client
@@ -163,7 +163,7 @@ The repo ships a complete configuration under `CoworkConfig\`:
 
 ```
 CoworkConfig\
-  Skills\<skill-name>\SKILL.md      eleven skills, the three bridge skills among them
+  Skills\<skill-name>\SKILL.md      ten skills, the three bridge skills among them
   copilot-instructions.md           standing instructions (the Copilot host's filename)
   cowork-memory\cowork-lessons.md   the lessons corpus, beside the memory files
   README.md                         which files are generated from which
@@ -173,14 +173,17 @@ Start with an **empty** corpus, as `CoworkConfig\README.md` describes. The shipp
 and memory files are one operator's record of one machine — the right thing to read and
 the wrong thing to operate under.
 
-**Skills.** Claude Cowork takes a `SKILL.md` you upload as your own skill (Customize ›
-Skills), or one delivered by a plugin; skills installed from its directory are view-only.
-Upload `self-improvement` first — its scripts are host-agnostic and the corpus depends on
-them — then whichever bridge skill matches a bridge you registered. The shipped skills
-address the bridges by the Copilot host's connector ids and describe OneDrive paths and
-`.bat` jobs; their host-adapter sections are issue #6 work, so until then read them as
-reference. `[verify: the uploader tolerates the skills' `cowork:` and `metadata:`
-frontmatter keys; where it caps a description]`
+**Skills.** Build the repository's plugin; do not upload individual `SKILL.md` files:
+
+```bat
+python scripts\build_plugin.py --strict --platform windows
+```
+
+Open `Outputs\Skills Plugin\agent-of-record-skills-windows.plugin` in Claude, accept it,
+restart the app, and confirm `ListSkills` returns all ten repository skills. The same ten
+skills ship on Windows and macOS; each skill states the platform-specific launcher, path or
+job-script shape in the same instructions. A directory copy into `~/.claude/skills/` does
+nothing.
 
 **Instructions.** `copilot-instructions.md` is the Copilot host's file and has no
 equivalent here *(expected)*. It carries the lessons digest, and that digest is also

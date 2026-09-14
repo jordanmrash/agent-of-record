@@ -27,7 +27,7 @@ different one, and do not report success on any evidence weaker than step 5.
    Both describe a client that runs in the cloud and reaches the bridges through a dev
    tunnel - the **hosted** route. A client that runs on the machine itself (Claude
    Cowork) is the **local** route: it registers the launchers as stdio servers and skips
-   the tunnel, `supergateway`, the connector packages, the personalizer and the watchdog,
+   the tunnel, `supergateway`, the connector packages, the Copilot-only personalizer and the Windows watchdog,
    and it installs only what that host lacks - the executor is required, the browser and
    filesystem bridges are optional. `docs/install/README.md` compares the routes;
    `docs/install/claude-cowork-*.md` are the pages. The local route needs a **local**
@@ -51,7 +51,7 @@ different one, and do not report success on any evidence weaker than step 5.
    the host loads skills from. The launchers derive the tooling root from their
    own location on both platforms, so a client that starts them directly
    (`docs/install/`) can use a clone in any directory. The hosted (tunnel)
-   route still runs `scripts/personalize.py` for the connector manifests, the
+   route still runs `scripts/copilot/personalize.py` for the connector manifests, the
    watchdog, the shipped jobs and the skills, and those expect the clone at the
    path `docs/setup.md` names. The operator's OneDrive folder name and account
    name are things you must ASK for or read from the environment - never guess,
@@ -119,7 +119,7 @@ steps with their evidence unknown rather than as passing checks.
 
 ## Installing is not publishing
 
-`scripts/personalize.py` turns the placeholders into one operator's real values
+`scripts/copilot/personalize.py` turns the placeholders into one operator's real values
 across the operating trees (`Startup/`, `CommandJobs/`, `CoworkConfig/`,
 `docs/bridge-facts.json`). A personalized tree fails `public_scan.py` by design.
 Never run the personalizer on a tree you intend to push; never "fix" the scan by

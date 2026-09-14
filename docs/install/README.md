@@ -13,6 +13,21 @@ the repository adds to it, then follow the page for your platform.
 **Not yet operated** means nobody has run that page end to end. If you do, open a pull
 request with your `install_check.py` result — that is what flips the status.
 
+## Supported matrix
+
+| Product | Windows | macOS |
+|---|---|---|
+| Claude Cowork | supported | supported — the primary path, first-class on both |
+| Copilot Cowork | supported | not supported — low expected usage, PC only |
+
+Two consequences follow. Every Claude-facing surface — launcher, page, skill, lesson block,
+tool description — must be correct on both platforms or say which one it is for. And
+`install_check.py --route` follows the product, not the platform: Copilot is always `hosted`,
+Claude is always `local`. Which bridges each product and platform gets is declared in
+`docs/bridge-facts.json` (`products`, `platforms`) and every count is derived from it: four
+for the repository, three for Claude Cowork and three for any Mac. `facts_check.py` checks
+each Claude and macOS page against the bridges that exist there.
+
 The code is not split by host. `Startup/` holds the Windows launchers and the two own-code
 servers, `Startup/posix/` the macOS and Linux launchers, and both hosts start the same
 files. A route is a choice of *which* launchers to register and *how*, not a second copy
@@ -52,9 +67,9 @@ architecture overview* (Help Center), *Claude's memory works everywhere* (blog) 
 | **Lessons machinery** — failure → keyed entry → rule → generated delivery into skills and tool descriptions, with checkers | Required | Required — nothing native does this |
 | **Deep-tier memory files** — mechanism and evidence, one home per fact, under git | Required | Required — the host's memory is the pointer tier, not this |
 | **Pointer-tier memory** | The host's 512-character store, indexed to the deep files | Use the host's own memory; no workaround shipped |
-| **Filesystem bridge** (8932) — named roots | Required — the only way to read or write the machine | Optional — connect the folder instead; register the bridge only for tool parity with the hosted route |
-| **Browser bridge** (8931) — a signed-in profile, traces and screenshots to disk | Required for authenticated browsing | Optional |
-| **Power Automate bridge** (8934) — flow administration, allow-listed environments, audited writes | Optional, needs a tenant | Optional, needs a tenant |
+| **Filesystem bridge** (8932) — named roots | Required — the only way to read or write the machine | Registered by `install-mac.sh` on a Mac; optional on Windows — connect the folder instead |
+| **Browser bridge** (8931) — a signed-in profile, traces and screenshots to disk | Required for authenticated browsing | Registered by `install-mac.sh` on a Mac; optional on Windows |
+| **Power Automate bridge** (8934) — flow administration, allow-listed environments, audited writes | Windows only; optional, needs a tenant | Not available — Copilot Cowork on Windows only |
 | **supergateway, dev tunnel, Ports panel, connector packages, watchdog, personalizer** | Required — they exist to reach a machine from a cloud | Not installed — nothing to reach across |
 | **Skills** — the bridge skills and the operating bookends | Required; written to this host's tool names | Machinery works; the skill prose needs its host-adapter sections (issue #6) |
 

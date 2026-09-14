@@ -100,10 +100,10 @@ CASES = [
     # Anchored on the executable line, not the header comment: the check reads
     # only live lines, so a fixture that edits a comment proves nothing.
     ("a POSIX launcher starts the wrong server",
-     lambda t: edit(t, "Startup/posix/flow-server.sh",
-                    'exec "$NODE_BIN" "$COWORK_ROOT/Startup/FlowBridge/flow-mcp-server.js"',
-                    'exec "$NODE_BIN" "$COWORK_ROOT/Startup/FlowBridge/some-other-server.js"'),
-     r"does not start Startup/FlowBridge/flow-mcp-server\.js"),
+     lambda t: edit(t, "Startup/posix/exec-server.sh",
+                    'exec "$NODE_BIN" "$COWORK_ROOT/Startup/CommandBridge/batch-exec-server.js"',
+                    'exec "$NODE_BIN" "$COWORK_ROOT/Startup/CommandBridge/some-other-server.js"'),
+     r"does not start Startup/CommandBridge/batch-exec-server\.js"),
     ("a POSIX launcher hard-codes a root instead of deriving it",
      lambda t: edit(t, "Startup/posix/pw-server.sh",
                     'COWORK_ROOT="$(cd "$HERE/../.." && pwd)"',
@@ -117,6 +117,23 @@ CASES = [
     ("tasks.json loses its macOS override, so a Mac runs the .cmd launchers",
      lambda t: edit(t, "Startup/.vscode/tasks.json", '"osx"', '"osx_disabled"'),
      r"no osx override"),
+    # --- the two axes. A bridge that exists for one product on one platform must not
+    # grow a launcher, a task variant or a paragraph on a surface where it does not. ---
+    ("a Windows-only bridge names a POSIX launcher again",
+     lambda t: edit(t, "docs/bridge-facts.json",
+                    '"watchdog_name": "FlowAuto"',
+                    '"watchdog_name": "FlowAuto",\n      "stdio_posix": "posix/flow-server.sh"'),
+     r"port 8934 is not a macOS bridge but names a POSIX launcher"),
+    ("a Claude page describes the Copilot-only bridge",
+     lambda t: edit(t, "docs/install/claude-cowork-mac.md", "## 1. Prerequisites",
+                    "## 1. Prerequisites\n\nRegister port 8934 as well.\n"),
+     r"stale phrase present: '8934'"),
+    ("tasks.json gives the Windows-only bridge a macOS variant",
+     lambda t: (edit(t, "Startup/.vscode/tasks.json", '"label": "Cowork Power Automate Bridge (8934)",',
+                     '"label": "Cowork Power Automate Bridge (8934)", "osx": {},'),
+                edit(t, "Startup/KnownGood/tasks.json", '"label": "Cowork Power Automate Bridge (8934)",',
+                     '"label": "Cowork Power Automate Bridge (8934)", "osx": {},')),
+     r"port 8934 is Windows-only but tasks.json gives it a macOS/Linux variant"),
 ]
 
 

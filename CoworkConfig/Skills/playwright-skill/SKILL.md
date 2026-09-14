@@ -10,6 +10,7 @@ description: >
   bridge's browser_* tools — never local Node, Playwright installs, or the session
   container. If the bridge is not connected, say so and stop. Do NOT use for file
   operations (local-file-bridge) or shell commands (command-bridge).
+  Platform behavior: On macOS under Claude Cowork, use the `aor-playwright` stdio server and the browser profile/output paths configured by `Startup/posix/pw-server.sh`; no tunnel or bridge port is used.
 cowork:
   category: automation
   icon: Globe
@@ -35,10 +36,12 @@ metadata:
 > reinstate it, and never modify a file the user did not ask you to change.
 
 Port 8931 runs `@playwright/mcp` behind supergateway, launched by `pw-server.cmd` with:
+Platform counterpart: On macOS under Claude Cowork, use the `aor-playwright` stdio server and the browser profile/output paths configured by `Startup/posix/pw-server.sh`; no tunnel or bridge port is used.
 
 ```
 --browser msedge --user-data-dir C:\Users\YOURUSER\pw-sso-profile
 ```
+Platform counterpart: On macOS under Claude Cowork, use the `aor-playwright` stdio server and the browser profile/output paths configured by `Startup/posix/pw-server.sh`; no tunnel or bridge port is used.
 
 No `--isolated`. That is deliberate: **the browser is persistent even though the transport
 is stateless.** Jordan's Microsoft and corporate sessions survive across calls, so this
@@ -47,7 +50,7 @@ bridge can reach authenticated intranet pages, intranet portals, and anything be
 
 <!-- SKILL-LESSONS:start -->
 
-## Lessons already paid for — browser automation (8931)
+## Lessons already paid for — browser automation
 
 2 rule(s) of 2 entries routed to this skill, generated from
 `cowork-memory/cowork-lessons.md`. **Do not hand-edit this block** — it is
@@ -122,6 +125,7 @@ which sits inside the filesystem bridge's allowed directories. Anything this bri
 screenshots, traces, console logs, page snapshots — can be read back through
 `local-file-bridge` and, if Jordan asks for a deliverable, promoted into session `output/`.
 Worth preserving; do not change the output directory.
+Platform counterpart: On macOS under Claude Cowork, use the `aor-playwright` stdio server and the browser profile/output paths configured by `Startup/posix/pw-server.sh`; no tunnel or bridge port is used.
 
 ## When NOT to Use
 
@@ -140,7 +144,7 @@ Worth preserving; do not change the output directory.
 |---|---|---|
 | No `browser_*` tools in session | Connector not loaded | Say the bridge is not connected; stop |
 | Timeout / reset / 502 / 504 | Transport blip | Retry that one call once |
-| Same call fails twice | Tunnel or server down | Report disconnected; port 8931 must be running and PUBLIC |
+| Same call fails twice | Tunnel or server down | Report disconnected; port 8931 must be running and PUBLIC On macOS under Claude Cowork, use the `aor-playwright` stdio server and the browser profile/output paths configured by `Startup/posix/pw-server.sh`; no tunnel or bridge port is used. |
 | Browser fails to launch | Another Playwright instance holds `pw-sso-profile` | Report it; the profile locks to one process — close the other |
 | Login page where none expected | SSO session expired | Ask Jordan to sign in himself; do not enter credentials |
 | `ref` not found on click | Snapshot is stale | Re-snapshot and use the fresh `ref` |

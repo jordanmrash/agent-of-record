@@ -4,6 +4,113 @@ All notable changes to the published repository. Through 0.3.0 each entry
 summarized one rebuilt snapshot; from 0.3.0 `main` keeps its history and each
 entry summarizes a release.
 
+## Unreleased
+
+Three bridges on a Mac, not one; the filesystem bridge pinned to a release this
+client can actually call; and the reserved-name entry the 0.3.2 installer left
+behind is retired on upgrade.
+
+- **Upgrading from 0.3.2 on a Mac.** The 0.3.2 installer registered the executor
+  under the name `cowork-batch-exec`. Claude Desktop reserves the `cowork` prefix
+  and refuses that entry at every launch, and because `install-mac.sh` merges
+  into `claude_desktop_config.json` rather than replacing it, upgrading alone left
+  the dead entry in place. `install-mac.sh --register` now retires it when it
+  points at an agent-of-record launcher, prints what it removed, and keeps the
+  dated backup it always took. A `cowork-batch-exec` that is not this
+  repository's is left alone with a warning. If you registered by hand, remove
+  the key yourself. The names are now `aor-batch-exec`, `aor-filesystem` and
+  `aor-playwright`.
+- **`install-mac.sh` registers all three bridges**, not only the executor, and
+  `--verify` reads the desktop app's logs for all three names. Before this a Mac
+  user who followed the quickstart ended up with one connector and no sign the
+  other two existed.
+- **`fs-server.sh` pins `@modelcontextprotocol/server-filesystem@2025.8.21`.**
+  Measured across twelve published releases: from 2025.11.25 onward the package
+  declares draft-07 output schemas on all 14 tools, and Claude Cowork supports
+  JSON Schema 2020-12 only, so an unpinned bridge handshakes, advertises 14 tools
+  and fails every call. 2025.8.21 is the last release with no output schemas and
+  carries the same 14 tools. `COWORK_FS_SERVER_VERSION` overrides the pin;
+  `docs/bridge-facts.json` records it as `posix_package_pin`. The Windows
+  launcher stays unpinned: the hosted route accepts draft-07.
+- **The Power Automate bridge is Copilot Cowork on Windows only, and the manifest says
+  so.** `docs/bridge-facts.json` carries `products` and `platforms` for every bridge and
+  no stated count. `facts_check.py` derives the counts, requires a POSIX launcher only for
+  a macOS bridge and refuses one on a Windows-only bridge, and checks each Claude and
+  macOS surface against the bridges that exist there. `install_check.py` tests only the
+  bridges in scope for its route and platform and says how many. `Startup/posix/flow-server.sh`
+  is removed, the 8934 task keeps its Windows variant only, and the Claude pages and the
+  macOS setup page describe three bridges. `docs/install/README.md` states the supported
+  matrix.
+- **A skill-install path for Claude Cowork.** `scripts/build_plugin.py` packages
+  `CoworkConfig/Skills` into a `.plugin` from the manifest at
+  `CoworkConfig/plugin/.claude-plugin/plugin.json`; `--strict` fails when a skill declared
+  for macOS carries Windows-only text. The eight bridge, memory and bookend skills still
+  do, so they are declared for Windows only and the macOS bundle carries `not-a-robot`
+  and `skill-menu`; the rest follow as their text is made platform-correct.
+- **The `myvoice` skill leaves the repository.** It describes one person's writing
+  register and is not part of the toolkit. It shipped in v0.2.0 through v0.3.2 and stays in
+  the history of those tags. The skill set is ten: `command-bridge`, `local-file-bridge`,
+  `git-bridge`, `playwright-skill`, `persistent-memory`, `self-improvement`, `dream-cycle`,
+  `gamma-tango`, `not-a-robot` and `skill-menu`. Its lesson route is gone too, so
+  `skill_lessons.py --check` opens only skills that exist here; the macOS bundle carries
+  `not-a-robot` and `skill-menu`.
+- **The release gate enforces the plugin manifest.** `release_check.py` runs
+  `scripts/build_plugin.py --strict --list` as a check, so a manifest entry with no skill
+  directory, or a skill declared for macOS that still carries Windows-only text, fails the
+  gate and CI on both platforms instead of failing only when someone builds the plugin by
+  hand.
+- **The `--strict` matcher fires on the defect it names.** The bridge-port pattern matched
+  the digits inside any hyphenated identifier, so a lesson key such as `bridge-8933-arg-name`
+  or a route id such as `command-bridge-8933` read as Windows-only text - 71 of the 141 port
+  hits across the ten skills, measured. A key is the retrieval mechanism and may never be
+  renamed, so no bridge skill could ever have passed. The pattern now matches a port number
+  standing in prose and not one embedded in an identifier; the Copilot connector ids, which
+  are platform text, are named as their own pattern. `scripts/build_plugin_selftest.py`
+  holds the positive and negative controls and joins the gate, which now reports
+  `RELEASE_CHECK: CLEAN (24 checks)`.
+- **`--strict` measures portability, not the presence of a Windows word.** A skill that is
+  correct on both platforms says both - "the job script, `.bat`/`.cmd` on Windows, `.sh` on
+  macOS" - and the token heuristic failed exactly those sentences. A Windows-specific token
+  is now acceptable where the same table row or prose paragraph names its macOS counterpart;
+  one that stands alone is still Windows-only text. The generated `SKILL-LESSONS` block is
+  not scanned: it is the operator's record, regenerated from the corpus, and a new install
+  starts with an empty corpus. `--list` now reports how many unpaired tokens remain in each
+  skill still declared for Windows only. The `devtunnel` pattern gets the identifier guard
+  the port pattern got, so a lesson key no longer reads as a platform claim.
+- **`persistent-memory` is declared for both platforms.** Its write path names the
+  mechanism per host - the filesystem bridge at the OneDrive path under Copilot Cowork on
+  Windows, the connected folder's file tools at `<config root>/cowork-memory/` under Claude
+  Cowork on either platform - instead of one Windows user-profile path. First of the eight.
+- **`git-bridge` is declared for both platforms.** Its mechanics section described one
+  host's connector, a Windows user-profile repository root, `.bat` authoring, a CRLF fix job
+  and a stripped environment as THE way; the last two were fixed at source in executor 1.3.0.
+  It now names the executor by its tool, the job script per platform (`.bat`/`.cmd` on
+  Windows, `.sh` on macOS), the tooling root by derivation, and shows the status job in both
+  shapes. Second of the eight.
+- **`self-improvement` is declared for both platforms.** Its environment facts named one
+  host's paths and two traps executor 1.3.0 had already removed; they now name the job
+  script, the working directory and the corpus location per platform. Three route titles
+  drop their port numbers, so three skills' lessons-block headers regenerate. Where a thing
+  is genuinely Windows-only - the Power Automate bridge, a `.bat` verification case - the
+  text says so instead of pretending otherwise. Third of the eight.
+- **All ten skills are portable.** The last five skills were rewritten by the gate's own
+  unit boundaries: every table row or prose paragraph that names a Windows mechanism also
+  names its macOS counterpart. The manifest's temporary per-skill `platforms` field is gone;
+  an entry now defaults to both platforms, and `build_plugin_selftest.py` scans the ten real
+  skill directories and fails if any unpaired unit returns. The macOS and Windows plugin
+  builds carry the same ten skills.
+- **Claude installs the ten skills from the repository plugin.** Both Claude install
+  pages now build the platform-named `.plugin`, open it in the app and verify all ten with
+  `ListSkills`; manual one-file uploads and the stale two-skill warning are gone.
+- **Hosted-only utilities are scoped to Copilot Cowork on Windows.** The personalizer moves
+  to `scripts/copilot/personalize.py`; its self-test follows it. The POSIX port watchdog and
+  launchd installer are removed because Claude owns its stdio children and exposes no tunnel
+  ports to poll; the Windows Task Scheduler watchdog remains.
+- `public_scan.py` scans what git would commit and honours path arguments; the executor
+  names itself `aor-batch-exec`; `docs/evidence/README.md` shows the checker command per
+  route; two pages stop saying `install-results.json` names your machine; `.DS_Store` is
+  ignored.
+
 ## 0.3.2 - 2026-09-11
 
 Installable on a Mac in one command, and every POSIX launcher finds its own

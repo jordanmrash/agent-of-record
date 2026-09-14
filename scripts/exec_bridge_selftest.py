@@ -233,7 +233,7 @@ def main() -> int:
         })
         info = init.get("result", {}).get("serverInfo", {})
         check("MCP initialize handshake answers",
-              info.get("name") == "cowork-batch-exec", json.dumps(init)[:200])
+              info.get("name") == "aor-batch-exec", json.dumps(init)[:200])
         check("server reports the portable version",
               info.get("version") == EXPECTED_VERSION, str(info))
 

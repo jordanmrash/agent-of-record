@@ -85,6 +85,14 @@ CHECKS = [
         ),
     ),
     Check("bridge facts", [sys.executable, str(ROOT / "scripts" / "facts_check.py")]),
+    # The plugin manifest's own validation, without writing a bundle: --list exits 3 when a
+    # manifest entry has no skill directory or, under --strict, when a skill declared for
+    # macOS carries Windows-only text. Item 6 asked for this to be wired into CI; CI runs
+    # this file, so this is the wire.
+    Check(
+        "skill plugin manifest",
+        [sys.executable, str(ROOT / "scripts" / "build_plugin.py"), "--strict", "--list"],
+    ),
     Check(
         "synthetic control loop",
         [sys.executable, str(ROOT / "examples" / "synthetic-control-loop" / "run.py"), "--check"],
@@ -99,6 +107,10 @@ ROOT_SELFTESTS = [
     # it. Runs the platform's own script shape, so the same suite covers the
     # Windows machine that publishes and the Mac that contributes.
     ROOT / "scripts" / "exec_bridge_selftest.py",
+    # Positive and negative controls for the --strict matcher: every Windows-only
+    # pattern fires on a sentence that means it, and none fires on a lesson key,
+    # a route id or a near-miss. The gate that guards the plugin is itself gated.
+    ROOT / "scripts" / "build_plugin_selftest.py",
 ]
 
 SELFTESTS = [

@@ -40,7 +40,7 @@ failure and state must be handled — see "Stateless behavior" below.
 
 <!-- SKILL-LESSONS:start -->
 
-## Lessons already paid for — the filesystem bridge (8932) and the OneDrive tree it writes
+## Lessons already paid for — the filesystem bridge and the OneDrive tree it writes
 
 19 rule(s) of 20 entries routed to this skill, generated from
 `cowork-memory/cowork-lessons.md`. **Do not hand-edit this block** — it is
@@ -83,11 +83,13 @@ The bridge reaches **only** these two paths. Anything outside them is rejected:
 
 - `C:\Users\YOURUSER\Documents\COPILOT_COWORK`
 - `C:\Users\YOURUSER\Downloads`
+Platform counterpart: On macOS under Claude Cowork, use `aor-filesystem` over stdio with the roots configured by `Startup/posix/fs-server.sh`; no tunnel or bridge port is used.
 
 Confirm with `list_allowed_directories` at the start of each file operation — not once
 per session. Under stateless MCP nothing is cached between calls, so a per-session check
 can go stale. The folder was renamed from `Cowork` on 2026-07-27; any older reference to
 `C:\Users\YOURUSER\Documents\Cowork` is stale.
+Platform counterpart: On macOS under Claude Cowork, use `aor-filesystem` over stdio with the roots configured by `Startup/posix/fs-server.sh`; no tunnel or bridge port is used.
 
 ## Stateless behavior
 
@@ -162,6 +164,7 @@ can go stale. The folder was renamed from `Cowork` on 2026-07-27; any older refe
 - Browser automation — that is the Web Automation bridge (port 8931, `playwright-skill`).
 - Running a command, script, `.bat`, `.cmd` or `.ps1` — that is the Command Bridge
   (port 8933, `command-bridge`). Write the script here, then run it there.
+Platform counterpart: On macOS under Claude Cowork, use `aor-filesystem` over stdio with the roots configured by `Startup/posix/fs-server.sh`; no tunnel or bridge port is used.
 
 ## Failure handling
 
@@ -169,7 +172,7 @@ can go stale. The folder was renamed from `Cowork` on 2026-07-27; any older refe
 |---|---|---|
 | Bridge tools absent entirely | Connector not loaded this session | Say the bridge is not connected; stop |
 | Timeout / connection reset / 502 / 504 | Ordinary stateless-transport blip | Retry that one call once (verify first if it was a write) |
-| Same call fails twice | Tunnel or server actually down | Report disconnected; check ports 8931/8932/8933/8934 are running and set to PUBLIC |
+| Same call fails twice | Tunnel or server actually down | Report disconnected; check ports 8931/8932/8933/8934 are running and set to PUBLIC On macOS under Claude Cowork, use `aor-filesystem` over stdio with the roots configured by `Startup/posix/fs-server.sh`; no tunnel or bridge port is used. |
 | "Access denied" or path rejected | Target outside the allowed directories | Report the limit; do not reroute elsewhere |
 | Write reports success but read-back fails | Write did not land | Report the discrepancy; do not claim success |
 
@@ -198,6 +201,7 @@ These are **separate stores** and must not be confused:
 - **OneDrive `Documents/Cowork`** (Cowork's config store, NOT reachable by the bridge) —
   holds personal skills, `cowork-memory/`, and `copilot-instructions.md`. Reach it with
   the OneDrive tools or the `/mnt/user-config/` mount, never the bridge.
+Platform counterpart: On macOS under Claude Cowork, use `aor-filesystem` over stdio with the roots configured by `Startup/posix/fs-server.sh`; no tunnel or bridge port is used.
 
 Writing a skill, memory file, or instructions change to the local PC folder has no effect
 on Cowork. Config belongs in OneDrive; working files belong on the PC.
@@ -205,14 +209,15 @@ on Cowork. Config belongs in OneDrive; working files belong on the PC.
 ## Bridge configuration
 
 Six files on the PC, all under `C:\Users\YOURUSER\Documents\COPILOT_COWORK\Startup\`:
+Platform counterpart: On macOS under Claude Cowork, use `aor-filesystem` over stdio with the roots configured by `Startup/posix/fs-server.sh`; no tunnel or bridge port is used.
 
 | File | Role | Holds allowed directories? |
 |---|---|---|
-| `GO.bat` | One-click launcher. Opens VS Code at the `Startup\` folder, which auto-runs the tasks. | No |
+| `GO.bat` | One-click launcher. Opens VS Code at the `Startup\` folder, which auto-runs the tasks. | No On macOS under Claude Cowork, use `aor-filesystem` over stdio with the roots configured by `Startup/posix/fs-server.sh`; no tunnel or bridge port is used. |
 | `.vscode\tasks.json` | Starts the four supergateway bridges on folder open (exactly 4 tasks — the autorun watcher was removed 2026-08-21). Points `--stdio` at the four `.cmd` files. | **No** — paths are not here |
-| `fs-server.cmd` | Filesystem MCP server (port 8932). | **Yes** — the two trailing arguments |
-| `pw-server.cmd` | Playwright MCP server (port 8931). | **Yes** — `--output-dir` |
-| `exec-server.cmd` | Commands MCP server (port 8933, `mcp-server-commands`). | **Yes** — the `cd /d` working directory |
+| `fs-server.cmd` | Filesystem MCP server (port 8932). | **Yes** — the two trailing arguments On macOS under Claude Cowork, use `aor-filesystem` over stdio with the roots configured by `Startup/posix/fs-server.sh`; no tunnel or bridge port is used. |
+| `pw-server.cmd` | Playwright MCP server (port 8931). | **Yes** — `--output-dir` On macOS under Claude Cowork, use `aor-filesystem` over stdio with the roots configured by `Startup/posix/fs-server.sh`; no tunnel or bridge port is used. |
+| `exec-server.cmd` | Commands MCP server (port 8933, `mcp-server-commands`). | **Yes** — the `cd /d` working directory On macOS under Claude Cowork, use `aor-filesystem` over stdio with the roots configured by `Startup/posix/fs-server.sh`; no tunnel or bridge port is used. |
 | `AUTORUN.ps1` | Retired queue runner — **manual use by Jordan only, never an agent fallback.** No longer auto-started. | **Yes** — the `$Root` variable |
 
 If the folder is moved or renamed, edit `fs-server.cmd`, `pw-server.cmd`, `exec-server.cmd`
@@ -225,11 +230,13 @@ go looking in `tasks.json` for paths — it contains none.
 starts Playwright directly on port 8931 without supergateway and without
 `--user-data-dir`, so the SSO profile is lost, and it opens VS Code at
 `PAD Cowork Project` rather than `Startup\`, so the tasks never fire.
+Platform counterpart: On macOS under Claude Cowork, use `aor-filesystem` over stdio with the roots configured by `Startup/posix/fs-server.sh`; no tunnel or bridge port is used.
 
 It has been neutralized — it now sits at `COPILOT_COWORK\SS\` renamed to
 `START_COWORK_BRIDGE_NOINSTALL.bat.SS`, an extension Windows will not execute. If a file
 by that name ever reappears with a live `.bat` extension, it is the old launcher and
 should not be run. **`Startup\GO.bat` is the only correct launcher.**
+Platform counterpart: On macOS under Claude Cowork, use `aor-filesystem` over stdio with the roots configured by `Startup/posix/fs-server.sh`; no tunnel or bridge port is used.
 
 ### Transport and browser state
 
@@ -245,6 +252,7 @@ single process, so the second would fail to launch.
 The transport being stateless is the goal; the **browser** being stateless is a bug.
 `pw-server.cmd` runs `--browser msedge --user-data-dir C:\Users\YOURUSER\pw-sso-profile`
 with no `--isolated`, so the SSO session survives across calls. Keep it that way.
+Platform counterpart: On macOS under Claude Cowork, use `aor-filesystem` over stdio with the roots configured by `Startup/posix/fs-server.sh`; no tunnel or bridge port is used.
 
 ### `search_files` matches direct children only
 
@@ -277,6 +285,7 @@ fails twice in a row.
 Ports 8931, 8932, 8933 and 8934 must be set to PUBLIC in the VS Code Ports panel after every restart —
 this does not persist. That is the genuine "bridge is dead" cause, and it is distinct from
 a single intermittent call failure, which under stateless MCP is just a retry.
+Platform counterpart: On macOS under Claude Cowork, use `aor-filesystem` over stdio with the roots configured by `Startup/posix/fs-server.sh`; no tunnel or bridge port is used.
 
 ### Connectors load at session start
 
@@ -295,6 +304,7 @@ handoff surface between them.
 - `exec-server.cmd` sets its working directory to `COPILOT_COWORK`, so a command that
   redirects output to a relative path lands where this bridge can read it. Write a `.ps1`
   here, run it on 8933, then read the output file back here.
+Platform counterpart: On macOS under Claude Cowork, use `aor-filesystem` over stdio with the roots configured by `Startup/posix/fs-server.sh`; no tunnel or bridge port is used.
 
 ### When the command bridge is down — there is NO fallback (authoritative)
 
@@ -302,6 +312,7 @@ If 8933 is unavailable, **stop and report the connection failure to Jordan.** Do
 this bridge to route around it: never write a script to `COPILOT_COWORK\autorun\queue`,
 never invoke `AUTORUN.ps1`, and never substitute another execution runtime. Retry a single
 failed call once — the transport is stateless — then report and wait.
+Platform counterpart: On macOS under Claude Cowork, use `aor-filesystem` over stdio with the roots configured by `Startup/posix/fs-server.sh`; no tunnel or bridge port is used.
 
 The autorun watcher task was removed from `Startup\.vscode\tasks.json` on 2026-08-21
 (commit 784dc9f) so the queue is no longer armed. `AUTORUN.ps1` stays on disk as a manual
