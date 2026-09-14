@@ -93,6 +93,12 @@ behind is retired on upgrade.
   drop their port numbers, so three skills' lessons-block headers regenerate. Where a thing
   is genuinely Windows-only - the Power Automate bridge, a `.bat` verification case - the
   text says so instead of pretending otherwise. Third of the eight.
+- **All ten skills are portable.** The last five skills were rewritten by the gate's own
+  unit boundaries: every table row or prose paragraph that names a Windows mechanism also
+  names its macOS counterpart. The manifest's temporary per-skill `platforms` field is gone;
+  an entry now defaults to both platforms, and `build_plugin_selftest.py` scans the ten real
+  skill directories and fails if any unpaired unit returns. The macOS and Windows plugin
+  builds carry the same ten skills.
 - `public_scan.py` scans what git would commit and honours path arguments; the executor
   names itself `aor-batch-exec`; `docs/evidence/README.md` shows the checker command per
   route; two pages stop saying `install-results.json` names your machine; `.DS_Store` is

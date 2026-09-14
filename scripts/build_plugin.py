@@ -162,7 +162,7 @@ def select(manifest: dict, platform: str | None) -> list[dict]:
         fail("manifest has no 'skills' array -- nothing to package", 2)
     if platform is None:
         return entries
-    chosen = [e for e in entries if platform in e.get("platforms", [])]
+    chosen = [e for e in entries if platform in e.get("platforms", ["windows", "macos"])]
     if not chosen:
         fail(f"no skills declared for platform '{platform}'", 2)
     return chosen
@@ -211,7 +211,7 @@ def main() -> int:
             problems.append(f"{name}: frontmatter name is '{front['name']}' -- must match the directory")
 
         hits = scan_windows_text(skill_dir)
-        if hits and "macos" in entry.get("platforms", []):
+        if hits and "macos" in entry.get("platforms", ["windows", "macos"]):
             message = f"{name}: declared macos but carries unpaired Windows-only text -> " + "; ".join(hits[:4])
             (problems if args.strict else warnings).append(message)
         elif hits:

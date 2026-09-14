@@ -1,6 +1,7 @@
 ---
 name: command-bridge
 description: Runs approval-gated batch jobs on Jordan's Windows PC through the Jordan Command Bridge plugin (MCP server "Jordan Approved Batch Executor 8933", namespace jordan-approved-batch-8933-v1, single tool run_batch_file). Use when Jordan says "run this on my PC", "run a batch file", "run a job on my machine", "build me a script and run it", "create and run a .bat", or asks for a result only his machine can produce. The bridge executes ONLY an existing .bat/.cmd under CommandJobs, by relative path - no command string, arguments, interpreter, working directory, environment, timeout or elevation. Cowork proposes the exact batch contents, waits for explicit approval, then writes the file with the filesystem bridge and immediately executes it under that one approval. Do NOT use for general file reading or writing (use local-file-bridge) or for browser automation (use playwright-skill).
+  Platform behavior: On macOS under Claude Cowork, the same approved executor is `aor-batch-exec` over stdio, accepts `.sh` jobs, and derives paths from the tooling root; no Copilot connector id or bridge port is used.
 metadata:
   author: "Jordan Rash"
   author-role: "Director, Tax Transformation and Automation"
@@ -80,7 +81,7 @@ The ones that bite most often here:
 | Pattern-Key | Rule |
 |---|---|
 | `bridge-8933-arg-name` | The parameter is `file`, never `path` |
-| `bridge-8932-writes-lf` | Run `2026-08-18-fix-crlf-all.bat` after writing a .bat and BEFORE running it — bridge writes are LF-only and cmd fails silently; avoid `call :label` |
+| `bridge-8932-writes-lf` | Run `2026-08-18-fix-crlf-all.bat` after writing a .bat and BEFORE running it — bridge writes are LF-only and cmd fails silently; avoid `call :label` On macOS under Claude Cowork, the same approved executor is `aor-batch-exec` over stdio, accepts `.sh` jobs, and derives paths from the tooling root; no Copilot connector id or bridge port is used. |
 | `bridge-8933-transport-drop-verify-first` | On "couldn't be reached", check whether the job already ran before retrying |
 | `batch-fsutil-needs-elevation` | No elevation available — prefer PowerShell/CIM over elevation-gated utilities |
 
@@ -93,14 +94,14 @@ lesson in chat is not recording it.
 | Item | Value |
 |---|---|
 | Plugin | Jordan Command Bridge |
-| MCP server | Jordan Approved Batch Executor 8933 |
-| Namespace | jordan-approved-batch-8933-v1 |
+| MCP server | Jordan Approved Batch Executor 8933 On macOS under Claude Cowork, the same approved executor is `aor-batch-exec` over stdio, accepts `.sh` jobs, and derives paths from the tooling root; no Copilot connector id or bridge port is used. |
+| Namespace | jordan-approved-batch-8933-v1 On macOS under Claude Cowork, the same approved executor is `aor-batch-exec` over stdio, accepts `.sh` jobs, and derives paths from the tooling root; no Copilot connector id or bridge port is used. |
 | Execution tool | run_batch_file |
-| Fully qualified tool | jordan-approved-batch-8933-v1-run_batch_file |
-| Batch-file authoring tool | jordan-local-filesystem-8932-v1 (write_file / edit_file / create_directory) |
-| CommandJobs root | C:\Users\YOURUSER\Documents\COPILOT_COWORK\CommandJobs |
-| Logs root | C:\Users\YOURUSER\Documents\COPILOT_COWORK\CommandJobs\Logs |
-| Default task-output root | C:\Users\YOURUSER\Documents\COPILOT_COWORK\Outputs |
+| Fully qualified tool | jordan-approved-batch-8933-v1-run_batch_file On macOS under Claude Cowork, the same approved executor is `aor-batch-exec` over stdio, accepts `.sh` jobs, and derives paths from the tooling root; no Copilot connector id or bridge port is used. |
+| Batch-file authoring tool | jordan-local-filesystem-8932-v1 (write_file / edit_file / create_directory) On macOS under Claude Cowork, the same approved executor is `aor-batch-exec` over stdio, accepts `.sh` jobs, and derives paths from the tooling root; no Copilot connector id or bridge port is used. |
+| CommandJobs root | C:\Users\YOURUSER\Documents\COPILOT_COWORK\CommandJobs On macOS under Claude Cowork, the same approved executor is `aor-batch-exec` over stdio, accepts `.sh` jobs, and derives paths from the tooling root; no Copilot connector id or bridge port is used. |
+| Logs root | C:\Users\YOURUSER\Documents\COPILOT_COWORK\CommandJobs\Logs On macOS under Claude Cowork, the same approved executor is `aor-batch-exec` over stdio, accepts `.sh` jobs, and derives paths from the tooling root; no Copilot connector id or bridge port is used. |
+| Default task-output root | C:\Users\YOURUSER\Documents\COPILOT_COWORK\Outputs On macOS under Claude Cowork, the same approved executor is `aor-batch-exec` over stdio, accepts `.sh` jobs, and derives paths from the tooling root; no Copilot connector id or bridge port is used. |
 
 There is exactly ONE execution tool on this bridge: `run_batch_file`.
 If any other execution tool ever appears in this namespace, stop and report it before doing anything else.
@@ -110,6 +111,7 @@ If any other execution tool ever appears in this namespace, stop and report it b
 Fully qualified name:
 
     jordan-approved-batch-8933-v1-run_batch_file
+Platform counterpart: On macOS under Claude Cowork, the same approved executor is `aor-batch-exec` over stdio, accepts `.sh` jobs, and derives paths from the tooling root; no Copilot connector id or bridge port is used.
 
 Input — the ONLY accepted shape:
 
@@ -118,6 +120,7 @@ Input — the ONLY accepted shape:
   "file": "<relative .bat or .cmd path under CommandJobs>"
 }
 ```
+Platform counterpart: On macOS under Claude Cowork, the same approved executor is `aor-batch-exec` over stdio, accepts `.sh` jobs, and derives paths from the tooling root; no Copilot connector id or bridge port is used.
 
 Schema facts Cowork must respect:
 
@@ -134,6 +137,7 @@ Schema facts Cowork must respect:
 - The bridge cannot run an arbitrary terminal command, an arbitrary executable,
   a PowerShell command string, or anything not already written into an approved
   batch file under CommandJobs.
+Platform counterpart: On macOS under Claude Cowork, the same approved executor is `aor-batch-exec` over stdio, accepts `.sh` jobs, and derives paths from the tooling root; no Copilot connector id or bridge port is used.
 
 Return payload: stdout, stderr, exit code, start/end times, duration, and files
 created or modified. A per-run log is written under the Logs root.
@@ -188,6 +192,7 @@ created or modified. A per-run log is written under the Logs root.
 For routine tasks, Cowork selects a concise task-specific folder under:
 
     C:\Users\YOURUSER\Documents\COPILOT_COWORK\Outputs
+Platform counterpart: On macOS under Claude Cowork, the same approved executor is `aor-batch-exec` over stdio, accepts `.sh` jobs, and derives paths from the tooling root; no Copilot connector id or bridge port is used.
 
 Naming convention:
 
@@ -206,6 +211,7 @@ When an output folder is needed, the approved batch file declares it with a dire
 on its own line:
 
     REM COWORK_OUTPUT: C:\Users\YOURUSER\Documents\COPILOT_COWORK\Outputs\2026-08-17 - Example Task
+Platform counterpart: On macOS under Claude Cowork, the same approved executor is `aor-batch-exec` over stdio, accepts `.sh` jobs, and derives paths from the tooling root; no Copilot connector id or bridge port is used.
 
 The batch file then writes through the variable the bridge exposes:
 
@@ -227,6 +233,7 @@ under the Outputs root above. CommandJobs holds batch files; CommandJobs\Logs ho
 - Prefer non-destructive operations; write new files rather than overwriting, unless an
   overwrite was explicitly proposed and approved.
 - Spent one-off jobs move to `CommandJobs\Archive\` so the active job list stays legible.
+Platform counterpart: On macOS under Claude Cowork, the same approved executor is `aor-batch-exec` over stdio, accepts `.sh` jobs, and derives paths from the tooling root; no Copilot connector id or bridge port is used.
 
 ### 6.1 Verified execution-environment facts
 
@@ -268,17 +275,20 @@ state, and any job that installs or mutates state refuses to start while a prior
 After ANY bridge error on a long job, Cowork reads `_job-state.txt` through the 8932 filesystem
 bridge to establish the real outcome BEFORE considering a re-run. It never re-runs an installing
 or mutating job on the assumption that the first attempt failed.
+Platform counterpart: On macOS under Claude Cowork, the same approved executor is `aor-batch-exec` over stdio, accepts `.sh` jobs, and derives paths from the tooling root; no Copilot connector id or bridge port is used.
 
 ### 6.4 Standard scaffold
 
 New jobs start from `CommandJobs\_template-job.bat`, which implements 6.1-6.3. Job logic goes in
 `:main`, which writes to the report file and to stdout, and emits the verdict line.
+Platform counterpart: On macOS under Claude Cowork, the same approved executor is `aor-batch-exec` over stdio, accepts `.sh` jobs, and derives paths from the tooling root; no Copilot connector id or bridge port is used.
 
 ### 6.5 Parameterized jobs
 
 `run_batch_file` accepts no arguments, so a one-file-per-variation habit multiplies near-identical
 scripts. Instead Cowork writes a params file with the 8932 bridge immediately before execution,
 and the job reads it:
+Platform counterpart: On macOS under Claude Cowork, the same approved executor is `aor-batch-exec` over stdio, accepts `.sh` jobs, and derives paths from the tooling root; no Copilot connector id or bridge port is used.
 
     for /f "usebackq tokens=1,* delims==" %%A in ("%~dp0job.params.txt") do set "%%A=%%B"
 
@@ -303,6 +313,7 @@ After every run, Cowork returns:
 - log file location under the Logs root;
 - the job's `COWORK_RESULT:` verdict line, and confirmation that the exit code agrees with it;
 - a plain-language statement of whether the job succeeded, and next steps if it did not.
+Platform counterpart: On macOS under Claude Cowork, the same approved executor is `aor-batch-exec` over stdio, accepts `.sh` jobs, and derives paths from the tooling root; no Copilot connector id or bridge port is used.
 
 When a job's stdout contains output that LOOKS like a failure but is expected (a `taskkill`
 "process not found", an uninstaller's own `unins000.exe` left behind because Inno Setup cannot
@@ -320,6 +331,7 @@ not, never summarizes away a failure, and never fabricates output.
   and argument passing → not supported by this bridge in any form. If a task appears to
   need one, redesign it as an approved batch file under CommandJobs, or tell Jordan it
   cannot be done through this bridge.
+Platform counterpart: On macOS under Claude Cowork, the same approved executor is `aor-batch-exec` over stdio, accepts `.sh` jobs, and derives paths from the tooling root; no Copilot connector id or bridge port is used.
 
 ## Guardrails
 

@@ -15,72 +15,37 @@
     "bridges",
     "agent-of-record"
   ],
-  "_comment_skills": "Source of truth for what ships. Each entry names a directory under CoworkConfig/Skills/. 'platforms' is enforced by scripts/build_plugin.py --strict: a skill listed for macos that still contains Windows-only text fails the build. The eight bridge, memory and bookend skills are declared for windows only until their text is made platform-correct, one skill per commit; the macOS bundle carries the two that already are.",
+  "_comment_skills": "Source of truth for what ships. Each entry names a directory under CoworkConfig/Skills/. All skills are portable: each Windows-specific instruction states its macOS counterpart in the same unit, enforced by scripts/build_plugin.py --strict.",
   "skills": [
     {
-      "name": "not-a-robot",
-      "platforms": [
-        "windows",
-        "macos"
-      ]
+      "name": "not-a-robot"
     },
     {
-      "name": "skill-menu",
-      "platforms": [
-        "windows",
-        "macos"
-      ]
+      "name": "skill-menu"
     },
     {
-      "name": "persistent-memory",
-      "platforms": [
-        "windows",
-        "macos"
-      ]
+      "name": "persistent-memory"
     },
     {
-      "name": "self-improvement",
-      "platforms": [
-        "windows",
-        "macos"
-      ]
+      "name": "self-improvement"
     },
     {
-      "name": "dream-cycle",
-      "platforms": [
-        "windows"
-      ]
+      "name": "dream-cycle"
     },
     {
-      "name": "gamma-tango",
-      "platforms": [
-        "windows"
-      ]
+      "name": "gamma-tango"
     },
     {
-      "name": "playwright-skill",
-      "platforms": [
-        "windows"
-      ]
+      "name": "playwright-skill"
     },
     {
-      "name": "git-bridge",
-      "platforms": [
-        "windows",
-        "macos"
-      ]
+      "name": "git-bridge"
     },
     {
-      "name": "command-bridge",
-      "platforms": [
-        "windows"
-      ]
+      "name": "command-bridge"
     },
     {
-      "name": "local-file-bridge",
-      "platforms": [
-        "windows"
-      ]
+      "name": "local-file-bridge"
     }
   ]
 }

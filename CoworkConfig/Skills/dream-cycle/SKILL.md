@@ -160,6 +160,7 @@ Only servers Jordan owns can carry a segment: 8933 (`batch-exec-server.js`) and
 in `node_modules` and is overwritten on the next start - their rules stay in
 the companion skills, which `skill_lesson_routes.json` already covers. A route
 naming an npx-launched server is a defect in the routes file, not a finding.
+Platform counterpart: On macOS under Claude Cowork, FULL mode uses approved `.sh` jobs through the `aor-batch-exec` stdio server; CLOUD mode is unchanged and uses no local bridge.
 
 **When you add a rule that reads a file, add the file to `acquires:` in the same
 edit.** Then run:
@@ -378,6 +379,7 @@ written and run. An unattended 2am run cannot obtain that approval, so taking
 the FULL path on a schedule would quietly bypass the governance rule - the fact
 that the commands are read-only does not make the bypass acceptable. A
 scheduled run states that local git review was unavailable and moves on.
+Platform counterpart: On macOS under Claude Cowork, FULL mode uses approved `.sh` jobs through the `aor-batch-exec` stdio server; CLOUD mode is unchanged and uses no local bridge.
 
 **FULL mode** - Jordan is present and asks. It follows the SAME corpus scope,
 integrity rules, analysis rules, proposal schema, report format and mutation
@@ -392,6 +394,7 @@ prohibitions as CLOUD. It differs only in execution:
   the conversation, and emailing him a summary he just watched being produced
   is noise.
 - Still writes AND verifies the dated report. That is not CLOUD-specific.
+Platform counterpart: On macOS under Claude Cowork, FULL mode uses approved `.sh` jobs through the `aor-batch-exec` stdio server; CLOUD mode is unchanged and uses no local bridge.
 
 Prove the mode by CALLING a bridge tool, never by reading the tool list.
 
@@ -553,6 +556,7 @@ report becomes something Jordan stops reading.
    contradicts a lesson, a memory describing a file or script that has since
    changed, a `ptr-` pointer whose deep file no longer exists, and near-duplicate
    keys. Report the key and the conflict; propose no deletions beyond naming them.
+Platform counterpart: On macOS under Claude Cowork, FULL mode uses approved `.sh` jobs through the `aor-batch-exec` stdio server; CLOUD mode is unchanged and uses no local bridge.
 
    **Exhaust the pagination.** `list_memories` returns a page, not necessarily
    the whole store. On 2026-08-30 it returned 50 of 81 and all four
@@ -646,6 +650,7 @@ dream find", or just "dream":
    bare, `digest_apply`, `lesson_gate audit`, commit via `cowork-close.bat`.
 5. Note in the report file which proposals were applied and which were
    declined, so the next sweep does not re-propose a declined one.
+Platform counterpart: On macOS under Claude Cowork, FULL mode uses approved `.sh` jobs through the `aor-batch-exec` stdio server; CLOUD mode is unchanged and uses no local bridge.
 
 If Jordan never asks, nothing happens - and that is the correct behaviour, not
 a gap to engineer around. An unattended agent applying yesterday's proposals to
