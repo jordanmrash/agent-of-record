@@ -47,7 +47,7 @@ bridge can reach authenticated intranet pages, intranet portals, and anything be
 
 <!-- SKILL-LESSONS:start -->
 
-## Lessons already paid for — browser automation (8931)
+## Lessons already paid for — browser automation
 
 2 rule(s) of 2 entries routed to this skill, generated from
 `cowork-memory/cowork-lessons.md`. **Do not hand-edit this block** — it is

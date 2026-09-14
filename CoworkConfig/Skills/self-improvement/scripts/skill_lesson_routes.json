@@ -4,7 +4,7 @@
     "Consumed by skill_lessons.py, which regenerates a marker-delimited block in",
     "each named SKILL.md.",
     "",
-    "A key MAY appear under more than one skill: a rule about writing .bat files",
+    "A key MAY appear under more than one skill: a rule about writing .bat (or .sh on macOS) job scripts",
     "matters both to the skill that WRITES them and the one that RUNS them.",
     "Duplication is safe here and only here, because every block is REGENERATED",
     "from cowork-lessons.md. Hand-copied rules drift; generated ones cannot.",
@@ -19,7 +19,7 @@
     "PUBLISHED COPY: routes for skills withheld from this repository (workflow conversion, deck generation, the author's personal writing-voice skill) were removed so `skill_lessons.py --check` opens only files that exist here."
   ],
   "command-bridge": {
-    "title": "the approved batch executor (8933)",
+    "title": "the approved batch executor",
     "prefix": [
       "bridge-8933-",
       "batch-",
@@ -43,7 +43,7 @@
     ]
   },
   "local-file-bridge": {
-    "title": "the filesystem bridge (8932) and the OneDrive tree it writes",
+    "title": "the filesystem bridge and the OneDrive tree it writes",
     "prefix": [
       "bridge-8932-",
       "onedrive-"
@@ -115,7 +115,7 @@
     ]
   },
   "playwright-skill": {
-    "title": "browser automation (8931)",
+    "title": "browser automation",
     "prefix": [
       "bridge-8931-",
       "playwright-"

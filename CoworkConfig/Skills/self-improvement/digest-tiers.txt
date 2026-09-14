@@ -20,7 +20,7 @@
 # WHY PARTIAL EXISTS. Every line below used to say ENFORCED. On 2026-09-01
 # onedrive-recursive-scan-hydrates-tree was missed during a close, minutes
 # after the gate had printed it, because its prose had been quietened on the
-# strength of a check that reads .bat and .cmd files - and the mistake was made
+# strength of a check that reads .bat and .cmd files (.sh on macOS) - and the mistake was made
 # in the agent's own shell, which that check cannot see. The rule was not wrong
 # and the check was not broken. The DEMOTION was wrong, and nothing could tell,
 # because no line recorded how far the enforcer reached.
@@ -66,7 +66,7 @@ PARTIAL artifact-rollback-overwritten-on-rerun | job_lint/unguarded-snapshot | r
 # ---------------------------------------------------------------------------
 PIN git-deletion-does-not-sanitize-history | the path survives in every prior commit and every clone; there is no undo, and the repo is permanently unpublishable
 PIN git-renaming-is-not-sanitizing | a cosmetic rename leaves client work product in place and produces a clean grep, retiring the signal that would have prompted a real fix
-PIN bridge-8932-writes-lf | an LF-only .bat mis-parses in ways that look like a silent no-op, so the failure is invisible rather than loud
+PIN bridge-8932-writes-lf | on Windows an LF-only .bat mis-parses in ways that look like a silent no-op, so the failure is invisible rather than loud (a .sh on macOS is LF by convention and unaffected)
 PIN bridge-8932-parallel-writes-denied | a second batched write is auto-denied while the first approval is pending, and the denial is silent
 PIN bridge-8933-arg-name | a wrong parameter name fails the call outright; cheap to obey, and it recurs constantly
 PIN bridge-8933-env-partially-stripped | user-profile variables are empty, so a job that assumes them fails in a way that reads as a bridge fault

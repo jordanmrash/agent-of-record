@@ -24,7 +24,7 @@ metadata:
 
 <!-- SKILL-LESSONS:start -->
 
-## Lessons already paid for — the approved batch executor (8933)
+## Lessons already paid for — the approved batch executor
 
 24 rule(s) of 29 entries routed to this skill, generated from
 `cowork-memory/cowork-lessons.md`. **Do not hand-edit this block** — it is

@@ -40,7 +40,7 @@ failure and state must be handled — see "Stateless behavior" below.
 
 <!-- SKILL-LESSONS:start -->
 
-## Lessons already paid for — the filesystem bridge (8932) and the OneDrive tree it writes
+## Lessons already paid for — the filesystem bridge and the OneDrive tree it writes
 
 19 rule(s) of 20 entries routed to this skill, generated from
 `cowork-memory/cowork-lessons.md`. **Do not hand-edit this block** — it is

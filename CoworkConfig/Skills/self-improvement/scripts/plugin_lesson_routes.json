@@ -22,6 +22,8 @@
     "  8934  node FlowBridge\\flow-mcp-server.js             eligible - own code",
     "  8932  npx -y @modelcontextprotocol/server-filesystem  NOT eligible - upstream",
     "  8931  npx -y @playwright/mcp@latest                   NOT eligible - upstream",
+    "The port numbers are the Windows hosted route's. Under Claude Cowork on macOS the same",
+    "executor starts from Startup/posix/exec-server.sh as aor-batch-exec over stdio, no port.",
     "An edit to an npx-launched package lands in node_modules and is overwritten on",
     "the next start. For 8931/8932 the durable surface is the companion skill,",
     "which skill_lesson_routes.json already covers.",
@@ -43,7 +45,7 @@
   ],
 
   "command-bridge-8933": {
-    "title": "the approved batch executor (8933)",
+    "title": "the approved batch executor (port 8933 on Windows, stdio on macOS)",
     "server": "CommandBridge/batch-exec-server.js",
     "tool": "run_batch_file",
     "max_rules": 5,
@@ -86,7 +88,7 @@
       "",
       "bridge-8932-writes-lf is routed here even though it names the OTHER bridge:",
       "the LF damage is done by the filesystem bridge but it BITES when cmd parses",
-      "the .bat, which happens here. The trap belongs to the tool where it fires.",
+      "the .bat (a .sh on macOS is unaffected), which happens here. The trap belongs to the tool where it fires.",
       "",
       "The static description currently carries three of these rules TYPED BY HAND",
       "(arg name, CRLF, transport drop). Hand copies drift - see the lesson",
@@ -101,7 +103,7 @@
   },
 
   "power-automate-8934": {
-    "title": "the Power Automate bridge (8934)",
+    "title": "the Power Automate bridge (8934; Copilot Cowork on Windows only, no macOS counterpart)",
     "server": "FlowBridge/flow-mcp-server.js",
     "tool": "evaluate_expression",
     "max_rules": 4,

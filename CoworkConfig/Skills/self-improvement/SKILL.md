@@ -324,12 +324,13 @@ and becomes decoration.
 | Operation | How |
 |-----------|-----|
 | **Read** | The OneDrive tree is mounted read-only in the session at `/mnt/user-config/` — read `cowork-memory/cowork-lessons.md` there directly. No download needed. |
-| **Write** | PREFERRED (2026-08-24 on) — write it on the PC through the 8932 bridge under `OneDrive\Documents\Cowork\cowork-memory\`, using `edit_file` for in-place entry edits so the file is never rewritten wholesale. The repo sync sees it the same session. FALLBACK, only when the bridge is down — stage under `working/`, publish with `sharepoint_onedrive-UploadFileContent(drive_id, file_name, source_workspace_path, parent_path, conflict_behavior="replace")` (`drive_id` from `GetDefaultDrive`; `conflict_behavior` matters because the tool defaults to `fail`), then **re-list and confirm size and modified time changed**. That write lands cloud-side and will NOT reach the PC or the repo for many minutes. |
+| **Write** | PREFERRED (2026-08-24 on) — write it where the corpus lives, with the host's file tool: under Copilot Cowork on Windows the filesystem bridge at `OneDrive\Documents\Cowork\cowork-memory\`; under Claude Cowork on Windows or macOS the connected folder's own file tools at `<config root>/cowork-memory/`. Use an in-place edit for entry edits so the file is never rewritten wholesale. The repo sync sees it the same session. FALLBACK, only when the bridge is down — stage under `working/`, publish with `sharepoint_onedrive-UploadFileContent(drive_id, file_name, source_workspace_path, parent_path, conflict_behavior="replace")` (`drive_id` from `GetDefaultDrive`; `conflict_behavior` matters because the tool defaults to `fail`), then **re-list and confirm size and modified time changed**. That write lands cloud-side and will NOT reach the PC or the repo for many minutes. |
 
 Writing to the session's user surface returns `ok: true` and does **not** reach
 OneDrive — it only updates the container mirror. This was measured on 2026-08-18.
-On the PC, the same folder is
-`C:\Users\YOURUSER\OneDrive\Documents\Cowork\`.
+On a Windows PC the same folder is `%USERPROFILE%\OneDrive\Documents\Cowork\`; under Claude
+Cowork it is `<config root>` - the in-repo `CoworkConfig/`, on a Mac typically under
+`~/agent-of-record`.
 
 ## Capture triggers
 
@@ -378,7 +379,7 @@ prose. If it takes more than one line, it belongs in Phase 2.
 
 ```
 [2026-08-24T14:02Z] bridge call failed
-call: run_batch_file bridge-health.bat
+call: run_batch_file bridge-health.bat   (bridge-health.sh on macOS)
 err:  "connection lapsed" — exit 1
 next: re-called same args in a new turn -> exit 0, no restart
 ```
@@ -458,7 +459,7 @@ happens to scan the file, when it should be loading unconditionally.
 
 | Target | Use for | Example |
 |---|---|---|
-| `Documents/Cowork/copilot-instructions.md` | Behaviour that must hold no matter which skill is driving | "there is no fallback when 8933 is down" |
+| `Documents/Cowork/copilot-instructions.md` | Behaviour that must hold no matter which skill is driving | "there is no fallback when the executor is down" |
 | The owning `SKILL.md` | A procedure or trap specific to one subsystem | the CRLF normalizer step before running a job |
 | A memory file in `cowork-memory/` | Durable topic context, not a rule | measured drop rates, folder layout |
 | **A new skill** | A whole repeatable procedure, not a single rule | a fixed multi-step routine run often enough to name |
@@ -554,20 +555,25 @@ This overrides "exact args/commands".
 These restate lessons entries for speed. **The lessons entry is authoritative** — if
 this block and an entry disagree, the entry wins, and this block is the thing to fix.
 
-- Batch jobs live in `C:\Users\YOURUSER\Documents\COPILOT_COWORK\CommandJobs\`; the
-  batch bridge takes a path **relative to that folder**, in a parameter named `file`.
-- After writing any `.bat` through the filesystem bridge, run
-  `2026-08-18-fix-crlf-all.bat` (same folder) and read its report to confirm your file
-  was normalized — bridge-written files arrive LF-only and cmd fails silently on them.
+- Job scripts live under `CommandJobs` in the tooling root - `.bat`/`.cmd` on Windows, `.sh`
+  on macOS; the executor takes a path **relative to that folder**, in a parameter named `file`.
+- Line endings are the executor's problem since 1.3.0 (2026-09-09): an LF-only `.bat`/`.cmd`
+  is rewritten to CRLF before it runs and the result reports `line_endings`; a `.sh` on
+  macOS is LF as written. Read that field instead of running a fix job first.
 - Job output convention: `COPILOT_COWORK\Outputs\YYYY-MM-DD - Title\`.
-- 8933 does NOT inherit a working directory. Every job starts with `cd /d <repo>`.
-  PATH is intact and bare `powershell.exe` / `git` / `python` resolve; only
-  user-profile variables like `%LOCALAPPDATA%` expand to nothing.
-- Send approval-gated 8932 writes ONE per tool block. A second write batched beside
-  the first is auto-denied while that approval is still pending — the error names the
-  pending approval, so it reads like a refusal rather than a queue.
-- The two `Documents` roots are genuinely different: `C:\Users\YOURUSER\Documents\COPILOT_COWORK`
-  is local, the Cowork config lives under `OneDrive\Documents`.
+- The executor's working directory is `CommandJobs` on both platforms. Every job starts by
+  changing into the tooling root: `cd /d "%COWORK_ROOT%"` in a `.bat`, `cd "$COWORK_ROOT"`
+  in a `.sh`. Since 1.3.0 the job gets a complete user environment; the stripped-variables
+  and missing-user-PATH traps are history.
+- Under Copilot Cowork the filesystem bridge's writes are approval-gated: send them ONE per
+  tool block, because a second write batched beside the first is auto-denied while that
+  approval is pending — the error names the pending approval, so it reads like a refusal
+  rather than a queue. Under Claude Cowork on Windows or macOS the connected folder's file
+  tools carry no such gate.
+- On the Windows hosted route the two `Documents` roots are genuinely different: the tooling
+  root `%USERPROFILE%\Documents\COPILOT_COWORK` is local and the Cowork config lives under
+  `OneDrive\Documents`. Under Claude Cowork on either platform there is one tree - the clone,
+  on a Mac typically `~/agent-of-record` - unless `COWORK_CONFIG_ROOT` moves the corpus.
   Both were resolved by a running job on 2026-08-18 — do not assume Known Folder Move
   has merged them, and re-probe rather than hand-editing either path.
 - The filesystem bridge reaches THREE roots as of 2026-08-24 (commit `a6297b6`):

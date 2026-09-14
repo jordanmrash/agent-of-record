@@ -41,7 +41,8 @@
     {
       "name": "self-improvement",
       "platforms": [
-        "windows"
+        "windows",
+        "macos"
       ]
     },
     {

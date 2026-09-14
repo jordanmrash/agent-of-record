@@ -87,6 +87,12 @@ behind is retired on upgrade.
   It now names the executor by its tool, the job script per platform (`.bat`/`.cmd` on
   Windows, `.sh` on macOS), the tooling root by derivation, and shows the status job in both
   shapes. Second of the eight.
+- **`self-improvement` is declared for both platforms.** Its environment facts named one
+  host's paths and two traps executor 1.3.0 had already removed; they now name the job
+  script, the working directory and the corpus location per platform. Three route titles
+  drop their port numbers, so three skills' lessons-block headers regenerate. Where a thing
+  is genuinely Windows-only - the Power Automate bridge, a `.bat` verification case - the
+  text says so instead of pretending otherwise. Third of the eight.
 - `public_scan.py` scans what git would commit and honours path arguments; the executor
   names itself `aor-batch-exec`; `docs/evidence/README.md` shows the checker command per
   route; two pages stop saying `install-results.json` names your machine; `.DS_Store` is
