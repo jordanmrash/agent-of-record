@@ -93,12 +93,16 @@ working in this area: `memory-tiering-pointer-vs-deep`.
 
 - `<focus-slug>` is a stable **kebab-case** name (e.g. `q3-tax-provision`, `client-acme-etr`).
   The same slug is the filename AND the index key — this is what makes matching reliable.
-- **Write path (revised 2026-08-24):** write the file on the PC through the 8932 filesystem
-  bridge at `C:\Users\YOURUSER\OneDrive\Documents\Cowork\cowork-memory\<slug>.md`.
-  The repo sync sees it in the same session, and OneDrive carries it upward afterwards.
-  The older route — `output/cowork-memory/…` via CreateArtifact / EditArtifact (surface
-  `output`) — still lands at `Documents/Cowork/cowork-memory/`, but CLOUD-side: the desktop
-  client may take tens of minutes to pull it down, so use it only when the bridge is down.
+- **Write path (revised 2026-09-14):** write the file where the corpus lives on this
+  machine, through whichever file tool the host gives you. Under Copilot Cowork on Windows
+  that is the filesystem bridge at the OneDrive path,
+  `%USERPROFILE%\OneDrive\Documents\Cowork\cowork-memory\<slug>.md`; under Claude Cowork
+  it is the connected folder's own file tools, at `<config root>/cowork-memory/<slug>.md`
+  - the in-repo `CoworkConfig/cowork-memory/` unless `COWORK_CONFIG_ROOT` moved it, on a
+  Mac typically under `~/agent-of-record`. A local write is seen by the repo sync in the
+  same session. The Copilot artifact route - `output/cowork-memory/…` via CreateArtifact /
+  EditArtifact - lands CLOUD-side and the desktop client may take tens of minutes to pull
+  it down, so use it only when no local file tool is available.
 - **Read path (a fresh session starts with an empty workspace):** fetch from OneDrive —
   `GetDefaultDrive` → `SearchDrive`/`GetDriveChildren` → `ReadFileContent`.
 

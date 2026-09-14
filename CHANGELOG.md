@@ -77,6 +77,10 @@ behind is retired on upgrade.
   starts with an empty corpus. `--list` now reports how many unpaired tokens remain in each
   skill still declared for Windows only. The `devtunnel` pattern gets the identifier guard
   the port pattern got, so a lesson key no longer reads as a platform claim.
+- **`persistent-memory` is declared for both platforms.** Its write path names the
+  mechanism per host - the filesystem bridge at the OneDrive path under Copilot Cowork on
+  Windows, the connected folder's file tools at `<config root>/cowork-memory/` under Claude
+  Cowork on either platform - instead of one Windows user-profile path. First of the eight.
 - `public_scan.py` scans what git would commit and honours path arguments; the executor
   names itself `aor-batch-exec`; `docs/evidence/README.md` shows the checker command per
   route; two pages stop saying `install-results.json` names your machine; `.DS_Store` is

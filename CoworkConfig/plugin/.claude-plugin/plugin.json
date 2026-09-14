@@ -34,7 +34,8 @@
     {
       "name": "persistent-memory",
       "platforms": [
-        "windows"
+        "windows",
+        "macos"
       ]
     },
     {
