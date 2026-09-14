@@ -81,6 +81,12 @@ behind is retired on upgrade.
   mechanism per host - the filesystem bridge at the OneDrive path under Copilot Cowork on
   Windows, the connected folder's file tools at `<config root>/cowork-memory/` under Claude
   Cowork on either platform - instead of one Windows user-profile path. First of the eight.
+- **`git-bridge` is declared for both platforms.** Its mechanics section described one
+  host's connector, a Windows user-profile repository root, `.bat` authoring, a CRLF fix job
+  and a stripped environment as THE way; the last two were fixed at source in executor 1.3.0.
+  It now names the executor by its tool, the job script per platform (`.bat`/`.cmd` on
+  Windows, `.sh` on macOS), the tooling root by derivation, and shows the status job in both
+  shapes. Second of the eight.
 - `public_scan.py` scans what git would commit and honours path arguments; the executor
   names itself `aor-batch-exec`; `docs/evidence/README.md` shows the checker command per
   route; two pages stop saying `install-results.json` names your machine; `.DS_Store` is

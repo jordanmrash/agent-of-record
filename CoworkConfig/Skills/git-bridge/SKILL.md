@@ -3,7 +3,7 @@ name: git-bridge
 description: >-
   Version control for Jordan's COPILOT_COWORK folder, run as git commands inside a batch job
   through the EXISTING command bridge (tool run_batch_file). There is NO dedicated git MCP
-  server; port 8934 is the Power Automate bridge and has nothing to do with git.
+  server, and no other bridge has anything to do with git.
   Use when Jordan says "what changed", "commit this", "show me the diff", "what did you change",
   "roll that back", "undo that change", "show the history", "create a branch", or before and
   after any batch of edits to his bridges, skills or job scripts. Read operations (status, diff,
@@ -67,50 +67,49 @@ working in this area: `git-misses-system-state`.
 
 ## 1. How this actually works (read this first)
 
-There is no git MCP server. An earlier version of this skill described git tools on port
-8934 that were never installed; that port now carries the Power Automate bridge, which has
-nothing to do with git. Git needs no server of its own: it is a command-line program, and the
-command bridge already runs command-line programs on this machine under Jordan's
-approval flow.
+There is no git MCP server. An earlier version of this skill described git tools on a
+bridge that was never installed. Git needs no server of its own: it is a command-line
+program, and the approved batch executor already runs command-line programs on this
+machine under the user's approval flow - the same executor on Windows and on a Mac.
 
 | Item | Value |
 |---|---|
-| MCP server used | Jordan Approved Batch Executor 8933 |
-| Namespace | jordan-approved-batch-8933-v1 |
-| Tool | `run_batch_file` (relative path to an existing .bat under CommandJobs) |
-| Repository root | C:\Users\YOURUSER\Documents\COPILOT_COWORK |
-| Remote | NONE — the working repository is local only and must never gain one. The published repository (`agent-of-record`) is a separate, disposable single-commit snapshot built from it; that snapshot is the only tree that carries a remote. |
+| Executor | The approved batch executor - registered as a Copilot Cowork connector on the Windows hosted route, or as the `aor-batch-exec` stdio server under Claude Cowork on Windows or macOS |
+| Tool | `run_batch_file`, taking one argument: the job script's path relative to `CommandJobs` |
+| Job script | `.bat` or `.cmd` on Windows; `.sh` on macOS. Nothing else is accepted |
+| Tooling root | Derived by the launcher from its own location - the clone or working folder that holds `Startup`, `CommandJobs` and `Outputs`, wherever it lives (`COWORK_ROOT`) |
+| Remote | NONE - the working repository is local only and must never gain one. The published repository (`agent-of-record`) is a separate tree; that is the only one that carries a remote |
 
-The repository covers the whole Cowork working folder: `Startup\` (bridge configuration),
-`CommandJobs\` (job scripts), `Outputs\` (deliverables), and anything else Jordan keeps
-there.
+The repository covers the whole working folder: `Startup` (bridge configuration),
+`CommandJobs` (job scripts), `Outputs` (deliverables), and anything else kept there.
 
 **The mechanic for every operation in this skill is the same three steps:**
 
-1. Author a .bat file containing the exact git commands.
-2. Write it to `CommandJobs\` with the filesystem bridge (`jordan-local-filesystem-8932-v1`
-   `write_file`).
+1. Author the job script containing the exact git commands - `.bat`/`.cmd` on Windows,
+   `.sh` on macOS.
+2. Write it under `CommandJobs` with the file tool the host provides: the filesystem bridge
+   under Copilot Cowork, the connected folder's own file tools under Claude Cowork on either
+   platform.
 3. Call `run_batch_file` with its relative path, then report stdout, stderr and exit code.
 
-Under Jordan's approved 8933 workflow, a read-only job (status, diff, log, show) is
-proposed, approved once, written, and run immediately. A job that commits, reverts, or
-otherwise changes state must show the exact commit message and file list in the proposal
-before it is written.
+Under the approved workflow, a read-only job (status, diff, log, show) is proposed, approved
+once, written, and run immediately. A job that commits, reverts, or otherwise changes state
+must show the exact commit message and file list in the proposal before it is written.
 
-### Batch authoring rules that apply here
+### Job authoring rules that apply here
 
-- **CRLF.** Files written through the 8932 bridge arrive LF-only, and cmd mis-parses
-  LF-only .bat files — sometimes with a silent early exit rather than an error. After
-  writing any job, run `CommandJobs\2026-08-18-fix-crlf-all.bat` before running the job
-  itself.
-- Start every job with `cd /d C:\Users\YOURUSER\Documents\COPILOT_COWORK`. The 8933
-  environment is stripped and the working directory is not inherited.
+- **Line endings are the executor's problem, not yours.** Since executor 1.3.0 (2026-09-09)
+  a `.bat`/`.cmd` written LF-only is rewritten to CRLF before it runs, and the result reports
+  `line_endings`; a `.sh` on macOS is LF as written. Read that field rather than assuming.
+- **Start every job by changing into the tooling root.** The working directory is
+  `CommandJobs`: `cd /d "%COWORK_ROOT%"` in a `.bat`, `cd "$COWORK_ROOT"` in a `.sh`. The
+  executor hands the job a complete user environment on both platforms.
 - Add `--no-pager` to any git command that could page (`git --no-pager log`,
-  `git --no-pager diff`). A pager will hang the job.
+  `git --no-pager diff`). A pager will hang the job on either platform.
 - Echo a delimiter before each command (`echo ===STATUS===`) so multiple commands in one
   job can be told apart in stdout.
-- Prefer one job per logical operation. Do not build a menu-driven .bat with `call :label`
-  — label handling is the exact construct LF endings break.
+- Prefer one job per logical operation over a menu-driven script - `call :label` in a
+  `.bat`, `case` dispatch in a `.sh` - so each run's output answers one question.
 
 ## 2. Repository initialization
 
@@ -124,8 +123,8 @@ first commit — `Outputs\` may contain very large binaries.
 
 ## 3. Why this exists
 
-Before version control, the only rollback was a hand-written backup file — `tasks.json`
-has `.pre-8933-stateful-backup` and `.pre-8932-stateful-backup` siblings precisely because
+Before version control, the only rollback was a hand-written backup file — the bridge
+configuration under `Startup` accumulated `.pre-…-backup` siblings precisely because
 there was no history. Every configuration change was a one-way door guarded by remembering
 to copy a file first.
 
@@ -158,23 +157,26 @@ as a full rollback point. Memory carries the judgment; git carries the facts.
    Reference the conversation's decision, not the mechanics.
 
    ```
-   Add --stateful to the 8932 filesystem bridge
+   Add --stateful to the filesystem bridge launcher
 
-   8932 dropped three times in one session while running stateless.
-   Matches the fix already applied to 8931 and 8933. KnownGood updated
-   so bridge-restore-tasksjson.bat will not revert it.
+   The bridge dropped three times in one session while running stateless.
+   Matches the fix already applied to the other two launchers. The known-good
+   snapshot is updated so the restore job will not revert it.
    ```
 
-   In a .bat, pass the message as repeated `-m` flags — `git commit -m "subject" -m "body"`
-   — rather than trying to embed newlines.
+   In the job script - `.bat` or `.sh` alike - pass the message as repeated `-m` flags,
+   `git commit -m "subject" -m "body"`, rather than trying to embed newlines.
 5. **Verify.** Run `git --no-pager log -1` after committing and report the real commit id
    from stdout. A zero exit code alone is not confirmation.
 
 ### Worked example — the status job
 
+The same job in both shapes - `CommandJobs\git-status.bat` on Windows, `CommandJobs/git-status.sh` on macOS:
+
 ```bat
 @echo off
-cd /d C:\Users\YOURUSER\Documents\COPILOT_COWORK
+REM the macOS shape of this job is git-status.sh below
+cd /d "%COWORK_ROOT%"
 echo ===STATUS===
 git status --short
 echo ===DIFF===
@@ -182,6 +184,19 @@ git --no-pager diff --stat
 echo ===LOG===
 git --no-pager log -5 --oneline
 exit /b %ERRORLEVEL%
+```
+
+and for macOS:
+
+```sh
+#!/bin/sh
+cd "$COWORK_ROOT" || exit 1
+echo ===STATUS===
+git status --short
+echo ===DIFF===
+git --no-pager diff --stat
+echo ===LOG===
+git --no-pager log -5 --oneline
 ```
 
 ## 6. Reverting
@@ -221,8 +236,8 @@ the file is too large for version control and belongs in the output folder only.
 
 ## Guardrails
 
-- **Never call a port-8934 tool for git.** That port is the Power Automate bridge. If a future
-  session installs a real git bridge, this skill must be rewritten deliberately, not assumed.
+- **Never call another bridge's tool for git.** If a future session installs a real git
+  bridge, this skill must be rewritten deliberately, not assumed.
 - **Never run a destructive git command.** `reset --hard`, `clean -fd`, `checkout --force`,
   `branch -D`, `rebase`, `commit --amend` on an existing commit, and any history rewrite are all
   prohibited. Every one of them can discard work that has no remote backup.
@@ -234,7 +249,8 @@ the file is too large for version control and belongs in the output folder only.
 - **Always read the diff before describing a change.** Do not summarize from conversation memory;
   memory drifts and the working tree is the truth.
 - **Never stage blindly.** Name each file, so an unnoticed file cannot ride along into a
-  commit. ONE deliberate exception (2026-08-24): the standing `cowork-close.bat` runs
+  commit. ONE deliberate exception (2026-08-24): the standing close job (`cowork-close.bat`
+  on Windows, `cowork-close.sh` on macOS) runs
   `git add -A` only after printing the complete working tree and diff stat earlier in the
   same job. That review IS the protection — nothing rides along unseen, because the full
   tree was displayed and shown to Jordan before he approved. Outside that

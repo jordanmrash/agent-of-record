@@ -65,7 +65,8 @@
     {
       "name": "git-bridge",
       "platforms": [
-        "windows"
+        "windows",
+        "macos"
       ]
     },
     {
