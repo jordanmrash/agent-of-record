@@ -223,8 +223,8 @@ SKILL.md is not: the prose names OneDrive paths, `.bat` jobs, `C:\Users\YOURUSER
 8932 bridge, so uploading it as-is hands the host wrong operating instructions. The bridge
 skills have the same problem, addressing the bridges by the Copilot host's connector ids
 and describing `.bat` jobs on a Windows layout. Their host-adapter sections are issue #6
-work, `self-improvement` included; until then read all of them as reference and upload
-none. `[verify: the uploader tolerates the skills' `cowork:` and `metadata:` frontmatter
+work, `self-improvement` included; until then read the eight as reference; the macOS plugin bundle carries the three
+that are already correct here, and nothing else should be uploaded by hand. `[verify: the uploader tolerates the skills' `cowork:` and `metadata:` frontmatter
 keys; where it caps a description]`
 
 **Building the skill plugin.** The repository now builds the artifact Claude Cowork
@@ -233,10 +233,13 @@ stop the build; `python3 scripts/build_plugin.py` writes
 `Outputs/Skills Plugin/agent-of-record-skills.plugin`, a zip of
 `.claude-plugin/plugin.json` plus `skills/<name>/SKILL.md`, which you open and accept in
 the app. `CoworkConfig/plugin/.claude-plugin/plugin.json` is the source of truth for
-which skills ship and on which platforms. `--strict` fails the build while any skill
-declared for macOS still carries Windows-only text (`cd /d`, `reg query`, `C:\Users`,
-`.bat`, `devtunnel`, a bridge port); today that is eight of the eleven, so until that
-text is fixed the built plugin is for inspection, not installation.
+which skills ship and on which platforms. `--strict` fails the build when a skill
+declared for macOS carries Windows-only text (`cd /d`, `reg query`, `C:\Users`, `.bat`,
+`devtunnel`, a bridge port). Today the eight bridge, memory and bookend skills still do,
+so the manifest declares them for Windows only and
+`python3 scripts/build_plugin.py --platform macos` ships the three that are correct here:
+`myvoice`, `not-a-robot` and `skill-menu`. The other eight arrive on this route as their
+text is made platform-correct, one skill at a time.
 
 **Instructions.** `copilot-instructions.md` is the Copilot host's file and has no
 equivalent here *(expected)*. It carries the lessons digest, and that digest is also

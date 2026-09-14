@@ -15,7 +15,7 @@
     "bridges",
     "agent-of-record"
   ],
-  "_comment_skills": "Source of truth for what ships. Each entry names a directory under CoworkConfig/Skills/. 'platforms' is enforced by scripts/build_plugin.py --strict: a skill listed for macos that still contains Windows-only text fails the build.",
+  "_comment_skills": "Source of truth for what ships. Each entry names a directory under CoworkConfig/Skills/. 'platforms' is enforced by scripts/build_plugin.py --strict: a skill listed for macos that still contains Windows-only text fails the build. The eight bridge, memory and bookend skills are declared for windows only until their text is made platform-correct, one skill per commit; the macOS bundle carries the three that already are.",
   "skills": [
     {
       "name": "myvoice",
@@ -41,57 +41,49 @@
     {
       "name": "persistent-memory",
       "platforms": [
-        "windows",
-        "macos"
+        "windows"
       ]
     },
     {
       "name": "self-improvement",
       "platforms": [
-        "windows",
-        "macos"
+        "windows"
       ]
     },
     {
       "name": "dream-cycle",
       "platforms": [
-        "windows",
-        "macos"
+        "windows"
       ]
     },
     {
       "name": "gamma-tango",
       "platforms": [
-        "windows",
-        "macos"
+        "windows"
       ]
     },
     {
       "name": "playwright-skill",
       "platforms": [
-        "windows",
-        "macos"
+        "windows"
       ]
     },
     {
       "name": "git-bridge",
       "platforms": [
-        "windows",
-        "macos"
+        "windows"
       ]
     },
     {
       "name": "command-bridge",
       "platforms": [
-        "windows",
-        "macos"
+        "windows"
       ]
     },
     {
       "name": "local-file-bridge",
       "platforms": [
-        "windows",
-        "macos"
+        "windows"
       ]
     }
   ]

@@ -43,8 +43,10 @@ behind is retired on upgrade.
   matrix.
 - **A skill-install path for Claude Cowork.** `scripts/build_plugin.py` packages
   `CoworkConfig/Skills` into a `.plugin` from the manifest at
-  `CoworkConfig/plugin/.claude-plugin/plugin.json`; `--strict` fails while a skill declared
-  for macOS still carries Windows-only text, which today is eight of eleven.
+  `CoworkConfig/plugin/.claude-plugin/plugin.json`; `--strict` fails when a skill declared
+  for macOS carries Windows-only text. The eight bridge, memory and bookend skills still
+  do, so they are declared for Windows only and the macOS bundle carries `myvoice`,
+  `not-a-robot` and `skill-menu`; the rest follow as their text is made platform-correct.
 - `public_scan.py` scans what git would commit and honours path arguments; the executor
   names itself `aor-batch-exec`; `docs/evidence/README.md` shows the checker command per
   route; two pages stop saying `install-results.json` names your machine; `.DS_Store` is
