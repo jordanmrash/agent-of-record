@@ -68,6 +68,15 @@ behind is retired on upgrade.
   are platform text, are named as their own pattern. `scripts/build_plugin_selftest.py`
   holds the positive and negative controls and joins the gate, which now reports
   `RELEASE_CHECK: CLEAN (24 checks)`.
+- **`--strict` measures portability, not the presence of a Windows word.** A skill that is
+  correct on both platforms says both - "the job script, `.bat`/`.cmd` on Windows, `.sh` on
+  macOS" - and the token heuristic failed exactly those sentences. A Windows-specific token
+  is now acceptable where the same table row or prose paragraph names its macOS counterpart;
+  one that stands alone is still Windows-only text. The generated `SKILL-LESSONS` block is
+  not scanned: it is the operator's record, regenerated from the corpus, and a new install
+  starts with an empty corpus. `--list` now reports how many unpaired tokens remain in each
+  skill still declared for Windows only. The `devtunnel` pattern gets the identifier guard
+  the port pattern got, so a lesson key no longer reads as a platform claim.
 - `public_scan.py` scans what git would commit and honours path arguments; the executor
   names itself `aor-batch-exec`; `docs/evidence/README.md` shows the checker command per
   route; two pages stop saying `install-results.json` names your machine; `.DS_Store` is

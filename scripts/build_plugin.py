@@ -46,7 +46,9 @@ WINDOWS_ONLY = [
     (re.compile(r"\breg query\b", re.I), "reg query"),
     (re.compile(r"C:\\\\Users|C:\\Users"), r"C:\Users"),
     (re.compile(r"\.bat\b"), ".bat"),
-    (re.compile(r"\bdevtunnel\b", re.I), "devtunnel"),
+    # Same identifier guard as the port pattern below: the lesson key
+    # `bridge-devtunnel-declared-dead-without-reprobe` is a name, not a claim.
+    (re.compile(r"(?<![\w-])devtunnel(?![\w-])", re.I), "devtunnel"),
     # A port number standing in prose ("port 8933", "(8933)", "8931/8932/8933"), not a
     # digit run inside a hyphenated identifier. `bridge-8933-arg-name` is a lesson key,
     # `command-bridge-8933` a route id, `bridge-8931-` a route prefix: names, not claims
@@ -94,14 +96,61 @@ def read_frontmatter(skill_md: Path) -> dict:
     return fields
 
 
+# A Windows-specific token is acceptable where the same unit of text names the macOS
+# counterpart: "the job script - .bat/.cmd on Windows, .sh on macOS" is CORRECT on both
+# platforms and must not read as Windows-only. The unit is one line for a table row
+# (each row stands alone) and one paragraph for prose (a sentence may wrap).
+MAC_COUNTERPART = re.compile(r"\bmac(?:os)?\b|\bposix\b|\bdarwin\b|\.sh\b|\bbash\b|\bzsh\b|(?<![\w])~/", re.I)
+
+# The generated lessons block is the operator's record, regenerated from the corpus by
+# skill_lessons.py; its entries name the route they were learned on, and a new install
+# starts with an empty corpus, which empties the block. It is a record, not the skill's
+# instructions, so it is not scanned. The markers are skill_lessons.py's START/END.
+LESSONS_START = "<!-- SKILL-LESSONS:start -->"
+LESSONS_END = "<!-- SKILL-LESSONS:end -->"
+
+
+def strip_lessons_block(text: str) -> str:
+    if LESSONS_START in text and LESSONS_END in text:
+        pre, rest = text.split(LESSONS_START, 1)
+        _block, post = rest.split(LESSONS_END, 1)
+        return pre + post
+    return text
+
+
+def unpaired_units(text: str) -> list[str]:
+    """The lines/paragraphs that carry a Windows token and name no macOS counterpart."""
+    units: list[str] = []
+    paragraph: list[str] = []
+
+    def flush() -> None:
+        if paragraph:
+            units.append("\n".join(paragraph))
+            paragraph.clear()
+
+    for line in text.splitlines():
+        if line.lstrip().startswith("|"):
+            flush()
+            units.append(line)
+        elif line.strip() == "":
+            flush()
+        else:
+            paragraph.append(line)
+    flush()
+    return [u for u in units if not MAC_COUNTERPART.search(u)]
+
+
 def scan_windows_text(skill_dir: Path) -> list[str]:
     hits: list[str] = []
     for path in sorted(skill_dir.rglob("*")):
         if not path.is_file() or path.suffix.lower() not in {".md", ".txt", ".json"}:
             continue
         text = path.read_text(encoding="utf-8", errors="replace")
+        if path.name == "SKILL.md":
+            text = strip_lessons_block(text)
+        scope = "\n".join(unpaired_units(text))
         for pattern, label in WINDOWS_ONLY:
-            count = len(pattern.findall(text))
+            count = len(pattern.findall(scope))
             if count:
                 hits.append(f"{path.relative_to(skill_dir)}: {count}x {label}")
     return hits
@@ -163,8 +212,12 @@ def main() -> int:
 
         hits = scan_windows_text(skill_dir)
         if hits and "macos" in entry.get("platforms", []):
-            message = f"{name}: declared macos but carries Windows-only text -> " + "; ".join(hits[:4])
+            message = f"{name}: declared macos but carries unpaired Windows-only text -> " + "; ".join(hits[:4])
             (problems if args.strict else warnings).append(message)
+        elif hits:
+            # Declared for Windows only: not a failure, but the residue is what stands
+            # between this skill and both platforms, so say how much is left.
+            warnings.append(f"{name}: windows-only, {sum(int(h.split(': ')[1].split('x')[0]) for h in hits)} unpaired token(s) remain")
 
         staged.append((name, skill_dir))
 

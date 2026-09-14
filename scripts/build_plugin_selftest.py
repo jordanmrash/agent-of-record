@@ -82,6 +82,58 @@ def main() -> int:
         got = count(label, text)
         case(got == 0, f"{label!r} stays silent on: {text!r} (got {got})")
 
+    # PAIRING: a Windows token is acceptable where the same unit names its macOS counterpart.
+    has_pairing = all(hasattr(bp, n) for n in ("unpaired_units", "strip_lessons_block", "MAC_COUNTERPART"))
+    case(has_pairing, "build_plugin exposes unpaired_units, strip_lessons_block and MAC_COUNTERPART")
+    if not has_pairing:
+        print(f"BUILD_PLUGIN_SELFTEST: FAIL {bad} of {ran} cases - the pairing rule is absent, remaining pairing cases skipped")
+        return 1
+    paired = [
+        "the job script - `.bat`/`.cmd` on Windows, `.sh` on macOS",
+        "| Executor | `Startup\\exec-server.cmd` on Windows, `Startup/posix/exec-server.sh` on macOS |",
+        "Start every job by changing into the tooling root:\n`cd /d <root>` on Windows, `cd <root>` in a POSIX shell.",
+        "the browser profile lives under C:\\Users\\YOURUSER on Windows and under ~/ on a Mac",
+        "Read the user PATH with reg query on Windows; on macOS the launcher reads ~/.zshrc via zsh.",
+    ]
+    for text in paired:
+        case(bp.unpaired_units(text) == [], f"paired unit is accepted: {text[:60]!r}")
+    unpaired = [
+        "Author a .bat file containing the exact git commands.",
+        "| Tool | `run_batch_file` (relative path to an existing .bat under CommandJobs) |",
+        "Start every job with cd /d into the repository root.\nThe environment is complete.",
+    ]
+    for text in unpaired:
+        case(bp.unpaired_units(text) == [text], f"unpaired unit is kept for scanning: {text[:60]!r}")
+    # a table pairs PER ROW: one macOS row does not excuse its neighbours
+    table = "| a | .bat on Windows, .sh on macOS |\n| b | run the .bat |"
+    case(bp.unpaired_units(table) == ["| b | run the .bat |"], "a table pairs per row, not per table")
+    # prose pairs PER PARAGRAPH: a wrapped sentence counts as one unit
+    prose = "The job script is .bat on\nWindows and .sh on macOS.\n\nAnother paragraph runs the .bat."
+    case(bp.unpaired_units(prose) == ["Another paragraph runs the .bat."], "prose pairs per paragraph; the unpaired one is kept")
+    # macOS counterpart vocabulary, and the words that must NOT count as one
+    for good in ["on macOS", "a POSIX shell", "run install.sh", "under ~/agent-of-record", "the Mac", "bash -n"]:
+        case(bp.MAC_COUNTERPART.search(good) is not None, f"counterpart vocabulary: {good!r}")
+    for miss in ["macros are fine", "the machine", "a .shx file", "posixly", "nomac"]:
+        case(bp.MAC_COUNTERPART.search(miss) is None, f"not a counterpart: {miss!r}")
+    # the generated block is a record, not instructions, and is not scanned
+    with tempfile.TemporaryDirectory() as td:
+        rec = Path(td) / "rec-skill"
+        rec.mkdir()
+        (rec / "SKILL.md").write_text(
+            "# skill\n\n<!-- SKILL-LESSONS:start -->\n| `bridge-8932-writes-lf` | files written through 8932 arrive LF-only; run the .bat fix |\n<!-- SKILL-LESSONS:end -->\n\nPortable body.\n",
+            encoding="utf-8")
+        case(bp.scan_windows_text(rec) == [], "a Windows-flavoured lessons block does not fail a portable body")
+        (rec / "SKILL.md").write_text(
+            "# skill\n\n<!-- SKILL-LESSONS:start -->\n| k | r |\n<!-- SKILL-LESSONS:end -->\n\nRun the .bat.\n",
+            encoding="utf-8")
+        case(bp.scan_windows_text(rec) == ["SKILL.md: 1x .bat"], "the body outside the block is still scanned")
+        (rec / "notes.md").write_text("<!-- SKILL-LESSONS:start -->\nrun the .bat\n<!-- SKILL-LESSONS:end -->\n", encoding="utf-8")
+        # sorted(): rglob order is case-sensitive on POSIX and case-insensitive on Windows
+        case(sorted(bp.scan_windows_text(rec)) == ["SKILL.md: 1x .bat", "notes.md: 1x .bat"], "only SKILL.md's block is exempt; the same markers in another file are not")
+    # devtunnel: identifier guard
+    case(count("devtunnel", "see `bridge-devtunnel-declared-dead-without-reprobe` first") == 0, "'devtunnel' silent inside a lesson key")
+    case(count("devtunnel", "drops are the devtunnel hop") == 1, "'devtunnel' fires in prose")
+
     # END TO END through scan_windows_text, the function --strict actually calls: a skill
     # directory whose SKILL.md is all lesson keys is CLEAN; one line of prose is not.
     with tempfile.TemporaryDirectory() as td:
