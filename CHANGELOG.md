@@ -54,6 +54,11 @@ behind is retired on upgrade.
   `gamma-tango`, `not-a-robot` and `skill-menu`. Its lesson route is gone too, so
   `skill_lessons.py --check` opens only skills that exist here; the macOS bundle carries
   `not-a-robot` and `skill-menu`.
+- **The release gate enforces the plugin manifest.** `release_check.py` runs
+  `scripts/build_plugin.py --strict --list` as a check, so a manifest entry with no skill
+  directory, or a skill declared for macOS that still carries Windows-only text, fails the
+  gate and CI on both platforms instead of failing only when someone builds the plugin by
+  hand. The gate now reports `RELEASE_CHECK: CLEAN (23 checks)`.
 - `public_scan.py` scans what git would commit and honours path arguments; the executor
   names itself `aor-batch-exec`; `docs/evidence/README.md` shows the checker command per
   route; two pages stop saying `install-results.json` names your machine; `.DS_Store` is

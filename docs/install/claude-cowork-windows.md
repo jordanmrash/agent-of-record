@@ -58,7 +58,7 @@ python scripts/release_check.py
 `<tooling root>` is yours to choose — step 3 says what the launchers derive from it.
 
 Run the gate **before** anything else: `release_check.py` must end with
-`RELEASE_CHECK: CLEAN (22 checks)`. On a fresh clone anything else means the tree is wrong
+`RELEASE_CHECK: CLEAN (23 checks)`. On a fresh clone anything else means the tree is wrong
 before you have changed a single file — stop and open an issue with the output rather
 than working around it. Do not adjust a check to make it pass.
 

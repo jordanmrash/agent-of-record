@@ -85,6 +85,14 @@ CHECKS = [
         ),
     ),
     Check("bridge facts", [sys.executable, str(ROOT / "scripts" / "facts_check.py")]),
+    # The plugin manifest's own validation, without writing a bundle: --list exits 3 when a
+    # manifest entry has no skill directory or, under --strict, when a skill declared for
+    # macOS carries Windows-only text. Item 6 asked for this to be wired into CI; CI runs
+    # this file, so this is the wire.
+    Check(
+        "skill plugin manifest",
+        [sys.executable, str(ROOT / "scripts" / "build_plugin.py"), "--strict", "--list"],
+    ),
     Check(
         "synthetic control loop",
         [sys.executable, str(ROOT / "examples" / "synthetic-control-loop" / "run.py"), "--check"],
