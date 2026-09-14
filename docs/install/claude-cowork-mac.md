@@ -81,7 +81,7 @@ run from the macOS Terminal, then prints the short list of things only you can d
 page says what each step does and why.
 
 Run the gate **before** anything else: `release_check.py` must end with
-`RELEASE_CHECK: CLEAN (23 checks)`. On a fresh clone anything else means the tree is wrong
+`RELEASE_CHECK: CLEAN (24 checks)`. On a fresh clone anything else means the tree is wrong
 before you have changed a single file — stop and open an issue with the output rather
 than working around it. Do not adjust a check to make it pass.
 

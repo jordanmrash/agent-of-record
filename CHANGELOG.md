@@ -58,7 +58,16 @@ behind is retired on upgrade.
   `scripts/build_plugin.py --strict --list` as a check, so a manifest entry with no skill
   directory, or a skill declared for macOS that still carries Windows-only text, fails the
   gate and CI on both platforms instead of failing only when someone builds the plugin by
-  hand. The gate now reports `RELEASE_CHECK: CLEAN (23 checks)`.
+  hand.
+- **The `--strict` matcher fires on the defect it names.** The bridge-port pattern matched
+  the digits inside any hyphenated identifier, so a lesson key such as `bridge-8933-arg-name`
+  or a route id such as `command-bridge-8933` read as Windows-only text - 71 of the 141 port
+  hits across the ten skills, measured. A key is the retrieval mechanism and may never be
+  renamed, so no bridge skill could ever have passed. The pattern now matches a port number
+  standing in prose and not one embedded in an identifier; the Copilot connector ids, which
+  are platform text, are named as their own pattern. `scripts/build_plugin_selftest.py`
+  holds the positive and negative controls and joins the gate, which now reports
+  `RELEASE_CHECK: CLEAN (24 checks)`.
 - `public_scan.py` scans what git would commit and honours path arguments; the executor
   names itself `aor-batch-exec`; `docs/evidence/README.md` shows the checker command per
   route; two pages stop saying `install-results.json` names your machine; `.DS_Store` is

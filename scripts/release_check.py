@@ -107,6 +107,10 @@ ROOT_SELFTESTS = [
     # it. Runs the platform's own script shape, so the same suite covers the
     # Windows machine that publishes and the Mac that contributes.
     ROOT / "scripts" / "exec_bridge_selftest.py",
+    # Positive and negative controls for the --strict matcher: every Windows-only
+    # pattern fires on a sentence that means it, and none fires on a lesson key,
+    # a route id or a near-miss. The gate that guards the plugin is itself gated.
+    ROOT / "scripts" / "build_plugin_selftest.py",
 ]
 
 SELFTESTS = [
