@@ -25,7 +25,7 @@
 - Startup/CommandBridge/batch-exec-server.js
 - Startup/FlowBridge/flow-mcp-server.js
 - Startup/Plugins/
-- scripts/personalize.py
+- scripts/copilot/personalize.py
 - scripts/install_check.py
 - Startup/posix/
 - CoworkConfig/cowork-memory/cowork-lessons.md

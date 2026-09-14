@@ -99,6 +99,13 @@ behind is retired on upgrade.
   an entry now defaults to both platforms, and `build_plugin_selftest.py` scans the ten real
   skill directories and fails if any unpaired unit returns. The macOS and Windows plugin
   builds carry the same ten skills.
+- **Claude installs the ten skills from the repository plugin.** Both Claude install
+  pages now build the platform-named `.plugin`, open it in the app and verify all ten with
+  `ListSkills`; manual one-file uploads and the stale two-skill warning are gone.
+- **Hosted-only utilities are scoped to Copilot Cowork on Windows.** The personalizer moves
+  to `scripts/copilot/personalize.py`; its self-test follows it. The POSIX port watchdog and
+  launchd installer are removed because Claude owns its stdio children and exposes no tunnel
+  ports to poll; the Windows Task Scheduler watchdog remains.
 - `public_scan.py` scans what git would commit and honours path arguments; the executor
   names itself `aor-batch-exec`; `docs/evidence/README.md` shows the checker command per
   route; two pages stop saying `install-results.json` names your machine; `.DS_Store` is

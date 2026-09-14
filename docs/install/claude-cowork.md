@@ -97,9 +97,14 @@ reaches this host through the generated blocks in the skills instead.
 
 ## Skills on this host
 
-The shipped skills are written to the Copilot host: they address the bridges by that
-host's connector ids and describe OneDrive paths and `.bat` jobs. Their scripts work here;
-their prose is being given host-adapter sections (issue #6). Until then, install the
-`self-improvement` machinery and an empty corpus first, register the executor, and treat
-the bridge skills as reference rather than instruction. Whether the uploader tolerates the
-skills' extra frontmatter keys and where it caps a description are `[verify]`.
+Build the same ten-skill plugin for either platform:
+
+```bash
+python3 scripts/build_plugin.py --strict --platform macos     # Mac
+python  scripts\build_plugin.py --strict --platform windows  # Windows
+```
+
+Open the resulting `.plugin`, accept it, restart Claude, and confirm `ListSkills` returns
+all ten. Each `SKILL.md` is one portable instruction set: where a mechanism differs, the
+Windows and macOS forms are stated together. Do not copy the directory into
+`~/.claude/skills/`; that is not an installation.

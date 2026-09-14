@@ -97,6 +97,4 @@ release-results.json
 # by name, so a tracked copy fails the gate rather than leaking a home directory.
 Startup/cowork-env.cmd
 Startup/posix/cowork-env.sh
-Startup/posix/watchdog/status.txt
-Startup/posix/watchdog/logs/
 /install-results.json

@@ -173,14 +173,17 @@ Start with an **empty** corpus, as `CoworkConfig\README.md` describes. The shipp
 and memory files are one operator's record of one machine — the right thing to read and
 the wrong thing to operate under.
 
-**Skills.** Claude Cowork takes a `SKILL.md` you upload as your own skill (Customize ›
-Skills), or one delivered by a plugin; skills installed from its directory are view-only.
-Upload `self-improvement` first — its scripts are host-agnostic and the corpus depends on
-them — then whichever bridge skill matches a bridge you registered. The shipped skills
-address the bridges by the Copilot host's connector ids and describe OneDrive paths and
-`.bat` jobs; their host-adapter sections are issue #6 work, so until then read them as
-reference. `[verify: the uploader tolerates the skills' `cowork:` and `metadata:`
-frontmatter keys; where it caps a description]`
+**Skills.** Build the repository's plugin; do not upload individual `SKILL.md` files:
+
+```bat
+python scripts\build_plugin.py --strict --platform windows
+```
+
+Open `Outputs\Skills Plugin\agent-of-record-skills-windows.plugin` in Claude, accept it,
+restart the app, and confirm `ListSkills` returns all ten repository skills. The same ten
+skills ship on Windows and macOS; each skill states the platform-specific launcher, path or
+job-script shape in the same instructions. A directory copy into `~/.claude/skills/` does
+nothing.
 
 **Instructions.** `copilot-instructions.md` is the Copilot host's file and has no
 equivalent here *(expected)*. It carries the lessons digest, and that digest is also

@@ -42,7 +42,7 @@ import re
 import sys
 import uuid
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 USER_PLACEHOLDER = "YOURUSER"
 TUNNEL_PLACEHOLDER = "YOUR-TUNNEL-HOST"

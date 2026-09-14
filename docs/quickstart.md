@@ -50,7 +50,7 @@ The real configuration is intentionally gitignored.
 
 ## Configure local paths
 
-`scripts/personalize.py` replaces the placeholders in the operating trees in one
+`scripts/copilot/personalize.py` replaces the placeholders in the operating trees in one
 pass - `C:\Users\YOURUSER\...`, the OneDrive folder name, `YOUR-TUNNEL-HOST`,
 and the shared placeholder app id in the connector packages. It is a dry run
 until `--apply` is passed and prints every file it changes. It does not touch

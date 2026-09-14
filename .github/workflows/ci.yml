@@ -46,7 +46,7 @@ jobs:
       - name: POSIX launchers are executable and parse
         if: runner.os != 'Windows'
         run: |
-          for f in Startup/posix/*.sh Startup/posix/watchdog/*.sh; do
+          for f in Startup/posix/*.sh; do
             test -x "$f" || { echo "not executable: $f"; exit 1; }
             bash -n "$f"
           done

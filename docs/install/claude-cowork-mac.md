@@ -216,30 +216,17 @@ Start with an **empty** corpus, as `CoworkConfig/README.md` describes. The shipp
 and memory files are one operator's record of one machine — the right thing to read and
 the wrong thing to operate under.
 
-**Skills.** Claude Cowork takes a `SKILL.md` you upload as your own skill (Customize ›
-Skills), or one delivered by a plugin; skills installed from its directory are view-only.
-The corpus depends on `self-improvement`, and its *scripts* are host-agnostic, but its
-SKILL.md is not: the prose names OneDrive paths, `.bat` jobs, `C:\Users\YOURUSER` and the
-8932 bridge, so uploading it as-is hands the host wrong operating instructions. The bridge
-skills have the same problem, addressing the bridges by the Copilot host's connector ids
-and describing `.bat` jobs on a Windows layout. Their host-adapter sections are issue #6
-work, `self-improvement` included; until then read the eight as reference; the macOS plugin bundle carries the two
-that are already correct here, and nothing else should be uploaded by hand. `[verify: the uploader tolerates the skills' `cowork:` and `metadata:` frontmatter
-keys; where it caps a description]`
+**Skills.** Build the repository's plugin; do not upload individual `SKILL.md` files:
 
-**Building the skill plugin.** The repository now builds the artifact Claude Cowork
-installs: `python3 scripts/build_plugin.py --list` shows what would ship and what would
-stop the build; `python3 scripts/build_plugin.py` writes
-`Outputs/Skills Plugin/agent-of-record-skills.plugin`, a zip of
-`.claude-plugin/plugin.json` plus `skills/<name>/SKILL.md`, which you open and accept in
-the app. `CoworkConfig/plugin/.claude-plugin/plugin.json` is the source of truth for
-which skills ship and on which platforms. `--strict` fails the build when a skill
-declared for macOS carries Windows-only text (`cd /d`, `reg query`, `C:\Users`, `.bat`,
-`devtunnel`, a bridge port). Today the eight bridge, memory and bookend skills still do,
-so the manifest declares them for Windows only and
-`python3 scripts/build_plugin.py --platform macos` ships the two that are correct here:
-`not-a-robot` and `skill-menu`. The other eight arrive on this route as their
-text is made platform-correct, one skill at a time.
+```bash
+python3 scripts/build_plugin.py --strict --platform macos
+```
+
+Open `Outputs/Skills Plugin/agent-of-record-skills-macos.plugin` in Claude, accept it,
+restart the app, and confirm `ListSkills` returns all ten repository skills. The same ten
+skills ship on Windows and macOS; each skill states the platform-specific launcher, path or
+job-script shape in the same instructions. A directory copy into `~/.claude/skills/` does
+nothing.
 
 **Instructions.** `copilot-instructions.md` is the Copilot host's file and has no
 equivalent here *(expected)*. It carries the lessons digest, and that digest is also
@@ -260,9 +247,9 @@ does.
 ## 8. Keep them running
 
 *Expected:* nothing to do. The host owns each bridge's lifetime, so there is no watchdog
-to install and no port to monitor. `Startup/posix/watchdog/install-launchd.sh` exists for
-the **hosted** Mac setup, where the bridges must stay up for a tunnel; do not install it
-here. If a bridge misbehaves, end the session and start a new one.
+to install and no port to monitor. The repository has no POSIX watchdog: Claude Cowork
+owns each stdio child's lifetime, while the hosted watchdog is Copilot Cowork on Windows
+only. If a bridge misbehaves, end the session and start a new one.
 
 ## 9. Prove it
 

@@ -1,7 +1,11 @@
 ---
 name: command-bridge
-description: Runs approval-gated batch jobs on Jordan's Windows PC through the Jordan Command Bridge plugin (MCP server "Jordan Approved Batch Executor 8933", namespace jordan-approved-batch-8933-v1, single tool run_batch_file). Use when Jordan says "run this on my PC", "run a batch file", "run a job on my machine", "build me a script and run it", "create and run a .bat", or asks for a result only his machine can produce. The bridge executes ONLY an existing .bat/.cmd under CommandJobs, by relative path - no command string, arguments, interpreter, working directory, environment, timeout or elevation. Cowork proposes the exact batch contents, waits for explicit approval, then writes the file with the filesystem bridge and immediately executes it under that one approval. Do NOT use for general file reading or writing (use local-file-bridge) or for browser automation (use playwright-skill).
-  Platform behavior: On macOS under Claude Cowork, the same approved executor is `aor-batch-exec` over stdio, accepts `.sh` jobs, and derives paths from the tooling root; no Copilot connector id or bridge port is used.
+description: >-
+  Runs approval-gated host scripts through run_batch_file. Use for "run this on my PC",
+  "run a batch file", "run a job on my machine", or "build a script and run it".
+  Jobs are .bat/.cmd on Windows and .sh on macOS, live under CommandJobs, and are invoked
+  by relative path only. Show the exact script and output location before approval; one
+  approval covers writing and running it. Do not use for ordinary file work or browser automation.
 metadata:
   author: "Jordan Rash"
   author-role: "Director, Tax Transformation and Automation"

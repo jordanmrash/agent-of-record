@@ -46,7 +46,7 @@ roots and says so on stderr. The same file can override COWORK_PW_BROWSER
 and COWORK_PW_PROFILE for the Playwright bridge. The watchdog
 (_bridge-watchdog.ps1) and the shipped jobs still carry personalized paths
 and expect the clone at %USERPROFILE%\Documents\COPILOT_COWORK;
-scripts\personalize.py handles those. A client that starts the launchers
+scripts\copilot\personalize.py handles those. A client that starts the launchers
 directly (docs\install\claude-cowork-windows.md) needs neither.
 
 

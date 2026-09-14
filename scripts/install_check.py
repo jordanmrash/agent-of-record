@@ -92,7 +92,7 @@ def check_runtime(rep: Report, route: str = "hosted") -> None:
         ("node", ["node", "--version"], True),
         ("python", [sys.executable, "--version"], True),
         ("git", ["git", "--version"], True),
-        ("npx", ["npx", "--version"], False),
+        ("npx", ["npx.cmd" if IS_WINDOWS else "npx", "--version"], False),
     ):
         exe = cmd[0]
         if exe != sys.executable and shutil.which(exe) is None:

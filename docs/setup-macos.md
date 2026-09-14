@@ -28,7 +28,6 @@ Only these. Everything else in `docs/setup.md` applies unchanged.
 | Output directive | `REM COWORK_OUTPUT: ...` | `# COWORK_OUTPUT: ...` |
 | Job shell | `cmd.exe /d /s /c` | `/bin/bash <script>` |
 | Local paths | launchers derive them; overrides in `Startup/cowork-env.cmd` | launchers derive them; overrides in `Startup/posix/cowork-env.sh` |
-| Watchdog | Task Scheduler, `_watchdog-install.ps1` | `launchd`, `Startup/posix/watchdog/` |
 | Playwright browser | `msedge` | `chrome` by default, `COWORK_PW_BROWSER` to change |
 
 The command bridge enforces the **same refusal set on both**, and
@@ -151,21 +150,7 @@ address, and `scripts/facts_check.py` fails if a manifest drifts from them.
 Start a **new** Cowork session afterwards. Connectors register at session start,
 and a session that began before the upload will not see them.
 
-## 7. Install the watchdog
-
-```bash
-bash Startup/posix/watchdog/install-launchd.sh
-```
-
-This installs a `launchd` agent that probes the three ports every two minutes and
-starts a listener only on a port that refuses connections. It never kills
-anything, and it will not restart the same port twice inside its cooldown
-window. Like its Windows counterpart it cannot restore tunnel visibility, and it
-cannot help when VS Code itself is closed.
-
-To remove it: `bash Startup/posix/watchdog/install-launchd.sh --uninstall`.
-
-## 8. Install the Cowork configuration
+## 7. Install the Cowork configuration
 
 ```bash
 COWORK="$HOME/Library/CloudStorage/OneDrive-Example/Documents/Cowork"   # yours
