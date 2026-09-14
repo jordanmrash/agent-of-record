@@ -19,13 +19,14 @@
 registered bridge itself as a stdio process and talks to it directly. There is no tunnel,
 nothing to make public, and nothing that has to keep running between sessions.
 
-**Why this page installs one bridge, not four.** Claude Cowork already reads and writes
+**Why this page installs one bridge of three.** Claude Cowork already reads and writes
 the folders you connect, fetches the web, remembers across sessions and runs shell
 commands — in a Linux virtual machine, never on Windows. Nothing it does natively can run
 a `.bat`, read the registry, or drive a Windows application. The approved batch executor
 is the only path from a session to `cmd.exe`, so it is the one required component, and
 with it come the job conventions, the release gate and the lessons machinery. The browser
-and filesystem bridges are optional here; the Power Automate bridge needs a tenant. What
+and filesystem bridges are optional here. The fourth bridge in this repository, Power Automate,
+is Copilot Cowork only and not part of this route. What
 each part lets you do is in [What this repository adds to Claude Cowork](claude-cowork.md).
 
 ---
@@ -150,7 +151,6 @@ server, and any optional bridge you want:
 | Approved batch executor | `<tooling root>\Startup\exec-server.cmd` | **Yes.** One tool: `run_batch_file`. Runs `.bat`/`.cmd` only. Plain `node`, no dependencies, fetches nothing at start. |
 | Browser | `<tooling root>\Startup\pw-server.cmd` | Optional — a signed-in Edge profile with traces to disk. Uses `npx -y`, so its **first** start downloads a package and needs the network. |
 | Filesystem | `<tooling root>\Startup\fs-server.cmd` | Optional — only for tool parity with the hosted route. Connect the clone as a folder instead and the host's own file tools cover it. |
-| Power Automate | `<tooling root>\Startup\flow-server.cmd` | Optional — needs a Power Platform tenant; refuses everything until configured. |
 
 These are the `stdio` entries in `docs/bridge-facts.json`; the commands above should match
 it exactly, and if they do not, the facts file wins and this page is wrong. If the client

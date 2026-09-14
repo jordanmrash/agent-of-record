@@ -32,6 +32,23 @@ behind is retired on upgrade.
   carries the same 14 tools. `COWORK_FS_SERVER_VERSION` overrides the pin;
   `docs/bridge-facts.json` records it as `posix_package_pin`. The Windows
   launcher stays unpinned: the hosted route accepts draft-07.
+- **The Power Automate bridge is Copilot Cowork on Windows only, and the manifest says
+  so.** `docs/bridge-facts.json` carries `products` and `platforms` for every bridge and
+  no stated count. `facts_check.py` derives the counts, requires a POSIX launcher only for
+  a macOS bridge and refuses one on a Windows-only bridge, and checks each Claude and
+  macOS surface against the bridges that exist there. `install_check.py` tests only the
+  bridges in scope for its route and platform and says how many. `Startup/posix/flow-server.sh`
+  is removed, the 8934 task keeps its Windows variant only, and the Claude pages and the
+  macOS setup page describe three bridges. `docs/install/README.md` states the supported
+  matrix.
+- **A skill-install path for Claude Cowork.** `scripts/build_plugin.py` packages
+  `CoworkConfig/Skills` into a `.plugin` from the manifest at
+  `CoworkConfig/plugin/.claude-plugin/plugin.json`; `--strict` fails while a skill declared
+  for macOS still carries Windows-only text, which today is eight of eleven.
+- `public_scan.py` scans what git would commit and honours path arguments; the executor
+  names itself `aor-batch-exec`; `docs/evidence/README.md` shows the checker command per
+  route; two pages stop saying `install-results.json` names your machine; `.DS_Store` is
+  ignored.
 
 ## 0.3.2 - 2026-09-11
 

@@ -177,6 +177,16 @@ def check_posix_launchers(m, f):
     """
     for b in m["bridges"]:
         rel = b.get("stdio_posix")
+        if "macos" not in b.get("platforms", []):
+            # A bridge that does not exist on macOS has no POSIX launcher, and must
+            # not name one: a launcher nothing can register is dead code that drifts.
+            if rel:
+                f.fail("posix launchers",
+                       "port %s is not a macOS bridge but names a POSIX launcher %s"
+                       % (b["port"], rel))
+            else:
+                f.ok()
+            continue
         if not rel:
             f.fail("posix launchers", "port %s has no stdio_posix in the manifest"
                    % b["port"])
@@ -214,11 +224,20 @@ def check_posix_launchers(m, f):
     tasks = strip_json_comments(read(m["surfaces"]["tasks"]))
     for b in m["bridges"]:
         rel = b.get("stdio_posix")
-        if not rel:
-            continue
         seg = _task_segment(tasks, str(b["port"]))
         if seg is None:
             continue          # already reported by check_tasks
+        if not rel:
+            # Windows-only: the task must not offer a macOS or Linux variant, or a
+            # Mac would try to start a launcher that does not exist.
+            offered = [k for k in ("osx", "linux") if '"%s"' % k in seg]
+            if offered:
+                f.fail("posix launchers",
+                       "port %s is Windows-only but tasks.json gives it a macOS/Linux variant: %s"
+                       % (b["port"], ", ".join(offered)))
+            else:
+                f.ok()
+            continue
         missing = [k for k in ("osx", "linux") if '"%s"' % k not in seg]
         if missing:
             f.fail("posix launchers",
@@ -279,8 +298,8 @@ def check_readmes(m, f):
                 f.fail(path, "port %s row does not say %s" % (b["port"], word))
             f.ok()
         heading = re.search(r"^## The (\w+) bridges", text, re.M)
-        if heading and _number(heading.group(1)) != m["bridge_count"]:
-            f.fail(path, "heading counts %s bridges, manifest has %d" % (heading.group(1), m["bridge_count"]))
+        if heading and _number(heading.group(1)) != len(m["bridges"]):
+            f.fail(path, "heading counts %s bridges, manifest has %d" % (heading.group(1), len(m["bridges"])))
 
     text = read(m["surfaces"]["startup_readme"])
     for b in m["bridges"]:
@@ -358,26 +377,76 @@ def check_architecture(m, f):
             f.fail("docs/architecture.md", "system diagram has no tunnel node for %s" % b["port"])
         else:
             f.ok()
-    count = m["bridge_count"]
+    count = len(m["bridges"])
     if "## Why %s bridges remain separate" % {4: "four", 3: "three"}.get(count, count) not in text:
         f.fail("docs/architecture.md", "separation heading does not count %d bridges" % count)
+
+
+def _prose_surface(path, phrases, f, listed_in):
+    if not os.path.isfile(os.path.join(ROOT, path)):
+        f.fail(listed_in, "%s listed as a surface but missing" % path)
+        return
+    text = read(path)
+    # generated blocks are regenerated from the corpus and audited there, not here
+    text = re.sub(r"<!-- SKILL-LESSONS:start -->.*?<!-- SKILL-LESSONS:end -->", "", text, flags=re.S)
+    text = re.sub(r"<!-- LESSON-DIGEST:BEGIN.*?<!-- LESSON-DIGEST:END[^\n]*-->", "", text, flags=re.S)
+    low = text.lower()
+    for p in phrases:
+        if p in low:
+            f.fail(path, "stale phrase present: %r" % p)
+    f.ok()
 
 
 def check_prose(m, f):
     phrases = [p.lower() for p in m["stale_phrases"]]
     for path in m["surfaces"]["prose"]:
-        if not os.path.isfile(os.path.join(ROOT, path)):
-            f.fail("prose", "%s listed as a surface but missing" % path)
+        _prose_surface(path, phrases, f, "prose")
+
+
+AXES = {"products": {"claude", "copilot"}, "platforms": {"windows", "macos"}}
+
+
+def scope_bridges(m, scope):
+    """The bridges a scope has, and the ones it does not: a bridge is inside when it
+    shares at least one product AND one platform with the scope."""
+    products, platforms = set(scope["products"]), set(scope["platforms"])
+    inside, outside = [], []
+    for b in m["bridges"]:
+        if products & set(b.get("products", [])) and platforms & set(b.get("platforms", [])):
+            inside.append(b)
+        else:
+            outside.append(b)
+    return inside, outside
+
+
+def check_scopes(m, f):
+    """Two axes, never a stated count. Every bridge declares the products and the
+    platforms it exists for; a surface written for one product or platform is checked
+    against the bridges that exist there. Removing a bridge from a product is one
+    manifest edit, and every surface that still describes it fails until it agrees -
+    the same discipline the rest of this file applies to ports and names.
+
+    The stale phrases for a scope are derived: the port and the '<name> bridge' of
+    each bridge outside it, plus the count words the scope lists for itself."""
+    for b in m["bridges"]:
+        for axis, allowed in AXES.items():
+            values = b.get(axis)
+            if not values or not set(values) <= allowed:
+                f.fail("scopes", "port %s %s must be a non-empty subset of %s, got %r"
+                       % (b["port"], axis, sorted(allowed), values))
+            else:
+                f.ok()
+    for name, scope in m.get("scopes", {}).items():
+        inside, outside = scope_bridges(m, scope)
+        if not inside:
+            f.fail("scopes", "scope %s matches no bridge" % name)
             continue
-        text = read(path)
-        # generated blocks are regenerated from the corpus and audited there, not here
-        text = re.sub(r"<!-- SKILL-LESSONS:start -->.*?<!-- SKILL-LESSONS:end -->", "", text, flags=re.S)
-        text = re.sub(r"<!-- LESSON-DIGEST:BEGIN.*?<!-- LESSON-DIGEST:END[^\n]*-->", "", text, flags=re.S)
-        low = text.lower()
-        for p in phrases:
-            if p in low:
-                f.fail(path, "stale phrase present: %r" % p)
-        f.ok()
+        phrases = [p.lower() for p in scope.get("stale_phrases", [])]
+        for b in outside:
+            phrases.append(str(b["port"]))
+            phrases.append(b["name"].lower() + " bridge")
+        for path in scope["surfaces"]:
+            _prose_surface(path, phrases, f, "scope %s" % name)
 
 
 def main(argv):
@@ -389,7 +458,7 @@ def main(argv):
         return 2
     f = Findings()
     for check in (check_tasks, check_watchdog, check_launchers, check_posix_launchers, check_tool_count,
-                  check_readmes, check_architecture, check_prose, check_plugins):
+                  check_readmes, check_architecture, check_prose, check_scopes, check_plugins):
         try:
             check(m, f)
         except FileNotFoundError as exc:

@@ -19,7 +19,7 @@ REM  NOT_CONFIGURED or REFUSED message until deliberately widened
 REM  in FlowBridge\flow-bridge.config.json.
 REM
 REM  COWORK_ROOT is derived from this file's own location - the
-REM  Windows twin of posix\flow-server.sh. Optional overrides come
+REM  Windows only: this bridge is Copilot Cowork on Windows and has no POSIX twin. Optional overrides come
 REM  from cowork-env.cmd beside this file (gitignored).
 REM
 REM  Implementation: Startup\FlowBridge\flow-mcp-server.js

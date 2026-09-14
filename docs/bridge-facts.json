@@ -7,9 +7,10 @@
     "Filesystem roots are launcher-derived on both platforms: the tooling root comes from the launcher's own location (COWORK_ROOT), Downloads from the user profile, and the config root from COWORK_CONFIG_ROOT set in the gitignored Startup/cowork-env.cmd or Startup/posix/cowork-env.sh. The roots below are the Windows variable names as they appear in fs-server.cmd; the POSIX launcher passes $COWORK_ROOT, $HOME/Downloads and $COWORK_CONFIG_ROOT.",
     "Files that still carry the repository placeholder YOURUSER (the watchdog, the connector manifests, the shipped jobs, the skills) are personalized by scripts/personalize.py; no launcher, task file or root in this manifest does.",
     "connector_id is the tool namespace the skills address; plugin_manifest is the Cowork connector package that must carry it and the port.",
-    "stdio is the Windows launcher; stdio_posix is its macOS/Linux sibling under Startup/posix. facts_check.py verifies both exist and that neither hard-codes a root."
+    "stdio is the Windows launcher; stdio_posix is its macOS/Linux sibling under Startup/posix, present only for a bridge whose platforms include macos. facts_check.py verifies each exists and that neither hard-codes a root.",
+    "products and platforms are two different cuts and every bridge carries both: 8934 Power Automate is Copilot Cowork on Windows only; the other three run under either product on either platform. Bridge counts are DERIVED from these lists and never stated - four for the whole repository, three for any Claude Cowork surface and for any macOS surface.",
+    "scopes lists the surfaces written for one product or platform. facts_check.py checks each against the bridges that exist for it: the port and the '<name> bridge' of every bridge outside the scope are stale phrases there, on top of the scope's own count words."
   ],
-  "bridge_count": 4,
   "bridges": [
     {
       "port": 8931,
@@ -19,6 +20,8 @@
       "stateful": true,
       "implementation": "upstream",
       "package": "@playwright/mcp",
+      "products": ["claude", "copilot"],
+      "platforms": ["windows", "macos"],
       "task_label": "Cowork Playwright Bridge (8931)",
       "connector_id": "jordan-local-playwright-8931-v1",
       "plugin_manifest": "Startup/Plugins/playwright-8931/manifest.json",
@@ -39,6 +42,8 @@
         "%USERPROFILE%\\Downloads",
         "%COWORK_CONFIG_ROOT%"
       ],
+      "products": ["claude", "copilot"],
+      "platforms": ["windows", "macos"],
       "task_label": "Cowork Filesystem Bridge (8932)",
       "connector_id": "jordan-local-filesystem-8932-v1",
       "plugin_manifest": "Startup/Plugins/filesystem-8932/manifest.json",
@@ -53,6 +58,8 @@
       "stateful": false,
       "implementation": "own",
       "server": "Startup/CommandBridge/batch-exec-server.js",
+      "products": ["claude", "copilot"],
+      "platforms": ["windows", "macos"],
       "task_label": "Cowork Command Bridge (8933)",
       "connector_id": "jordan-approved-batch-8933-v1",
       "plugin_manifest": "Startup/Plugins/command-8933/manifest.json",
@@ -68,11 +75,12 @@
       "implementation": "own",
       "server": "Startup/FlowBridge/flow-mcp-server.js",
       "tool_count": 29,
+      "products": ["copilot"],
+      "platforms": ["windows"],
       "task_label": "Cowork Power Automate Bridge (8934)",
       "connector_id": "jordan-power-automate-8934-v1",
       "plugin_manifest": "Startup/Plugins/power-automate-8934/manifest.json",
-      "watchdog_name": "FlowAuto",
-      "stdio_posix": "posix/flow-server.sh"
+      "watchdog_name": "FlowAuto"
     }
   ],
   "surfaces": {
@@ -99,15 +107,49 @@
       "CoworkConfig/Skills/gamma-tango/SKILL.md",
       "CoworkConfig/Skills/playwright-skill/SKILL.md",
       "docs/setup.md",
-      "docs/setup-macos.md",
       "docs/install/README.md",
       "docs/install/copilot-cowork.md",
-      "docs/install/claude-cowork.md",
-      "docs/install/claude-cowork-windows.md",
-      "docs/install/claude-cowork-mac.md",
       "CoworkConfig/README.md"
     ],
     "posix_launcher_dir": "Startup/posix"
+  },
+  "scopes": {
+    "claude": {
+      "products": ["claude"],
+      "platforms": ["windows", "macos"],
+      "surfaces": [
+        "docs/install/claude-cowork.md",
+        "docs/install/claude-cowork-windows.md",
+        "docs/install/claude-cowork-mac.md",
+        "docs/install/claude-cowork-mac-quickstart.md"
+      ],
+      "stale_phrases": [
+        "four bridges",
+        "all four",
+        "the four ports",
+        "8931-8934",
+        "one bridge, not four"
+      ]
+    },
+    "macos": {
+      "products": ["claude", "copilot"],
+      "platforms": ["macos"],
+      "surfaces": [
+        "docs/setup-macos.md",
+        "Startup/posix/GO.sh",
+        "Startup/posix/watchdog/bridge-watchdog.sh"
+      ],
+      "stale_phrases": [
+        "four bridges",
+        "four running bridges",
+        "four bridge tasks",
+        "all four",
+        "the four ports",
+        "the four bridge",
+        "8931-8934",
+        "flowbridge"
+      ]
+    }
   },
   "stale_phrases": [
     "three supergateway bridges",

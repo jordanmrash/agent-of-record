@@ -4,7 +4,8 @@
 #   POSIX sibling of ../GO.bat
 #
 #   Opens VS Code on the Startup folder, which auto-starts the
-#   four bridge tasks and auto-forwards ports 8931-8934.
+#   three bridge tasks and auto-forwards ports 8931-8933; the fourth task,
+#   Power Automate, is Windows-only and prints a note instead.
 #
 #   The one thing left to do in VS Code: set each port PUBLIC in
 #   the Ports panel. Visibility does not persist across restarts,

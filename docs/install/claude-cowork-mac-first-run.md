@@ -8,7 +8,9 @@
 > Two things in it are still open: whether a fresh install can start a local session at all,
 > and whether the plugin's server failed to spawn (the launcher could not find `node` under
 > the PATH a desktop app passes) or was never started. `install-mac.sh --verify` reads the
-> desktop app's own logs to tell those apart.
+> desktop app's own logs to tell those apart. The `8934 Power Automate` handshake in the
+> sample output below is historical too: that bridge is now declared Copilot Cowork on Windows
+> only, and `install_check.py --route local` no longer tests it on a Mac.
 
 ---
 

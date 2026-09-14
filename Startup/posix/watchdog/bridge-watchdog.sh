@@ -3,7 +3,7 @@
 #  Cowork bridge watchdog (macOS / Linux)
 #  POSIX sibling of ../../_bridge-watchdog.ps1
 #
-#  Probes the four ports and starts a listener ONLY on a port
+#  Probes the three macOS bridge ports and starts a listener ONLY on a port
 #  that refuses connections. It never kills anything, and it
 #  will not restart the same port twice inside the cooldown
 #  window - a port that dies repeatedly is a fault to read
@@ -35,12 +35,12 @@ SUPERGATEWAY="$STARTUP/node_modules/supergateway/dist/index.js"
 
 mkdir -p "$LOG_DIR"
 
-# port:name:launcher:stateful  -- kept in the same order as bridge-facts.json
+# port:name:launcher:stateful  -- kept in the same order as bridge-facts.json.
+# The fourth bridge, Power Automate, is absent on purpose: Windows-only, no POSIX launcher.
 BRIDGES=(
   "8931:Playwright:pw-server.sh:true"
   "8932:Filesystem:fs-server.sh:false"
   "8933:Command:exec-server.sh:false"
-  "8934:FlowAuto:flow-server.sh:false"
 )
 
 now() { date +%s; }

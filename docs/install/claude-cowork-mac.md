@@ -35,14 +35,15 @@
 registered bridge as a stdio child process and brokers the session's calls to it. There is
 no tunnel, nothing to make public, and nothing that has to keep running between sessions.
 
-**Why this page installs one bridge, not four.** Claude Cowork already reads and writes
+**What this page installs, and why.** Claude Cowork already reads and writes
 the folders you connect, fetches the web, remembers across sessions and runs shell
 commands — in a Linux virtual machine under Apple's Virtualization framework, never on
 macOS itself. Nothing it does natively can run `osascript`, open an application, or change
 a preference on the Mac. The approved batch executor is the only path from a session to
 the host's `/bin/bash`, so it is the one required component, and with it come the job
 conventions, the release gate and the lessons machinery. The browser and filesystem
-bridges are registered alongside it by `install-mac.sh`; the Power Automate bridge needs a tenant. What each part lets
+bridges are registered alongside it by `install-mac.sh`. The fourth bridge in this repository, Power Automate,
+is Copilot Cowork on Windows only and has no place on this route. What each part lets
 you do is in [What this repository adds to Claude Cowork](claude-cowork.md).
 
 ---
@@ -195,7 +196,6 @@ did not start, and `install-mac.sh --verify` reads them for you. The launchers t
 | Approved batch executor | `<clone>/Startup/posix/exec-server.sh` | **Yes** — registered as `aor-batch-exec`. One tool: `run_batch_file`. Runs `.sh` only. Plain `node`, no dependencies, fetches nothing at start. Finds `node` under the minimal PATH a desktop app passes (`COWORK_NODE` in `cowork-env.sh` wins) and says so on stderr when it cannot. |
 | Browser | `<clone>/Startup/posix/pw-server.sh` | **Yes** — registered as `aor-playwright`. A signed-in browser profile with traces to disk. Uses `npx -y`, so its **first** start downloads a package and needs the network. |
 | Filesystem | `<clone>/Startup/posix/fs-server.sh` | **Yes** — registered as `aor-filesystem`, pinned to `@modelcontextprotocol/server-filesystem@2025.8.21`. Measured 2026-09-13: every release from 2025.11.25 onward declares draft-07 output schemas on all 14 tools, and this client supports 2020-12 only, so an unpinned `npx -y` gives you a bridge that handshakes, lists 14 tools and fails every call. |
-| Power Automate | `<clone>/Startup/posix/flow-server.sh` | Optional — needs a Power Platform tenant; refuses everything until configured. |
 
 `docs/bridge-facts.json` records the `stdio_posix` entry for each bridge; the commands
 above should match it exactly. If they do not, the facts file wins and this page is wrong.
@@ -267,7 +267,8 @@ here. If a bridge misbehaves, end the session and start a new one.
 python scripts/install_check.py --route local --config-root "<config root>" --json install-results.json
 ```
 
-`INSTALL_CHECK: CLEAN` is the finish line. The check starts each own-code bridge as a real
+`INSTALL_CHECK: CLEAN` is the finish line, and the servers section opens with
+`bridges in scope: 3 of 4` - the three this route has. The check starts each own-code bridge as a real
 stdio MCP server and completes a handshake — not a test that a file exists — checks the
 runtime, enforces the 1024-character cap on skill descriptions, and runs the corpus checks.
 `--route local` records `supergateway` as skipped rather than required: this route never

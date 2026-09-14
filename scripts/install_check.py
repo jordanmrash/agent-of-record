@@ -215,12 +215,35 @@ def mcp_handshake(server_js: Path, timeout: int = 25) -> tuple[bool, str]:
             proc.kill()
 
 
-def check_servers(rep: Report, facts: dict) -> None:
+ROUTE_PRODUCT = {"hosted": "copilot", "local": "claude"}
+THIS_PLATFORM = "windows" if IS_WINDOWS else "macos"
+
+
+def bridges_in_scope(facts: dict, route: str) -> tuple[list[dict], list[dict]]:
+    """The bridges that exist for this route's product on this platform, per the two
+    axes the manifest declares. No port is named here: a bridge leaves a route by a
+    manifest edit, and this check follows."""
+    product = ROUTE_PRODUCT[route]
+    inside, outside = [], []
+    for bridge in facts.get("bridges", []):
+        products = bridge.get("products") or sorted(ROUTE_PRODUCT.values())
+        platforms = bridge.get("platforms") or ["windows", "macos"]
+        (inside if product in products and THIS_PLATFORM in platforms else outside).append(bridge)
+    return inside, outside
+
+
+def check_servers(rep: Report, facts: dict, route: str = "hosted") -> None:
     if shutil.which("node") is None:
         rep.add("servers", "all bridges", SKIP, "node is not installed")
         return
 
-    for bridge in facts.get("bridges", []):
+    inside, _outside = bridges_in_scope(facts, route)
+    total = len(facts.get("bridges", []))
+    rep.add("servers", "bridges in scope", PASS,
+            f"{len(inside)} of {total} for {ROUTE_PRODUCT[route]} on {THIS_PLATFORM}: "
+            + ", ".join(str(b.get("port")) for b in inside))
+
+    for bridge in inside:
         port = bridge.get("port")
         label = f"{port} {bridge.get('name', '')}".strip()
 
@@ -405,7 +428,7 @@ def main(argv: list[str]) -> int:
 
     rep = Report()
     check_runtime(rep, args.route)
-    check_servers(rep, facts)
+    check_servers(rep, facts, args.route)
     check_config(rep, config_root)
     check_corpus(rep, config_root)
 
