@@ -45,8 +45,15 @@ behind is retired on upgrade.
   `CoworkConfig/Skills` into a `.plugin` from the manifest at
   `CoworkConfig/plugin/.claude-plugin/plugin.json`; `--strict` fails when a skill declared
   for macOS carries Windows-only text. The eight bridge, memory and bookend skills still
-  do, so they are declared for Windows only and the macOS bundle carries `myvoice`,
-  `not-a-robot` and `skill-menu`; the rest follow as their text is made platform-correct.
+  do, so they are declared for Windows only and the macOS bundle carries `not-a-robot`
+  and `skill-menu`; the rest follow as their text is made platform-correct.
+- **The `myvoice` skill leaves the repository.** It describes one person's writing
+  register and is not part of the toolkit. It shipped in v0.2.0 through v0.3.2 and stays in
+  the history of those tags. The skill set is ten: `command-bridge`, `local-file-bridge`,
+  `git-bridge`, `playwright-skill`, `persistent-memory`, `self-improvement`, `dream-cycle`,
+  `gamma-tango`, `not-a-robot` and `skill-menu`. Its lesson route is gone too, so
+  `skill_lessons.py --check` opens only skills that exist here; the macOS bundle carries
+  `not-a-robot` and `skill-menu`.
 - `public_scan.py` scans what git would commit and honours path arguments; the executor
   names itself `aor-batch-exec`; `docs/evidence/README.md` shows the checker command per
   route; two pages stop saying `install-results.json` names your machine; `.DS_Store` is

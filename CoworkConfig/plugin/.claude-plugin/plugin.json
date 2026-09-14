@@ -15,15 +15,8 @@
     "bridges",
     "agent-of-record"
   ],
-  "_comment_skills": "Source of truth for what ships. Each entry names a directory under CoworkConfig/Skills/. 'platforms' is enforced by scripts/build_plugin.py --strict: a skill listed for macos that still contains Windows-only text fails the build. The eight bridge, memory and bookend skills are declared for windows only until their text is made platform-correct, one skill per commit; the macOS bundle carries the three that already are.",
+  "_comment_skills": "Source of truth for what ships. Each entry names a directory under CoworkConfig/Skills/. 'platforms' is enforced by scripts/build_plugin.py --strict: a skill listed for macos that still contains Windows-only text fails the build. The eight bridge, memory and bookend skills are declared for windows only until their text is made platform-correct, one skill per commit; the macOS bundle carries the two that already are.",
   "skills": [
-    {
-      "name": "myvoice",
-      "platforms": [
-        "windows",
-        "macos"
-      ]
-    },
     {
       "name": "not-a-robot",
       "platforms": [

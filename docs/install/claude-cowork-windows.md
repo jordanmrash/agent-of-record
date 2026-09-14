@@ -163,7 +163,7 @@ The repo ships a complete configuration under `CoworkConfig\`:
 
 ```
 CoworkConfig\
-  Skills\<skill-name>\SKILL.md      eleven skills, the three bridge skills among them
+  Skills\<skill-name>\SKILL.md      ten skills, the three bridge skills among them
   copilot-instructions.md           standing instructions (the Copilot host's filename)
   cowork-memory\cowork-lessons.md   the lessons corpus, beside the memory files
   README.md                         which files are generated from which

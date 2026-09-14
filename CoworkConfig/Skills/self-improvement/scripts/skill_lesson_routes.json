@@ -16,7 +16,7 @@
     "authoritative home for every entry. Nothing here DELETES a lesson - the",
     "entry keeps its Pattern-Key, its evidence and its history, and gains a",
     "Promoted-to pointer saying which skill now carries the rule.",
-    "PUBLISHED COPY: routes for skills withheld from this repository (workflow conversion, deck generation) were removed so `skill_lessons.py --check` opens only files that exist here."
+    "PUBLISHED COPY: routes for skills withheld from this repository (workflow conversion, deck generation, the author's personal writing-voice skill) were removed so `skill_lessons.py --check` opens only files that exist here."
   ],
   "command-bridge": {
     "title": "the approved batch executor (8933)",
@@ -112,16 +112,6 @@
       "onedrive-read-mount-locally",
       "onedrive-user-surface-not-live",
       "skill-editartifact-patch-rejected-republish-folder"
-    ]
-  },
-  "myvoice": {
-    "title": "writing in his register",
-    "prefix": [
-      "voice-"
-    ],
-    "exact": [
-      "skill-voiceprofile-calibrate-from-user-diff",
-      "work-is-an-exercise-not-an-engagement"
     ]
   },
   "playwright-skill": {

@@ -13,7 +13,7 @@ the repository holds a copy so the corpus is versioned, gated and published.
 
 | Path | Installs to (under `Documents\Cowork`) | What it is |
 |---|---|---|
-| `Skills/<name>/SKILL.md` | `skills\<name>\SKILL.md` | Eleven skills. Each has a frontmatter block Cowork reads at session start and a body it loads when the skill fires. |
+| `Skills/<name>/SKILL.md` | `skills\<name>\SKILL.md` | Ten skills. Each has a frontmatter block Cowork reads at session start and a body it loads when the skill fires. |
 | `Skills/self-improvement/scripts/` | with its skill | The lesson tooling - `lesson_check`, `lesson_dupe`, `lesson_gate`, `digest_apply`, `skill_lessons`, `plugin_lessons`, `scope_check`, `job_lint`, `verify_delivery`, `dream_analyze`, `nightly_measure` - and the ten negative-control self-test suites the release gate runs against them. |
 | `Skills/_ATTRIBUTION-TEMPLATE.md` | - | The attribution block every skill carries. |
 | `copilot-instructions.md` | `copilot-instructions.md` | Standing instructions, including the generated lesson digest. |

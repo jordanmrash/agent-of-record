@@ -206,7 +206,7 @@ The repo ships a complete configuration under `CoworkConfig/`:
 
 ```
 CoworkConfig/
-  Skills/<skill-name>/SKILL.md      eleven skills, the three bridge skills among them
+  Skills/<skill-name>/SKILL.md      ten skills, the three bridge skills among them
   copilot-instructions.md           standing instructions (the Copilot host's filename)
   cowork-memory/cowork-lessons.md   the lessons corpus, beside the memory files
   README.md                         which files are generated from which
@@ -223,7 +223,7 @@ SKILL.md is not: the prose names OneDrive paths, `.bat` jobs, `C:\Users\YOURUSER
 8932 bridge, so uploading it as-is hands the host wrong operating instructions. The bridge
 skills have the same problem, addressing the bridges by the Copilot host's connector ids
 and describing `.bat` jobs on a Windows layout. Their host-adapter sections are issue #6
-work, `self-improvement` included; until then read the eight as reference; the macOS plugin bundle carries the three
+work, `self-improvement` included; until then read the eight as reference; the macOS plugin bundle carries the two
 that are already correct here, and nothing else should be uploaded by hand. `[verify: the uploader tolerates the skills' `cowork:` and `metadata:` frontmatter
 keys; where it caps a description]`
 
@@ -237,8 +237,8 @@ which skills ship and on which platforms. `--strict` fails the build when a skil
 declared for macOS carries Windows-only text (`cd /d`, `reg query`, `C:\Users`, `.bat`,
 `devtunnel`, a bridge port). Today the eight bridge, memory and bookend skills still do,
 so the manifest declares them for Windows only and
-`python3 scripts/build_plugin.py --platform macos` ships the three that are correct here:
-`myvoice`, `not-a-robot` and `skill-menu`. The other eight arrive on this route as their
+`python3 scripts/build_plugin.py --platform macos` ships the two that are correct here:
+`not-a-robot` and `skill-menu`. The other eight arrive on this route as their
 text is made platform-correct, one skill at a time.
 
 **Instructions.** `copilot-instructions.md` is the Copilot host's file and has no
