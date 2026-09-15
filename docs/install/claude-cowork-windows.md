@@ -179,11 +179,16 @@ the wrong thing to operate under.
 python scripts\build_plugin.py --strict --platform windows
 ```
 
-Open `Outputs\Skills Plugin\agent-of-record-skills-windows.plugin` in Claude, accept it,
-restart the app, and confirm `ListSkills` returns all ten repository skills. The same ten
-skills ship on Windows and macOS; each skill states the platform-specific launcher, path or
-job-script shape in the same instructions. A directory copy into `~/.claude/skills/` does
-nothing.
+In Claude, open **Customize -> Plugins -> Add -> Upload plugin** and select
+`Outputs\Skills Plugin\agent-of-record-skills-windows.plugin`. Restart the app and confirm
+`ListSkills` returns all ten repository skills. The same ten skills ship on Windows and
+macOS; each skill states the platform-specific launcher, path or job-script shape in the
+same instructions.
+
+Do not double-click the `.plugin` file; Claude registers no document type for that
+extension. The upload picker inside Claude is the install path. A directory copy into
+`~/.claude/skills/` is not an install either -- Cowork sessions do not read that directory
+(Claude Code does).
 
 **Instructions.** `copilot-instructions.md` is the Copilot host's file and has no
 equivalent here *(expected)*. It carries the lessons digest, and that digest is also

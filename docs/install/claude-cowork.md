@@ -104,7 +104,10 @@ python3 scripts/build_plugin.py --strict --platform macos     # Mac
 python  scripts\build_plugin.py --strict --platform windows  # Windows
 ```
 
-Open the resulting `.plugin`, accept it, restart Claude, and confirm `ListSkills` returns
-all ten. Each `SKILL.md` is one portable instruction set: where a mechanism differs, the
-Windows and macOS forms are stated together. Do not copy the directory into
-`~/.claude/skills/`; that is not an installation.
+Install it through **Customize -> Plugins -> Add -> Upload plugin**, restart Claude, and
+confirm `ListSkills` returns all ten. Each `SKILL.md` is one portable instruction set: where
+a mechanism differs, the Windows and macOS forms are stated together.
+
+Opening the `.plugin` file from Finder or Explorer does not work -- Claude registers no
+document type for the extension -- and copying the directory into `~/.claude/skills/` is not
+an installation for Cowork, which does not read that directory.

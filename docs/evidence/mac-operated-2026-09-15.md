@@ -84,7 +84,7 @@ Node the jobs see: /Users/YOURUSER/.local/bin/node
 `aor-playwright` drove a real browser and wrote its snapshot to
 `playwright-output/page-2026-09-15T03-35-30-271Z.yml`.
 
-### `aor-filesystem` — known failure, fix already in `6cfc77c`, clears on restart
+### `aor-filesystem` — broken, and the existing pin does not fix it
 
 First call returned a client-side schema rejection; the server then reported `failed`:
 
@@ -93,24 +93,56 @@ Invalid result for tools/list: [{ "code": "invalid_value", "values": ["object"],
   "path": ["tools", 0, "inputSchema", "type"], ... }]
 ```
 
-This is exactly the draft-07 failure that the header comment in
-`Startup/posix/fs-server.sh` documents, and that `FS_SERVER_VERSION=2025.8.21` pins
-against. That pin lands **only in `6cfc77c`** — `git show fa7473b:Startup/posix/fs-server.sh`
-has no pin at all. The server process Claude is currently running was started from the
-pre-pin launcher, so `npx` fetched a recent `@modelcontextprotocol/server-filesystem`
-with draft-07 output schemas on all 14 tools.
+An earlier revision of this file attributed that to the pre-pin launcher and predicted it
+would clear at the next Claude restart. **That was wrong.** Measured on this Mac the same
+day, by handshaking the pinned launcher directly:
 
-So this is not a defect in `main`; it is the pre-pin launcher still resident in memory.
-The pinned `fs-server.sh` is now on disk and will be used at the next Claude restart —
-the same restart step 5 already requires. **Re-run step 3 for `aor-filesystem` after that
-restart before calling this bridge operated.**
+| version | tools | inputSchema missing `type` | input draft-07 | output draft-07 |
+|---|---|---|---|---|
+| **2025.8.21** (current pin) | 14 | **13** | 13 | 0 |
+| 2025.11.25 | 14 | 0 | 14 | 14 |
+| 2026.8.31 | 14 | 0 | 14 | 14 |
 
-Related gap worth noting: `install_check.py` SKIPs the 8931/8932 stdio handshakes, so a
-CLEAN install check cannot catch this class of failure. The `fs-server.sh` comment already
-says why it is dangerous — "the handshake passing is what makes it dangerous: nothing looks
-wrong until a tool is used" — and in this case not even the handshake was checked.
+The pinned release is the worst of the three. Thirteen of its fourteen tools emit an
+`inputSchema` of literally `{"$schema": "http://json-schema.org/draft-07/schema#"}` — no
+`type`, no `properties`. That is exactly the error Cowork reported, at exactly
+`tools[0].inputSchema.type`. Restarting Claude will not fix this bridge.
 
-## Step 4 — build the macOS plugin — BUILT (not yet accepted in Claude)
+The `fs-server.sh` pin comment reached the opposite conclusion because the 2026-09-13
+measurement read **outputSchema** dialects only. On that axis 2025.8.21 is clean — it has
+no output schemas at all. The breakage is on the input side, which was never measured.
+
+**Root cause**, measured the same day: the package declares `zod-to-json-schema ^3.23.5`
+and no `zod` of its own, so npx resolves zod 4.x transitively through
+`@modelcontextprotocol/sdk` 1.30.0. `zod-to-json-schema@3` cannot read zod 4 internals and
+silently emits an empty schema.
+
+```
+server-filesystem: 2025.8.21    zod: 4.6.5    zod-to-json-schema: 3.25.2
+```
+
+Installing the same version with an npm `overrides` of `zod` to `^3.25.0` restores complete
+schemas on all 14 tools:
+
+```
+zod: 3.25.76   tools=14  missing-type=0  input-draft07=13
+tools[0].inputSchema: { "type": "object", "properties": { "path": {...} },
+                        "required": ["path"], "$schema": "...draft-07..." }
+```
+
+Structurally valid, still labelled draft-07. **Whether Cowork refuses a well-formed
+draft-07 schema has not been verified on this machine** — the 2026-09-13 note asserts it,
+and nothing here tests it. That is the remaining unknown for this bridge.
+
+`install_check.py` now handshakes 8931 and 8932 and reports both faults, so this is caught
+at check time rather than at first tool call. Against the current pin it correctly fails:
+
+```
+PASS  8932 Filesystem: stdio handshake   secure-filesystem-server 0.2.0, 14 tool(s)
+FAIL  8932 Filesystem: tool schemas      read_file.inputSchema has no type:object (empty schema)
+```
+
+## Step 4 — build the macOS plugin — BUILT (not yet uploaded into Claude)
 
 Built on the Mac through `aor-batch-exec` (`CommandJobs/mac-evidence-build-plugin.sh`).
 Transcript: `Outputs/Mac Evidence 2026-09-15/build-plugin-macos-20260914-223919.txt`.
@@ -148,26 +180,26 @@ The documented command from `docs/install/claude-cowork-mac.md` —
 same artifact. `release_check.py` was run on Darwin as a pre-commit gate and returned
 `RELEASE_CHECK: CLEAN (24 checks)`, matching the Windows post-merge figure in the handoff.
 
-### The install page's instruction does not work on this Mac
+### The install instruction on the install pages is wrong
 
-`docs/install/claude-cowork-mac.md:225` says "Open
+`docs/install/claude-cowork-mac.md:225` said "Open
 `Outputs/Skills Plugin/agent-of-record-skills-macos.plugin` in Claude, accept it", and
-`build_plugin.py` prints the same line after every build. On this machine that is not
-possible: no application claims the `.plugin` extension.
+`build_plugin.py` printed the same line after every build. Opening the file does not work:
 
 ```
 $ open "Outputs/Skills Plugin/agent-of-record-skills-macos.plugin"
 handler: kMDItemContentType = "dyn.ah62d4rv4ge81a5dzq7y06"
 No application knows how to open URL ...agent-of-record-skills-macos.plugin
-(Error Domain=NSOSStatusErrorDomain Code=-10814 "kLSApplicationNotFoundErr:
- E.g. no application claims the file")
+(Error Domain=NSOSStatusErrorDomain Code=-10814 "kLSApplicationNotFoundErr")
 ```
 
-`dyn.ah62d4rv4ge81a5dzq7y06` is the dynamic UTI macOS assigns an extension it has no
-declaration for — Claude has not registered a document type for `.plugin`. A Finder
-double-click fails the same way. The real install gesture on macOS therefore has to be
-something other than "open the file"; it has not been established here, and the install
-page and the `build_plugin.py` epilogue both need correcting once it is.
+Claude 1.52386.3 declares `CFBundleDocumentTypes` for `.dxt`/`.mcpb` (Desktop Extension)
+and `.skill` (Skill File), but nothing for `.plugin`, so macOS assigns the dynamic UTI
+`dyn.ah62d4rv4ge81a5dzq7y06` and Finder has no handler. A double-click fails the same way.
+
+The install path is the app's own picker: **Customize -> Plugins -> Add -> Upload plugin**.
+The file is uploaded, not opened. The install pages, the quickstart and the
+`build_plugin.py` epilogue have been corrected to say so.
 
 So the artifact is built and verified, but **not installed**.
 
@@ -180,21 +212,30 @@ So the artifact is built and verified, but **not installed**.
 |---|---|
 | 1. Pull `main` at `6cfc77c` | DONE |
 | 2. `install_check.py --route local` | DONE — CLEAN on Darwin |
-| 3. One tool on each of the three bridges | 2 of 3 PASS; `aor-filesystem` blocked on restart |
-| 4. Build + install `agent-of-record-skills-macos.plugin` | BUILT and verified; install gesture unknown on macOS |
+| 3. One tool on each of the three bridges | 2 of 3 PASS; `aor-filesystem` broken, pin does not fix it |
+| 4. Build + install `agent-of-record-skills-macos.plugin` | BUILT and verified; upload via Customize -> Plugins -> Add -> Upload plugin |
 | 5. Restart Claude, `ListSkills` returns ten skills | NOT DONE |
 
-The install pages cannot move from "not yet operated" to operated yet. What remains is the
-in-app accept of the built plugin, the Claude restart, and then two post-restart checks:
-`ListSkills` returning ten skills, and one `aor-filesystem` tool call succeeding.
+The install pages cannot move from "not yet operated" to operated yet. What remains:
+
+1. Upload the built `.plugin` through **Customize -> Plugins -> Add -> Upload plugin**.
+2. Restart Claude and confirm `ListSkills` returns all ten skills.
+3. `aor-filesystem` stays broken regardless. Fixing it means controlling the dependency
+   tree instead of handing npx a version string — an npm `overrides` of `zod` to `^3.25.0`
+   is measured to restore complete schemas, but whether Cowork then accepts a well-formed
+   draft-07 schema is untested.
+
+Steps 1 and 2 are enough to move the install pages to operated for the skills plugin. The
+filesystem bridge needs its own fix and its own evidence.
 
 ### Housekeeping observed, not acted on
 
 - `git fetch` left 77 stray `.git/objects/tmp_obj_*` files; removed.
 - `~/agent-of-record` contains duplicate-suffixed siblings — `.git 2`, `CoworkConfig 2`,
   `examples 2`, `Startup 2` — the usual cloud-sync collision artifacts. Left alone.
-- This clone has never pushed: `credential.helper` is `osxkeychain` but holds no
-  github.com credential, and `gh` is not installed, so the evidence commit is local only.
+- This clone had never pushed: `credential.helper` was `osxkeychain` with no github.com
+  credential and no `gh`. Now pushes over SSH; `origin` was switched from the HTTPS remote to the SSH one.
+- Neither Homebrew nor `gh` is installed on this Mac.
 - `playwright-output/` was untracked and not ignored; the browser bridge writes into it on
   every snapshot. Added to `.gitignore`.
 - The `aor-batch-exec` operating-rules block returned with each job is still Windows-only

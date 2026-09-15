@@ -6,10 +6,16 @@ Why this exists
 The repo's only skill-install mechanism was syncing CoworkConfig/Skills into
 $COWORK_CONFIG_ROOT/skills, which is a Copilot Cowork location. Nothing
 installed a skill into Claude Cowork on either platform. Copying skills into
-~/.claude/skills/ looks right and does nothing -- a directory drop is not an
-install. The mechanism that works is a plugin: a directory holding
+~/.claude/skills/ does not do it either: Claude Code reads that directory,
+Cowork does not. The mechanism that works is a plugin: a directory holding
 .claude-plugin/plugin.json plus skills/<name>/SKILL.md, zipped to a .plugin
-file the user accepts in-app.
+file and uploaded through Customize -> Plugins -> Add -> Upload plugin.
+
+The upload picker is the only install path. Claude registers no document type
+for the .plugin extension, so double-clicking the file fails with
+kLSApplicationNotFoundErr on macOS and does nothing on Windows -- measured
+2026-09-15 against Claude 1.52386.3, whose CFBundleDocumentTypes declare
+.dxt/.mcpb and .skill but no .plugin.
 
 This script makes that artifact reproducible instead of hand-assembled.
 
@@ -277,8 +283,9 @@ def main() -> int:
     except ValueError:
         shown = out_path
     print(f"OK    {shown}")
-    print("\nInstall: open the .plugin file and accept it in Claude, restart the app,")
-    print("then confirm with ListSkills. A directory copy into ~/.claude/skills/ does nothing.")
+    print("\nInstall: in Claude, Customize -> Plugins -> Add -> Upload plugin, select this")
+    print("file, then restart the app and confirm with ListSkills. Double-clicking the")
+    print("file does not work; Claude registers no document type for .plugin.")
     return 0
 
 

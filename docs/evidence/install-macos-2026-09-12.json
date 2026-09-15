@@ -1,0 +1,167 @@
+{
+  "repository": "agent-of-record",
+  "host": {
+    "system": "Darwin",
+    "release": "25.6.0",
+    "machine": "arm64",
+    "python": "3.14.7"
+  },
+  "config_root": null,
+  "route": "local",
+  "checks": [
+    {
+      "layer": "runtime",
+      "check": "node",
+      "status": "PASS",
+      "detail": "v26.8.2"
+    },
+    {
+      "layer": "runtime",
+      "check": "python",
+      "status": "PASS",
+      "detail": "Python 3.14.7"
+    },
+    {
+      "layer": "runtime",
+      "check": "git",
+      "status": "PASS",
+      "detail": "git version 2.50.1 (Apple Git-155)"
+    },
+    {
+      "layer": "runtime",
+      "check": "npx",
+      "status": "PASS",
+      "detail": "11.19.1"
+    },
+    {
+      "layer": "runtime",
+      "check": "node is 20 or newer",
+      "status": "PASS",
+      "detail": "v26.8.2"
+    },
+    {
+      "layer": "runtime",
+      "check": "supergateway",
+      "status": "SKIP",
+      "detail": "not used on the local route - the host starts each launcher as a stdio server"
+    },
+    {
+      "layer": "servers",
+      "check": "8931 Playwright: launcher present",
+      "status": "PASS",
+      "detail": "pw-server.sh"
+    },
+    {
+      "layer": "servers",
+      "check": "8931 Playwright: launcher is executable",
+      "status": "PASS",
+      "detail": "chmod +x Startup/posix/pw-server.sh"
+    },
+    {
+      "layer": "servers",
+      "check": "8931 Playwright: stdio handshake",
+      "status": "SKIP",
+      "detail": "upstream server, fetched by npx at first start"
+    },
+    {
+      "layer": "servers",
+      "check": "8932 Filesystem: launcher present",
+      "status": "PASS",
+      "detail": "fs-server.sh"
+    },
+    {
+      "layer": "servers",
+      "check": "8932 Filesystem: launcher is executable",
+      "status": "PASS",
+      "detail": "chmod +x Startup/posix/fs-server.sh"
+    },
+    {
+      "layer": "servers",
+      "check": "8932 Filesystem: stdio handshake",
+      "status": "SKIP",
+      "detail": "upstream server, fetched by npx at first start"
+    },
+    {
+      "layer": "servers",
+      "check": "8933 Command: launcher present",
+      "status": "PASS",
+      "detail": "exec-server.sh"
+    },
+    {
+      "layer": "servers",
+      "check": "8933 Command: launcher is executable",
+      "status": "PASS",
+      "detail": "chmod +x Startup/posix/exec-server.sh"
+    },
+    {
+      "layer": "servers",
+      "check": "8933 Command: server parses",
+      "status": "PASS",
+      "detail": "batch-exec-server.js"
+    },
+    {
+      "layer": "servers",
+      "check": "8933 Command: stdio handshake",
+      "status": "PASS",
+      "detail": "cowork-batch-exec 1.3.0, 1 tool(s)"
+    },
+    {
+      "layer": "servers",
+      "check": "8934 Power Automate: launcher present",
+      "status": "PASS",
+      "detail": "flow-server.sh"
+    },
+    {
+      "layer": "servers",
+      "check": "8934 Power Automate: launcher is executable",
+      "status": "PASS",
+      "detail": "chmod +x Startup/posix/flow-server.sh"
+    },
+    {
+      "layer": "servers",
+      "check": "8934 Power Automate: server parses",
+      "status": "PASS",
+      "detail": "flow-mcp-server.js"
+    },
+    {
+      "layer": "servers",
+      "check": "8934 Power Automate: stdio handshake",
+      "status": "PASS",
+      "detail": "cowork-power-automate 0.5.0, 29 tool(s)"
+    },
+    {
+      "layer": "config",
+      "check": "repository skills present",
+      "status": "PASS",
+      "detail": "11 skill(s)"
+    },
+    {
+      "layer": "config",
+      "check": "repository skills under the 1024-char cap",
+      "status": "PASS",
+      "detail": "11 checked"
+    },
+    {
+      "layer": "config",
+      "check": "installed skills",
+      "status": "SKIP",
+      "detail": "no config root given; pass --config-root or set COWORK_CONFIG_ROOT"
+    },
+    {
+      "layer": "corpus",
+      "check": "lesson integrity (repository corpus)",
+      "status": "PASS",
+      "detail": "  INFO 75 entries (61%) are advice with no runnable check."
+    },
+    {
+      "layer": "corpus",
+      "check": "digest currency",
+      "status": "PASS",
+      "detail": "already current: 93 rules from 123 entries"
+    }
+  ],
+  "passed": 21,
+  "failed": 0,
+  "skipped": 4,
+  "clean": true
+}
