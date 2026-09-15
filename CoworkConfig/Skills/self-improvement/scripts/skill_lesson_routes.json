@@ -39,7 +39,13 @@
       "bridge-recovery-scripts-revert-config",
       "bridge-restart-needs-pid-kill",
       "bridge-session-bound-to-pid",
-      "cowork-close-reports-ok-on-failed-commit"
+      "cowork-close-reports-ok-on-failed-commit",
+      "plugin-install-is-upload-not-open",
+      "install-check-skipped-handshake-hides-dead-bridge",
+      "fs-server-pin-measured-output-schema-only",
+      "device-shell-is-a-linux-vm-not-the-host",
+      "git-protected-branch-bypass-not-reversible",
+      "lessons-served-out-of-scope-dilute-the-block"
     ]
   },
   "local-file-bridge": {
@@ -58,7 +64,9 @@
       "bridge-reprobe-must-be-separated-in-time",
       "bridge-absent-probe-is-not-permanent",
       "bridge-session-bound-to-pid",
-      "file-write-to-user-surface-not-onedrive"
+      "file-write-to-user-surface-not-onedrive",
+      "cowork-draft07-well-formed-untested",
+      "fs-server-pin-measured-output-schema-only"
     ]
   },
   "git-bridge": {
@@ -99,7 +107,11 @@
     "exact": [
       "memory-digest-repair-blocked-by-its-own-gate",
       "skill-editartifact-patch-rejected-republish-folder",
-      "skill-alwayson-defeated-by-routing"
+      "skill-alwayson-defeated-by-routing",
+      "install-check-skipped-handshake-hides-dead-bridge",
+      "fs-server-pin-measured-output-schema-only",
+      "narrow-before-fixing-duplicated-capability",
+      "verify-product-claim-before-correcting-the-operator"
     ]
   },
   "persistent-memory": {
@@ -134,7 +146,9 @@
     "exact": [
       "lessons-gate-receipt-dir-read-only",
       "git-repo-clean-not-dirty",
-      "bridge-recovery-scripts-revert-config"
+      "bridge-recovery-scripts-revert-config",
+      "skill-description-cap-crossed-by-edit",
+      "verify-product-claim-before-correcting-the-operator"
     ]
   },
   "dream-cycle": {
@@ -148,7 +162,9 @@
       "digest-enforced-demotion-outruns-the-enforcer",
       "enforcer-encodes-the-superseded-rule",
       "memory-two-stores-drift",
-      "schtask-hosted-success-describes-the-trigger"
+      "schtask-hosted-success-describes-the-trigger",
+      "lessons-served-out-of-scope-dilute-the-block",
+      "narrow-before-fixing-duplicated-capability"
     ]
   }
 }

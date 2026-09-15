@@ -33,7 +33,7 @@ REQUIRED = ["Pattern-Key", "Date", "Trigger", "Failed", "Why", "Worked", "Eviden
 # behaves exactly as it did before scoping existed.
 VALID_ROUTES = {"claude", "copilot"}
 VALID_PLATFORMS = {"windows", "macos"}
-VALID_TRIGGERS = {"failure", "correction", "better-approach", "contradiction",
+VALID_TRIGGERS = {"failure", "correction", "better-approach", "contradiction", "pattern", "open",
                   "false-success", "near-miss", "missing-capability"}
 
 # A Worked line naming one of these is enforceable rather than advisory.

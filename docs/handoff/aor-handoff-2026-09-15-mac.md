@@ -32,7 +32,7 @@ From: the Windows PC (Copilot Cowork), after the route review and PR #19.
    Anthropic account. See step 9.
 5. **Lessons.** Your Part 3 entries and one new PC entry
    (`verify-product-claim-before-correcting-the-operator`) are in the repository corpus and
-   in the live Copilot corpus. `lesson_scope_tag.py` was dry-run only; nothing was tagged.
+   in the live Copilot corpus, routed into their skills. `lesson_scope_tag.py` was dry-run only.
 
 ## 3. Tonight's steps
 
@@ -65,9 +65,9 @@ Only after 6-10 pass: flip `docs/install/claude-cowork-mac.md` and the quickstar
 
 ## 5. Open after tonight
 
-- Routes for the ten new lessons in `skill_lesson_routes.json` / `plugin_lesson_routes.json`
-  (they are in the corpus, not yet delivered into skills).
-- Live Copilot skill bodies on the PC still lack the redundancy sections until the next
-  repo-to-live sync (a PC job; no action on the Mac).
+- Done on the PC after this handoff was first written: the ten new lessons are routed into
+  their skills (not into the executor's description - that surface is reserved for rules that
+  fire while calling the tool), `lesson_check` accepts `Trigger: pattern` and `open`, and the
+  live Copilot skills carry the same redundancy sections.
 - Release 0.4.0 with the `CITATION.cff` bump once PR #19 and tonight's PR are merged.
 - Ruleset: whether admins may keep bypassing the pull-request requirement.
