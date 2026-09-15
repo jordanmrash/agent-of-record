@@ -394,7 +394,20 @@ def frontmatter_description(text: str) -> str | None:
     return raw.strip().strip("'\"")
 
 
-def check_config(rep: Report, config_root: Path | None) -> None:
+PLUGIN_MANIFEST = ROOT / "CoworkConfig" / "plugin" / ".claude-plugin" / "plugin.json"
+
+
+def skills_for_product(product: str) -> int | None:
+    """How many manifest skills are declared for this product. None if unreadable."""
+    try:
+        entries = json.loads(PLUGIN_MANIFEST.read_text(encoding="utf-8"))["skills"]
+    except (OSError, ValueError, KeyError):
+        return None
+    return sum(1 for e in entries
+               if product in e.get("products", list(ROUTE_PRODUCT.values())))
+
+
+def check_config(rep: Report, config_root: Path | None, route: str = "hosted") -> None:
     # The skills that ship in the repository are always checkable.
     for label, skills_dir in (("repository", ROOT / "CoworkConfig" / "Skills"),
                               ("installed", (config_root / "skills")
@@ -410,8 +423,17 @@ def check_config(rep: Report, config_root: Path | None) -> None:
             continue
 
         files = sorted(skills_dir.glob("*/SKILL.md"))
+        detail = f"{len(files)} skill(s)"
+        if label == "repository":
+            # The repository holds every skill; a route ships the subset declared
+            # for its product. Both numbers are true and reporting only the first
+            # makes a correct install look wrong.
+            shipped = skills_for_product(ROUTE_PRODUCT[route])
+            if shipped is not None and shipped != len(files):
+                detail = (f"{len(files)} in the repository, "
+                          f"{shipped} ship to {ROUTE_PRODUCT[route]}")
         rep.add("config", f"{label} skills present",
-                PASS if files else FAIL, f"{len(files)} skill(s)")
+                PASS if files else FAIL, detail)
 
         over = []
         missing = []
@@ -514,7 +536,7 @@ def main(argv: list[str]) -> int:
     rep = Report()
     check_runtime(rep, args.route)
     check_servers(rep, facts, args.route)
-    check_config(rep, config_root)
+    check_config(rep, config_root, args.route)
     check_corpus(rep, config_root)
 
     width = max(len(r["check"]) for r in rep.rows)

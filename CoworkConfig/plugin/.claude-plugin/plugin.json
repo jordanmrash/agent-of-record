@@ -31,6 +31,12 @@
     },
     {
       "name": "command-bridge"
+    },
+    {
+      "name": "persistent-memory",
+      "products": [
+        "copilot"
+      ]
     }
   ]
 }

@@ -162,13 +162,26 @@ def scan_windows_text(skill_dir: Path) -> list[str]:
     return hits
 
 
-def select(manifest: dict, platform: str | None) -> list[dict]:
+# This script builds the CLAUDE delivery: a .plugin uploaded through Customize ->
+# Plugins -> Add -> Upload plugin. Copilot Cowork gets the same skills a different
+# way -- CoworkConfig/Skills is synced into $COWORK_CONFIG_ROOT/skills -- so a skill
+# that exists only for one product is declared here rather than kept in two trees.
+# Same two-axis shape docs/bridge-facts.json uses for bridges: absent means both.
+PRODUCTS = ["claude", "copilot"]
+PLATFORMS = ["windows", "macos"]
+
+
+def select(manifest: dict, platform: str | None,
+           product: str = "claude") -> list[dict]:
     entries = manifest.get("skills")
     if not isinstance(entries, list) or not entries:
         fail("manifest has no 'skills' array -- nothing to package", 2)
+    entries = [e for e in entries if product in e.get("products", PRODUCTS)]
+    if not entries:
+        fail(f"no skills declared for product '{product}'", 2)
     if platform is None:
         return entries
-    chosen = [e for e in entries if platform in e.get("platforms", ["windows", "macos"])]
+    chosen = [e for e in entries if platform in e.get("platforms", PLATFORMS)]
     if not chosen:
         fail(f"no skills declared for platform '{platform}'", 2)
     return chosen
@@ -183,6 +196,9 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--platform", choices=["windows", "macos"], default=None,
                         help="package only skills declared for this platform (default: all)")
+    parser.add_argument("--product", choices=["claude", "copilot"], default="claude",
+                        help="package only skills declared for this product (default: claude, "
+                             "which is the product this .plugin installs into)")
     parser.add_argument("--strict", action="store_true",
                         help="fail the build if a macos-declared skill contains Windows-only text")
     parser.add_argument("--list", action="store_true", help="report what would ship and exit")
@@ -193,7 +209,7 @@ def main() -> int:
         fail(f"skills source not found: {SKILLS_SRC.relative_to(ROOT)}", 2)
 
     manifest = load_manifest()
-    entries = select(manifest, args.platform)
+    entries = select(manifest, args.platform, args.product)
 
     problems: list[str] = []
     warnings: list[str] = []

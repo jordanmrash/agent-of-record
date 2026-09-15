@@ -10,7 +10,8 @@ description: >-
   cycle", "nightly review", "consolidate my lessons", "clean up my memory",
   "what should be retired", "is my memory still accurate", or when the 2am
   scheduled task fires. Do NOT use to log one lesson (self-improvement), to
-  save one memory (write it directly), or to run the session open/close
+  save one memory (persistent-memory on Copilot, the host's memory on Claude), or
+  to run the session open/close
   bookend (gamma-tango) - this is the periodic sweep across all of them.
 metadata:
   version: 1.5.0
@@ -205,7 +206,7 @@ work the owning skills do:
 | Concern | Owner | Dream cycle's role |
 |---|---|---|
 | Writing one lesson | `self-improvement` | reads the log, proposes merges |
-| Writing one memory | the host's own memory | reads the files, proposes fixes |
+| Writing one memory | `persistent-memory` (Copilot) / the host's memory (Claude) | reads the files, proposes fixes |
 | Session open/close | `gamma-tango` | none - different cadence |
 | Running a git job | `git-bridge` | read-only log review only |
 
@@ -722,7 +723,7 @@ reads when he wants it.
 ## When NOT to Use
 
 - Logging a single lesson from the session just finished -> `self-improvement`.
-- Saving or updating one memory -> the host's own memory.
+- Saving or updating one memory -> `persistent-memory` under Copilot Cowork, the host's own memory under Claude Cowork.
 - The session open/close bookend -> `gamma-tango`.
 - A plain git question -> `git-bridge`.
 - Applying the proposals. That is a normal approved session with the owning

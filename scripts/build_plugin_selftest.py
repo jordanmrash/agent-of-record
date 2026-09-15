@@ -143,11 +143,20 @@ def main() -> int:
     # THE REAL TREE: all five manifest skills exist, carry no temporary platforms field, and scan clean.
     repo_root = HERE.parent
     manifest_real = json.loads((repo_root / "CoworkConfig" / "plugin" / ".claude-plugin" / "plugin.json").read_text(encoding="utf-8"))
-    # 2026-09-15: ten became five. The browser, filesystem and git bridge skills, the skill
-    # menu, and persistent-memory were retired as duplicates of first-party Cowork
-    # capability -- the host browses, reads connected folders, runs git, lists its own
-    # skills, and carries one memory shared with chat.
-    case(len(manifest_real["skills"]) == 5, f"real manifest names five skills ({len(manifest_real['skills'])})")
+    # 2026-09-15: ten manifest entries became six, of which five ship to Claude. The
+    # browser, filesystem and git bridge skills and the skill menu were retired outright
+    # as duplicates of first-party Cowork capability. persistent-memory stayed but is
+    # declared products: [copilot] -- Copilot Cowork has no host memory to fall back on,
+    # Claude Cowork carries one shared with chat.
+    case(len(manifest_real["skills"]) == 6, f"real manifest names six skills ({len(manifest_real['skills'])})")
+    claude_skills = bp.select(manifest_real, None, "claude")
+    copilot_skills = bp.select(manifest_real, None, "copilot")
+    case(len(claude_skills) == 5, f"five skills ship to claude ({len(claude_skills)})")
+    case(len(copilot_skills) == 6, f"six skills ship to copilot ({len(copilot_skills)})")
+    case({s["name"] for s in copilot_skills} - {s["name"] for s in claude_skills} == {"persistent-memory"},
+         "persistent-memory is the only copilot-only skill")
+    case(bp.select({"skills": [{"name": "x"}]}, None, "claude")[0]["name"] == "x",
+         "a manifest entry with no products field defaults to both")
     case(all("platforms" not in e for e in manifest_real["skills"]), "the temporary per-skill platforms field is gone")
     dirty_real = {e["name"]: bp.scan_windows_text(repo_root / "CoworkConfig" / "Skills" / e["name"]) for e in manifest_real["skills"]}
     dirty_real = {k: v for k, v in dirty_real.items() if v}

@@ -18,8 +18,8 @@ the repository holds a copy so the corpus is versioned, gated and published.
 | `Skills/_ATTRIBUTION-TEMPLATE.md` | - | The attribution block every skill carries. |
 | `copilot-instructions.md` | `copilot-instructions.md` | Standing instructions, including the generated lesson digest. |
 | `cowork-memory/cowork-lessons.md` | `cowork-memory\cowork-lessons.md` | The lessons corpus: dated entries keyed by `Pattern-Key`, each with a Failure, a Why, a Worked-instead and an evidence tag. |
-| `cowork-memory/MEMORY-INDEX.md` | `cowork-memory\MEMORY-INDEX.md` | One row per memory file; read it first. |
-| `cowork-memory/<topic>.md` | `cowork-memory\<topic>.md` | One memory file per focus area; the schema is the one the existing files use. |
+| `cowork-memory/MEMORY-INDEX.md` | `cowork-memory\MEMORY-INDEX.md` | One row per memory file; the `persistent-memory` skill reads it first on Copilot, and it is read directly on Claude. |
+| `cowork-memory/<topic>.md` | `cowork-memory\<topic>.md` | One memory file per focus area, in the schema the `persistent-memory` skill defines. |
 | `cowork-memory/verification-ledger.json` | `cowork-memory\verification-ledger.json` | Verdicts from `verify_delivery.py`: which delivered rules were judged effective, against which control, keyed by a fingerprint of the text that was judged. |
 
 ## What is generated from what
@@ -71,7 +71,7 @@ To begin empty, in your installed `Documents\Cowork\cowork-memory` folder:
    ```
 
 3. **Create an empty `MEMORY-INDEX.md`** with the shipped file's title and
-   table header and no rows. Add a row when you
+   table header and no rows. A row is added when you
    starts a topic file.
 4. **Regenerate the delivery blocks** so no rule from the reference corpus
    remains in your instructions or skills. From the repository root, with

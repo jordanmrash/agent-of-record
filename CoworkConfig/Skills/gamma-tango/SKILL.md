@@ -3,12 +3,13 @@ name: gamma-tango
 description: |
   Jordan's session bookend command. When he types "gamma tango" (or "gt", "gamma tango
   open", "gamma tango close", "gamma tango me", "bookend this", "open the session", "close the
-  session"), run the three-step routine in one pass: memory, self-improvement, git.
-  OPEN (start of a task): load the relevant standing context from the host's own memory,
-  scan cowork-lessons.md Pattern-Keys, and report the repo's current git status as the
-  baseline.
-  CLOSE (end of a task): log any lessons learned, record what the next session needs,
-  then propose and run a git commit of what changed.
+  session"), run the three-step routine in one pass: memory, lessons, git. On Copilot
+  those are the persistent-memory, self-improvement and git-bridge skills; on Claude
+  only self-improvement is a skill.
+  OPEN (start of a task): load standing context, scan cowork-lessons.md Pattern-Keys,
+  report the repo's git status as the baseline.
+  CLOSE (end of a task): log lessons learned, record what the next session needs, then
+  propose and run a git commit of what changed.
   If the phrase arrives with no mode word, infer OPEN when no work has been done yet in
   the session and CLOSE when it has; say which mode was chosen.
   Do NOT use for a plain git question ("show me the diff"), a plain memory request
@@ -68,11 +69,13 @@ work session is always opened with context and always closed with the record wri
 | **OPEN** | "gamma tango", "gamma tango open", "gt open" | memory → self-improvement → git |
 | **CLOSE** | "gamma tango close", "gt close", "gamma tango out" | self-improvement → memory → git |
 
-Two of these three were their own skills until 2026-09-15. `persistent-memory` was
-retired because the host carries one memory shared with chat, and `git-bridge` because
-the host runs git directly — through the approved executor where a job is warranted, and
-with its own tools otherwise. Only the lessons step still has a skill of its own, and
-this skill invokes `self-improvement` for it and follows that skill's rules.
+Which skill owns each step depends on the product. Under **Copilot Cowork** all three
+are skills: `persistent-memory`, `self-improvement`, `git-bridge`. Under **Claude Cowork**
+only `self-improvement` is — `persistent-memory` and `git-bridge` were retired there on
+2026-09-15 because that host carries one memory shared with chat and runs git directly,
+through the approved executor where a job is warranted and with its own tools otherwise.
+The routine is the same either way; invoke the owning skill where one exists and follow
+its rules.
 
 ## Mode selection
 
@@ -84,11 +87,12 @@ this skill invokes `self-improvement` for it and follows that skill's rules.
 
 ## OPEN routine
 
-1. **Memory** — read the host's own memory for standing context on the task at hand:
-   who is involved, what was decided before, what the constraints are. If the topic is
-   not yet clear, say you will load it once the topic lands. Do not invent a topic to
-   justify a load. The repository's `cowork-memory/` tree is the durable record of this
-   project specifically; read it when the task is about this repository.
+1. **Memory** — load standing context for the task at hand: who is involved, what was
+   decided before, what the constraints are. Under Copilot Cowork invoke
+   `persistent-memory`, which reads `cowork-memory/MEMORY-INDEX.md` and loads the focus-area
+   file; under Claude Cowork read the host's own memory, and `cowork-memory/` when the task
+   is about this repository. If the topic is not yet clear, load the index only and say you
+   will load the file once the topic lands. Do not invent a topic to justify a load.
 2. **Lessons** — invoke `self-improvement` and run the targeted lookup rather than
    reading the file. The log passed 73 entries and 115 KB, so "read the Pattern-Key
    lines" is no longer a cheap instruction and was measured being skipped three sessions
@@ -168,9 +172,10 @@ Platform counterpart: On macOS under Claude Cowork, the same step uses an approv
    recurring. Write the entry with both the FAILED and the WORKED approach. If there is
    nothing worth logging, say so — an empty log is a valid outcome, a skipped scan is not.
 2. **Memory third** — record what was decided, what changed, and what the next session
-   needs: durable facts about Jordan or his work go to the host's own memory, facts about
-   this repository go to `cowork-memory/`. Lessons are written before memory so the
-   record can reference the new Pattern-Key.
+   needs. Under Copilot Cowork invoke `persistent-memory` and update or create the
+   focus-area file; under Claude Cowork put durable facts about Jordan or his work in the
+   host's own memory and facts about this repository in `cowork-memory/`. Lessons are
+   written before memory so the record can reference the new Pattern-Key.
 3. **Git fourth** — run git, with the rules from step 0 already in hand. **Before the commit job runs, prove step 0 actually happened:**
 
    ```bash
@@ -240,8 +245,8 @@ empty `Rules:` line is a defect in the run, not a tidy result.
 ## When NOT to Use
 
 - A plain git request ("show me the diff", "roll that back") → just run git.
-- A plain memory request ("save memory", "what do you remember about X") → just read or
-  write memory.
+- A plain memory request ("save memory", "what do you remember about X") →
+  `persistent-memory` alone on Copilot; just read or write memory on Claude.
 - A plain lesson request ("log that", "show my lessons") → `self-improvement` alone.
 - Quick one-off questions that involve no work worth recording — do not bookend them.
 - Anything that needs a remote/GitHub operation — this repository has no remote.
