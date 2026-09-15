@@ -153,23 +153,6 @@ was written successfully while all four file edits had to be deferred.
   always-on work to an approval-gated shell bridge, and one broken file would take out all
   three. `gamma-tango` is the composition layer instead.
 
-- **2026-08-21 — `myvoice` recalibrated from a hand-rewritten article, 9 rules to 21, score 100.**
-  Jordan rewrote a full AI-drafted LinkedIn article by hand; the diff was measured rather than
-  read. Headline finding: **zero em dashes and zero semicolons across 2,542 words**, every em
-  dash in the draft removed by hand — now rule 1 plus a mechanical strip-pass and a guardrail.
-  Other additions: humour lives in short parentheticals ("(read smug)"), escalate a beat to a
-  third instance, thrown-away pop-culture reference, orient the reader with an appositive before
-  naming a third party, coach directly ("Try to remember,"), headings as spoken questions,
-  conversational openers ("Well," "So,"). Two corrections: cut extended confessional asides but
-  keep one-sentence factual candour, and the wry rhetorical-question close is for SHORT posts
-  only — long technical pieces end on practical advice. Capped at one or two markers per
-  paragraph; restraint is part of the voice.
-- **2026-08-21 — LinkedIn article drafted on the self-improvement build.** Long technical version
-  covering the six architecture decisions, the description-cap failure, four defects found in
-  testing, and the Hermes / Nous / OpenClaw / sentrux landscape. Deliberately no firm or client
-  detail and no drop-in files — shape only. Banner image generated
-  (`self-improving-agent-banner.png`): ledger, terminal, one loop arrow, no text.
-
 ## 2026-09-01 - measurement honesty pass on the nightly tooling
 
 Three figures in the self-improvement tooling were found to say something other than

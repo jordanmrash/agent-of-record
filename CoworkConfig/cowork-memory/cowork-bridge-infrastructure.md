@@ -363,8 +363,7 @@ editing. The connector-level plugin description is the lever there, and it is un
   `b08ad5b` (2026-08-20) widened the skills pass from `SKILL.md` to
   `*.md *.py *.js /S /XF *conflicted*`, taking the synced set from 24 files/446 KB to
   102 files/1.64 MB. That pulls engagement-flavoured content into `CoworkConfig\` —
-  `je-builder` history and its mapping files, state-apportionment and
-  <client>-apportionment scripts. `0d72b12` added `/XD` exclusions and `0c80eb1` deleted three
+  three engagement-specific skills. `0d72b12` added `/XD` exclusions and `0c80eb1` deleted three
   client-identifying SKILL.md files, but because the filter admits by pattern rather than by
   allowlist, any future widening can re-introduce them silently. Read the staged file list
   before every commit. Deleting later does not undo it: the path is already in history and
@@ -428,27 +427,8 @@ editing. The connector-level plugin description is the lever there, and it is un
       unknown and no scheduler dump was run. Do not reopen it unprompted.
 - [x] ~~Get the git bridge (port 8934) connected~~ — CLOSED 2026-08-18: no such server exists;
       the skill was rewritten to run git through the 8933 command bridge instead.
-- [x] ~~Commit deck-builder v3.1 (2026-08-20)~~ — DONE, commit `2d962f5` (six files,
-      +327/-30). Preceded by `b08ad5b` (widen sync filter — without it `review_strip.py`
-      would have been silently skipped), `0d72b12` (/XD exclusions), `0c80eb1` (delete
-      engagement skills). Original blocker was a stalled laptop OneDrive client, which
-      caught up ~35 min after the cloud-side upload. Superseded detail: Bridges were started mid-session so 8932/8933
-      never registered — must run from a FRESH chat. Sequence: run
-      `CommandJobs\2026-08-18-sync-cowork-config.bat`, then a status/diff job, then stage
-      `CoworkConfig\Skills\deck-builder\SKILL.md` and `...\reference\review_strip.py`
-      by name. Subject: "Fix deck-builder slide review: renders are files, not inline images".
 - [ ] GitHub push (see Decisions 2026-08-20). Phase 1 is a read-only pre-flight scan, not a
       remote. Do not add a remote until the git-bridge guardrail is deliberately rewritten.
-- [ ] **The COPILOT_COWORK repo can NEVER be the one pushed.** Confirmed 2026-08-20: the
-      three engagement skills were committed in `5ff400d` and remain in every commit since;
-      commit `0c80eb1` deletes them going forward but does not sanitize history. A GitHub
-      repo must be NEW, populated by copying named folders in, never by cloning and
-      filtering. Define the scope as an ALLOWLIST — a blocklist fails open on the next
-      client skill added.
-- [ ] Scrub `state-apportionment`: `SAMPLE_DATA_NOTES.md` and `make_sample_data.py` carry
-      client-derived sample data and are currently excluded BY FILENAME, which protects two
-      names rather than the category. Regenerate them as genuinely synthetic so the skill
-      becomes fully generic and needs no exclusion.
 - [x] ~~Run a `git status` check to confirm the repo is clean since the baseline commit.~~ —
       DONE 2026-08-21: `git status --short` returned EMPTY after commit `8e096a3`. Tree clean.
 - [x] ~~8932 devtunnel dead~~ — CLOSED 2026-08-21: it was never dead at the time it was being
