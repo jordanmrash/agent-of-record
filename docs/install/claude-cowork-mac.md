@@ -182,20 +182,31 @@ registered there. Three routes do accept a local stdio server:
 3. **A desktop extension** (`.mcpb`) via Settings › Extensions › Advanced settings › Install
    Extension.
 
+One server is registered on this route, and one only: `aor-batch-exec`, the approved
+executor. If an earlier version of this repository registered `aor-filesystem` and
+`aor-playwright` as well, `install-mac.sh --register` removes both — they are no longer
+part of this route, because the host reads and writes connected folders and drives a
+browser itself.
+
 Registration is a step the person does on this host: a Cowork session has no tool that
 edits the app's configuration or its plugin list, which bounds Option A. Afterwards, in a
 Cowork chat started in the desktop app, the **+** button › Connectors lists the servers
 actually connected; `~/Library/Logs/Claude/mcp.log` and `mcp-server-<name>.log` say why one
 did not start, and `install-mac.sh --verify` reads them for you. The launchers to register:
 
-| Bridge | Command | Register it? |
+| What | Command | Register it? |
 |---|---|---|
 | Approved batch executor | `<clone>/Startup/posix/exec-server.sh` | **Yes** — registered as `aor-batch-exec`. One tool: `run_batch_file`. Runs `.sh` only. Plain `node`, no dependencies, fetches nothing at start. Finds `node` under the minimal PATH a desktop app passes (`COWORK_NODE` in `cowork-env.sh` wins) and says so on stderr when it cannot. |
-| Browser | `<clone>/Startup/posix/pw-server.sh` | **Yes** — registered as `aor-playwright`. A signed-in browser profile with traces to disk. Uses `npx -y`, so its **first** start downloads a package and needs the network. |
-| Filesystem | `<clone>/Startup/posix/fs-server.sh` | **Yes** — registered as `aor-filesystem`, pinned to `@modelcontextprotocol/server-filesystem@2025.8.21`. Measured 2026-09-13: every release from 2025.11.25 onward declares draft-07 output schemas on all 14 tools, and this client supports 2020-12 only, so an unpinned `npx -y` gives you a bridge that handshakes, lists 14 tools and fails every call. |
 
-`docs/bridge-facts.json` records the `stdio_posix` entry for each bridge; the commands
-above should match it exactly. If they do not, the facts file wins and this page is wrong.
+That is the whole table. There is no POSIX launcher for anything else in this repository:
+the two that existed were retired on 2026-09-15 because the host already does both jobs,
+and the filesystem one was additionally unusable — measured 2026-09-15, the pinned
+`@modelcontextprotocol/server-filesystem@2025.8.21` emits an `inputSchema` carrying only a
+`$schema` key on 13 of its 14 tools, and Cowork rejects the whole tool list. Keeping a
+bridge in that state to duplicate a capability the host already has was the wrong trade.
+
+`docs/bridge-facts.json` records the `stdio_posix` entry; the command above should match it
+exactly. If it does not, the facts file wins and this page is wrong.
 
 ## 7. Skills, instructions and memory on this host
 

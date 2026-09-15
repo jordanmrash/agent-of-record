@@ -42,10 +42,19 @@ set -euo pipefail
 SERVER_KEY="aor-batch-exec"      # must not begin with "cowork"; that prefix is
                                  # reserved by Claude Desktop and the entry is
                                  # refused from Cowork/Code sessions at startup
-FS_KEY="aor-filesystem"          # the other two bridges are registered as well: a Mac
-PW_KEY="aor-playwright"          # user who follows the quickstart should end up with
-                                 # three connectors, not one. Same "aor-" prefix, same
-                                 # reserved-name rule.
+#
+# ONE server is registered, not three. Until 2026-09-15 this installer also wrote
+# aor-filesystem and aor-playwright, because the repository shipped a POSIX launcher
+# for each. Claude Cowork reads and writes connected folders and drives a browser on
+# its own, so both only duplicated the host while adding an npx fetch and an upstream
+# dependency to every start. They are Copilot Cowork on Windows now, and their POSIX
+# launchers are gone -- so registering them here would point Claude at missing files.
+#
+# These two keys are kept for RETIREMENT only: an upgrade removes the entries this
+# installer wrote, the same way it retires the pre-upgrade cowork-batch-exec name. An
+# entry of the same name that is not ours is left alone and reported.
+RETIRE_FS_KEY="aor-filesystem"
+RETIRE_PW_KEY="aor-playwright"
 NODE_LINE_DEFAULT="v24.x"        # nodejs.org release line to fetch if the Mac has no node
 MIN_NODE_MAJOR=20
 MIN_PY_MINOR=10                  # 3.10
@@ -307,16 +316,20 @@ register_claude() {
     cp -p "$CLAUDE_CFG" "$CLAUDE_CFG.bak-$STAMP"
     info "backed up the existing config to $(basename "$CLAUDE_CFG").bak-$STAMP"
   fi
-  AOR_ROOT="$ROOT" AOR_KEY="$SERVER_KEY" AOR_FS_KEY="$FS_KEY" AOR_PW_KEY="$PW_KEY" \
+  AOR_ROOT="$ROOT" AOR_KEY="$SERVER_KEY" AOR_FS_KEY="$RETIRE_FS_KEY" AOR_PW_KEY="$RETIRE_PW_KEY" \
   AOR_NODE="$node_bin" AOR_NODE_DIR="$node_dir" AOR_CFG="$CLAUDE_CFG" \
   "$PY" - <<'PYEOF'
 import json, os, sys
 cfg_path = os.environ["AOR_CFG"]
 root, node, node_dir = (os.environ[k] for k in ("AOR_ROOT", "AOR_NODE", "AOR_NODE_DIR"))
 launchers = {
-    os.environ["AOR_KEY"]:    "exec-server.sh",
-    os.environ["AOR_FS_KEY"]: "fs-server.sh",
-    os.environ["AOR_PW_KEY"]: "pw-server.sh",
+    os.environ["AOR_KEY"]: "exec-server.sh",
+}
+# Registered until 2026-09-15, retired now: key -> the launcher OUR entry pointed at.
+# Only an entry pointing there is removed; anything else of that name is left alone.
+retire = {
+    os.environ["AOR_FS_KEY"]: "/Startup/posix/fs-server.sh",
+    os.environ["AOR_PW_KEY"]: "/Startup/posix/pw-server.sh",
 }
 data = {}
 if os.path.exists(cfg_path) and os.path.getsize(cfg_path) > 0:
@@ -337,15 +350,18 @@ servers = data.setdefault("mcpServers", {})
 # forever. Retire it when it is ours - an agent-of-record launcher, wherever the tree
 # lives now - and leave any other server of that name alone, saying so.
 LEGACY_KEY = "cowork-batch-exec"
-retired = None
-legacy = servers.get(LEGACY_KEY)
-if isinstance(legacy, dict):
-    legacy_args = legacy.get("args") or []
-    legacy_target = str(legacy_args[0]).replace("\\", "/") if legacy_args else ""
-    if legacy_target.endswith("/Startup/posix/exec-server.sh"):
-        retired = servers.pop(LEGACY_KEY)
+retire[LEGACY_KEY] = "/Startup/posix/exec-server.sh"
+retired = {}
+for key, suffix in retire.items():
+    entry = servers.get(key)
+    if not isinstance(entry, dict):
+        continue
+    entry_args = entry.get("args") or []
+    target = str(entry_args[0]).replace("\\", "/") if entry_args else ""
+    if target.endswith(suffix):
+        retired[key] = servers.pop(key)
     else:
-        print(f"WARN  mcpServers.{LEGACY_KEY} exists but is not this repository's launcher; left alone: {legacy_target or legacy}")
+        print(f"WARN  mcpServers.{key} exists but is not this repository's launcher; left alone: {target or entry}")
 def build(launcher):
     return {
         "command": "/bin/bash",
@@ -358,7 +374,7 @@ def build(launcher):
     }
 wanted = {k: build(launcher) for k, launcher in launchers.items()}
 changed = [k for k, entry in wanted.items() if servers.get(k) != entry]
-if not changed and retired is None:
+if not changed and not retired:
     for k in wanted:
         print(f"      mcpServers.{k} already points at /bin/bash {wanted[k]['args'][0]} (unchanged)")
     sys.exit(10)
@@ -369,9 +385,11 @@ with open(cfg_path, "w", encoding="utf-8") as f:
 for k in wanted:
     verb = "wrote" if k in changed else "kept "
     print(f"      {verb} mcpServers.{k} -> /bin/bash {wanted[k]['args'][0]}")
-if retired is not None:
-    print(f"      retired mcpServers.{LEGACY_KEY}: the pre-upgrade name, which Claude Desktop refuses "
-          f"(reserved prefix); it pointed at {(retired.get('args') or [''])[0]}")
+for key, entry in retired.items():
+    why = ("the pre-upgrade name, which Claude Desktop refuses (reserved prefix)"
+           if key == LEGACY_KEY else
+           "no longer part of the Claude Cowork route; the host does this itself")
+    print(f"      retired mcpServers.{key}: {why}; it pointed at {(entry.get('args') or [''])[0]}")
 PYEOF
   local rc=$?
   if [ $rc -eq 10 ]; then
@@ -453,9 +471,9 @@ PYEOF
 # ---------- verify mode: read what the desktop app logged ------------------
 verify_logs() {
   local logdir="$HOME/Library/Logs/Claude" k
-  local keys_re="$SERVER_KEY|$FS_KEY|$PW_KEY"
+  local keys_re="$SERVER_KEY"
   say ""
-  say "What Claude Desktop logged about $SERVER_KEY, $FS_KEY and $PW_KEY:"
+  say "What Claude Desktop logged about $SERVER_KEY:"
   if [ ! -d "$logdir" ]; then
     warn "no $logdir yet. Open the Claude desktop app, start a Cowork chat in it, then run --verify again."
     return 1
@@ -463,9 +481,9 @@ verify_logs() {
   local hits
   # files that mention the server by name, plus the per-server log the app names after it
   hits="$( { grep -ilE "$keys_re" "$logdir"/mcp*.log 2>/dev/null
-             for k in "$SERVER_KEY" "$FS_KEY" "$PW_KEY"; do ls "$logdir"/mcp-server-*"$k"*.log 2>/dev/null; done; } | sort -u || true)"
+             ls "$logdir"/mcp-server-*"$SERVER_KEY"*.log 2>/dev/null; } | sort -u || true)"
   if [ -z "$hits" ]; then
-    warn "no MCP log mentions $SERVER_KEY, $FS_KEY or $PW_KEY. The app has not tried to start them."
+    warn "no MCP log mentions $SERVER_KEY. The app has not tried to start it."
     info "Check: is the entry in $CLAUDE_CFG (run --register), did you fully quit and reopen Claude,"
     info "and was the Cowork chat started in the desktop app itself, not on the web."
     return 1
@@ -617,7 +635,7 @@ register_claude "$NODE_BIN" || true
 
 # ---------- what only the person can do -----------------------------------
 manual "In Claude, start a NEW Cowork chat on this Mac (choose Cowork in the message box). It has to be started in the desktop app, not on the web."
-manual "Click the + at the bottom of the message box, then Connectors. You should see three: $SERVER_KEY with one tool, run_batch_file; $FS_KEY; and $PW_KEY. If you do not, run:  bash \"$ROOT/Startup/posix/install-mac.sh\" --verify"
+manual "Click the + at the bottom of the message box, then Connectors. You should see one: $SERVER_KEY, with one tool, run_batch_file. Claude reads and writes your connected folders and drives a browser on its own, so this repository registers nothing for those. If you do not see it, run:  bash \"$ROOT/Startup/posix/install-mac.sh\" --verify"
 manual "Ask Claude: \"Use run_batch_file to run hello-mac.sh\" and approve it. The result should list $ROOT/Outputs/Executor Test/result.txt"
 manual "The first time a job controls another app (AppleScript), macOS will ask for permission once. Click OK."
 manual "Send back what happened, pass or fail: the INSTALL_CHECK line from this log and the --verify output, as a pull request or an issue on the repository."

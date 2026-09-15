@@ -40,7 +40,7 @@ each part lets you do is in [What this repository adds to Claude Cowork](claude-
 | Git | `git --version` |
 | Node.js 20 LTS or later | Runs the executor. `node --version` |
 | Python 3.10 or later | The gate, the checkers, `install_check.py`. `python --version` |
-| Microsoft Edge | **Optional** — only if you register the browser bridge, which drives an Edge profile. |
+| Microsoft Edge | Not needed on this route. Claude drives a browser itself. |
 | GitHub CLI | **Optional** — only for opening the pull request at the end. |
 
 Not required for this configuration (*expected*): VS Code, a tunnel or port forwarding of
@@ -141,19 +141,54 @@ moved the corpus (a value it must ask you for, never guess), register the launch
 it with `install_check.py --route local`. This is the claim v0.3 makes; running it is the
 test.
 
-**Option B — by hand.** In the host's connector settings, add the executor as a **stdio**
-server, and any optional bridge you want:
+**Option B — by hand.** One server is registered on this route, and one only:
 
-| Bridge | Command | Register it? |
+| What | Command | Register it? |
 |---|---|---|
 | Approved batch executor | `<tooling root>\Startup\exec-server.cmd` | **Yes.** One tool: `run_batch_file`. Runs `.bat`/`.cmd` only. Plain `node`, no dependencies, fetches nothing at start. |
-| Browser | `<tooling root>\Startup\pw-server.cmd` | Optional — a signed-in Edge profile with traces to disk. Uses `npx -y`, so its **first** start downloads a package and needs the network. |
-| Filesystem | `<tooling root>\Startup\fs-server.cmd` | Optional — only for tool parity with the hosted route. Connect the clone as a folder instead and the host's own file tools cover it. |
 
-These are the `stdio` entries in `docs/bridge-facts.json`; the commands above should match
-it exactly, and if they do not, the facts file wins and this page is wrong. If the client
-cannot spawn a `.cmd` file directly, use `cmd /c <path>` as the command. `[verify: how this
-client spawns a stdio server on Windows]`
+Nothing else. The repository's other launchers exist for the hosted Copilot route; on this
+route the host reads and writes connected folders and drives a browser itself, so
+registering them would add an `npx` fetch and a second set of file roots for no capability.
+This is the `stdio` entry in `docs/bridge-facts.json`; if the command above does not match
+it, the facts file wins and this page is wrong.
+
+Settings › Developer › Edit Config opens `%APPDATA%\Claude\claude_desktop_config.json`.
+The complete file, with your own user name and your own `node` directory:
+
+```json
+{
+  "mcpServers": {
+    "aor-batch-exec": {
+      "command": "cmd",
+      "args": [
+        "/c",
+        "C:\\Users\\YOURUSER\\agent-of-record\\Startup\\exec-server.cmd"
+      ],
+      "env": {
+        "PATH": "C:\\Program Files\\nodejs;C:\\Windows\\system32;C:\\Windows"
+      }
+    }
+  }
+}
+```
+
+Four things that are not optional here, each learned by getting it wrong on macOS:
+
+- **The key must not begin with `cowork`.** Claude Desktop reserves that prefix and refuses
+  the entry at every launch, silently as far as the chat is concerned.
+- **Absolute paths only.** No `%USERPROFILE%`, no `~`. The app does not expand them.
+- **`cmd /c`**, because a client that spawns a stdio server cannot always exec a `.cmd`
+  directly.
+- **`env.PATH` must contain your `node` directory.** The app hands its child a minimal
+  environment, and a launcher that cannot find `node` dies with a bare "command not found"
+  in a log you have to go looking for.
+
+If you already had `aor-filesystem` or `aor-playwright` registered from an earlier version
+of this repository, delete those two entries. They are no longer part of this route, and
+`install-mac.sh --register` removes them automatically on the macOS side.
+
+Quit Claude completely and reopen it; the config is read only at launch.
 
 ## 7. Skills, instructions and memory on this host
 
