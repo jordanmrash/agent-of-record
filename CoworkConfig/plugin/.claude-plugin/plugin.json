@@ -37,6 +37,30 @@
       "products": [
         "copilot"
       ]
+    },
+    {
+      "name": "local-file-bridge",
+      "products": [
+        "copilot"
+      ]
+    },
+    {
+      "name": "playwright-skill",
+      "products": [
+        "copilot"
+      ]
+    },
+    {
+      "name": "git-bridge",
+      "products": [
+        "copilot"
+      ]
+    },
+    {
+      "name": "skill-menu",
+      "products": [
+        "copilot"
+      ]
     }
   ]
 }

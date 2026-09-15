@@ -6,9 +6,49 @@ entry summarizes a release.
 
 ## Unreleased
 
-Three bridges on a Mac, not one; the filesystem bridge pinned to a release this
-client can actually call; and the reserved-name entry the 0.3.2 installer left
-behind is retired on upgrade.
+The Claude Cowork route narrows to the approved command executor, reversing the
+three-bridge scope recorded further down this section; the skills gain a `products`
+axis so the repository keeps ten while Claude receives five; and the reserved-name entry
+the 0.3.2 installer left behind is retired on upgrade.
+
+- **The Claude route is one bridge, `aor-batch-exec`. This reverses three entries below
+  from the 2026-09-13/14 work: "Three bridges on a Mac, not one", "`install-mac.sh`
+  registers all three bridges" and "the Claude pages and the macOS setup page describe
+  three bridges".** Measured on macOS 2026-09-15 (`docs/evidence/mac-operated-2026-09-15.md`):
+  Claude Cowork reads and writes connected folders and drives a browser first-party, so
+  `aor-filesystem` and `aor-playwright` duplicated the host while adding an `npx` fetch and
+  an upstream dependency - and the pinned `server-filesystem@2025.8.21` was unusable there
+  regardless: 13 of its 14 tools emit an `inputSchema` carrying only a draft-07 `$schema`,
+  which the 2026-09-13 measurement missed by reading output schemas alone. The executor has
+  no first-party equivalent - the session's own shell is a sandboxed Linux VM; the executor
+  runs natively as the user. `docs/bridge-facts.json` now carries 8931 and 8932 as
+  `products: ["copilot"]`, `platforms: ["windows"]`; `Startup/posix/fs-server.sh`,
+  `pw-server.sh` and `GO.sh` are removed; `install-mac.sh --register` registers the executor
+  only and retires `aor-filesystem` and `aor-playwright` entries that point at this
+  repository's launchers. Nothing changes for the Windows hosted route: the `.cmd`
+  launchers, `tasks.json`, the connector packages and the watchdog are untouched, and
+  Copilot Cowork keeps all four bridges.
+- **Skills carry a `products` axis. The repository keeps ten; Claude receives five.**
+  `persistent-memory`, `local-file-bridge`, `playwright-skill`, `git-bridge` and
+  `skill-menu` are `products: ["copilot"]` in `CoworkConfig/plugin/.claude-plugin/plugin.json`.
+  Claude Cowork has account memory, connected folders, a browser, runs git directly and
+  lists installed skills under Customize, so none of the five adds anything there; Copilot
+  Cowork has none of those, so all five stay and reach it through the `CoworkConfig/Skills`
+  sync. `build_plugin.py --product` (default `claude`, the product the `.plugin` installs
+  into) selects by that axis. The entries below that say "the skill set is ten" and
+  "`persistent-memory` is declared for both platforms" remain true for Copilot and are
+  superseded for Claude. This also supersedes `6e0d58d`, which had deleted four of the five
+  from the repository outright.
+- **Lessons carry optional `Routes:` and `Platforms:` fields; absent means everywhere.**
+  The executor filters the operating-rules block it returns with each job by platform, and
+  by route when `COWORK_ROUTE` is set (`exec-server.sh` sets `claude`; the Windows launcher
+  sets nothing, so Copilot keeps serving every rule). `lesson_check.py` fails on an unknown
+  value; `lesson_scope_selftest.py` joins the gate, now `RELEASE_CHECK: CLEAN (25 checks)`.
+- **Real-device evidence and two corrected instructions.** `docs/evidence/mac-operated-2026-09-15.md`
+  records `run_batch_file`, the install check, the release gate and the plugin build running
+  on a Mac through `aor-batch-exec`. A built `.plugin` is installed through Customize >
+  Plugins > Add > Upload plugin, never by opening the file. `install_check.py` now
+  handshakes every stdio server it can start and reports schema faults instead of skipping.
 
 - **Upgrading from 0.3.2 on a Mac.** The 0.3.2 installer registered the executor
   under the name `cowork-batch-exec`. Claude Desktop reserves the `cowork` prefix
