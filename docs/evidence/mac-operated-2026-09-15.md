@@ -204,6 +204,39 @@ The file is uploaded, not opened. The install pages, the quickstart and the
 So the artifact is built and verified, but **not installed**.
 
 
+## Step 6 — the narrowing, operated on this Mac
+
+Added after the repository was narrowed to one bridge on the Claude route. This is the
+retirement path running against a real `claude_desktop_config.json`, not a fixture.
+
+```
+=== mcpServers BEFORE ===
+  aor-batch-exec -> .../Startup/posix/exec-server.sh
+  aor-filesystem -> .../Startup/posix/fs-server.sh
+  aor-playwright -> .../Startup/posix/pw-server.sh
+
+=== install-mac.sh --register ===
+      backed up the existing config to claude_desktop_config.json.bak-20260915-000709
+      kept  mcpServers.aor-batch-exec -> /bin/bash .../Startup/posix/exec-server.sh
+      retired mcpServers.aor-filesystem: no longer part of the Claude Cowork route
+      retired mcpServers.aor-playwright: no longer part of the Claude Cowork route
+
+=== mcpServers AFTER ===
+  aor-batch-exec -> .../Startup/posix/exec-server.sh
+```
+
+The executor entry was **kept**, not rewritten — the installer is idempotent against a
+config it already owns. The two retired entries were removed only because they pointed at
+this repository's own launchers; a synthetic run first proved that a same-named entry
+belonging to another tool survives untouched.
+
+The retirement takes effect at the next Claude restart, which is also when the uploaded
+plugin takes effect. Until then the session still lists the two retired servers, and
+`aor-filesystem` still reports `failed`.
+
+Route state after this: **one** registered MCP server on macOS under Claude Cowork, and
+nothing on that route fetches a package at start.
+
 ---
 
 ## Status against the handoff
