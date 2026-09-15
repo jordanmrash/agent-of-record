@@ -150,18 +150,73 @@ def launcher_for(bridge: dict) -> Path:
     return ROOT / "Startup" / rel
 
 
-def mcp_handshake(server_js: Path, timeout: int = 25) -> tuple[bool, str]:
-    """Start the server on stdio and complete a real MCP initialize."""
+# Claude Cowork validates tool schemas against JSON Schema 2020-12 only. A server
+# that declares draft-07 handshakes, advertises its tools, and then fails EVERY
+# call -- which is what made the 2026-09-14 aor-filesystem outage invisible to a
+# CLEAN install check. An absent $schema is fine; a wrong one is not.
+SUPPORTED_DIALECT = "2020-12"
+
+# npx fetches the upstream servers on first run, so the first handshake on a cold
+# machine is a download. Long enough to clear a normal fetch, short enough that an
+# offline machine skips rather than hangs.
+UPSTREAM_TIMEOUT = int(os.environ.get("COWORK_UPSTREAM_HANDSHAKE_TIMEOUT", "60"))
+
+
+def schema_findings(tools: list) -> list[str]:
+    """Tool schemas Cowork cannot use.
+
+    Two distinct faults, both measured on this repo's own bridges:
+
+    1. A structurally empty inputSchema -- `{"$schema": ...}` and nothing else.
+       Cowork rejects tools/list outright ("expected object" at
+       tools[N].inputSchema.type) and the whole server drops out. Measured
+       2026-09-15: server-filesystem 2025.8.21 does this on 13 of 14 tools,
+       because zod-to-json-schema@3 cannot read the zod 4 internals that
+       @modelcontextprotocol/sdk now pulls in.
+
+    2. A declared $schema dialect other than 2020-12, which Cowork does not
+       validate against.
+
+    Fault 1 is fatal on its own, so it is reported first and separately: a
+    dialect complaint about an empty schema hides the real problem.
+    """
+    findings = []
+    for tool in tools or []:
+        name = tool.get("name", "?")
+        schema = tool.get("inputSchema")
+        if isinstance(schema, dict) and schema.get("type") != "object":
+            findings.append(f"{name}.inputSchema has no type:object (empty schema)")
+            continue
+        for field in ("inputSchema", "outputSchema"):
+            s = tool.get(field)
+            if not isinstance(s, dict):
+                continue
+            dialect = s.get("$schema")
+            if dialect and SUPPORTED_DIALECT not in dialect:
+                findings.append(f"{name}.{field}={dialect}")
+    return findings
+
+
+def mcp_handshake(command: list, timeout: int = 25,
+                  cwd: Path | None = None) -> tuple[bool, str, list]:
+    """Start the server on stdio and complete a real MCP initialize.
+
+    Returns (ok, detail, tools). `command` is argv, so this works for both the
+    repository's own node servers and the POSIX/Windows launcher scripts that
+    exec an upstream server through npx.
+    """
     env = dict(os.environ)
     env["COWORK_ROOT"] = str(ROOT)
+    tools_seen: list = []
     try:
         proc = subprocess.Popen(
-            ["node", str(server_js)],
+            [str(c) for c in command],
             stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-            text=True, bufsize=1, env=env, cwd=str(server_js.parent),
+            text=True, bufsize=1, env=env,
+            cwd=str(cwd) if cwd else None,
         )
     except OSError as exc:
-        return False, f"could not start: {exc}"
+        return False, f"could not start: {exc}", tools_seen
 
     req = {"jsonrpc": "2.0", "id": 1, "method": "initialize",
            "params": {"protocolVersion": "2025-06-18", "capabilities": {},
@@ -200,13 +255,14 @@ def mcp_handshake(server_js: Path, timeout: int = 25) -> tuple[bool, str]:
                         except json.JSONDecodeError:
                             continue
                         if m2.get("id") == 2:
-                            tools = str(len(m2.get("result", {}).get("tools", [])))
+                            tools_seen = m2.get("result", {}).get("tools", []) or []
+                            tools = str(len(tools_seen))
                             break
-                    return True, f"{name} {ver}, {tools} tool(s)"
-                return False, "initialize returned no serverInfo"
-        return False, "no initialize response"
+                    return True, f"{name} {ver}, {tools} tool(s)", tools_seen
+                return False, "initialize returned no serverInfo", tools_seen
+        return False, "no initialize response", tools_seen
     except (BrokenPipeError, OSError) as exc:
-        return False, f"transport error: {exc}"
+        return False, f"transport error: {exc}", tools_seen
     finally:
         try:
             proc.stdin.close()
@@ -257,13 +313,35 @@ def check_servers(rep: Report, facts: dict, route: str = "hosted") -> None:
                     PASS if mode & 0o111 else FAIL,
                     "chmod +x " + str(launcher.relative_to(ROOT)))
 
-        # Only the two own-code servers can be handshaken without a network
-        # fetch. The upstream two are started by npx, which downloads on first
-        # run; a check that needs the internet is not a check of this machine.
+        # The upstream servers are started by npx, which downloads on first run,
+        # so this used to be skipped outright. That skip is what let the
+        # 2026-09-14 aor-filesystem outage pass a CLEAN check: the launcher was
+        # present and executable, and every tool call still failed. So the
+        # handshake is attempted; only an unresponsive server is skipped, and a
+        # server that answers with the wrong schema dialect is a hard failure.
         server_rel = bridge.get("server")
         if not server_rel:
-            rep.add("servers", f"{label}: stdio handshake", SKIP,
-                    "upstream server, fetched by npx at first start")
+            if not launcher.is_file():
+                rep.add("servers", f"{label}: stdio handshake", SKIP,
+                        "launcher missing; nothing to start")
+                continue
+            command = ([str(launcher)] if not IS_WINDOWS
+                       else ["cmd", "/c", str(launcher)])
+            ok, detail, tools = mcp_handshake(command, timeout=UPSTREAM_TIMEOUT,
+                                              cwd=launcher.parent)
+            if not ok:
+                rep.add("servers", f"{label}: stdio handshake", SKIP,
+                        f"{detail} (npx may still be fetching it; re-run once cached)")
+                continue
+            rep.add("servers", f"{label}: stdio handshake", PASS, detail)
+
+            findings = schema_findings(tools)
+            rep.add("servers", f"{label}: tool schemas",
+                    FAIL if findings else PASS,
+                    "; ".join(findings[:3]) + (f" (+{len(findings) - 3} more)"
+                                               if len(findings) > 3 else "")
+                    if findings
+                    else f"{len(tools)} tool(s), no unsupported $schema")
             continue
 
         server_js = ROOT / server_rel
@@ -276,9 +354,16 @@ def check_servers(rep: Report, facts: dict, route: str = "hosted") -> None:
         rep.add("servers", f"{label}: server parses",
                 PASS if code == 0 else FAIL, server_js.name)
 
-        ok, detail = mcp_handshake(server_js)
+        ok, detail, tools = mcp_handshake(["node", str(server_js)],
+                                          cwd=server_js.parent)
         rep.add("servers", f"{label}: stdio handshake",
                 PASS if ok else FAIL, detail)
+
+        findings = schema_findings(tools)
+        rep.add("servers", f"{label}: tool schemas",
+                FAIL if findings else PASS,
+                "; ".join(findings[:3]) if findings
+                else f"{len(tools)} tool(s), no unsupported $schema")
 
 
 # ------------------------------------------------------------------ config --
@@ -309,7 +394,20 @@ def frontmatter_description(text: str) -> str | None:
     return raw.strip().strip("'\"")
 
 
-def check_config(rep: Report, config_root: Path | None) -> None:
+PLUGIN_MANIFEST = ROOT / "CoworkConfig" / "plugin" / ".claude-plugin" / "plugin.json"
+
+
+def skills_for_product(product: str) -> int | None:
+    """How many manifest skills are declared for this product. None if unreadable."""
+    try:
+        entries = json.loads(PLUGIN_MANIFEST.read_text(encoding="utf-8"))["skills"]
+    except (OSError, ValueError, KeyError):
+        return None
+    return sum(1 for e in entries
+               if product in e.get("products", list(ROUTE_PRODUCT.values())))
+
+
+def check_config(rep: Report, config_root: Path | None, route: str = "hosted") -> None:
     # The skills that ship in the repository are always checkable.
     for label, skills_dir in (("repository", ROOT / "CoworkConfig" / "Skills"),
                               ("installed", (config_root / "skills")
@@ -325,8 +423,17 @@ def check_config(rep: Report, config_root: Path | None) -> None:
             continue
 
         files = sorted(skills_dir.glob("*/SKILL.md"))
+        detail = f"{len(files)} skill(s)"
+        if label == "repository":
+            # The repository holds every skill; a route ships the subset declared
+            # for its product. Both numbers are true and reporting only the first
+            # makes a correct install look wrong.
+            shipped = skills_for_product(ROUTE_PRODUCT[route])
+            if shipped is not None and shipped != len(files):
+                detail = (f"{len(files)} in the repository, "
+                          f"{shipped} ship to {ROUTE_PRODUCT[route]}")
         rep.add("config", f"{label} skills present",
-                PASS if files else FAIL, f"{len(files)} skill(s)")
+                PASS if files else FAIL, detail)
 
         over = []
         missing = []
@@ -429,7 +536,7 @@ def main(argv: list[str]) -> int:
     rep = Report()
     check_runtime(rep, args.route)
     check_servers(rep, facts, args.route)
-    check_config(rep, config_root)
+    check_config(rep, config_root, args.route)
     check_corpus(rep, config_root)
 
     width = max(len(r["check"]) for r in rep.rows)

@@ -24,9 +24,9 @@ the folders you connect, fetches the web, remembers across sessions and runs she
 commands — in a Linux virtual machine, never on Windows. Nothing it does natively can run
 a `.bat`, read the registry, or drive a Windows application. The approved batch executor
 is the only path from a session to `cmd.exe`, so it is the one required component, and
-with it come the job conventions, the release gate and the lessons machinery. The browser
-and filesystem bridges are optional here. The fourth bridge in this repository, Power Automate,
-is Copilot Cowork only and not part of this route. What
+with it come the job conventions, the release gate and the lessons machinery. The
+repository's other bridges are Copilot Cowork only and are not part of this route.
+What
 each part lets you do is in [What this repository adds to Claude Cowork](claude-cowork.md).
 
 ---
@@ -40,7 +40,7 @@ each part lets you do is in [What this repository adds to Claude Cowork](claude-
 | Git | `git --version` |
 | Node.js 20 LTS or later | Runs the executor. `node --version` |
 | Python 3.10 or later | The gate, the checkers, `install_check.py`. `python --version` |
-| Microsoft Edge | **Optional** — only if you register the browser bridge, which drives an Edge profile. |
+| Microsoft Edge | Not needed on this route. Claude drives a browser itself. |
 | GitHub CLI | **Optional** — only for opening the pull request at the end. |
 
 Not required for this configuration (*expected*): VS Code, a tunnel or port forwarding of
@@ -65,8 +65,7 @@ than working around it. Do not adjust a check to make it pass.
 There is nothing to install. The executor is plain `node` with no packages and fetches
 nothing at start. The hosted route's `Startup/package.json` pins `supergateway`, the HTTP
 wrapper a cloud client needs to reach a stdio server through a tunnel; this route has no
-tunnel and never starts it. Only the optional browser and filesystem bridges fetch a
-package, by `npx`, on their first start.
+tunnel and never starts it. Nothing on this route fetches a package at start.
 
 ## 3. Choose your folders
 
@@ -89,9 +88,8 @@ copy Startup\cowork-env.example.cmd Startup\cowork-env.cmd
 
 | Variable | Default | Sets |
 |---|---|---|
-| `COWORK_CONFIG_ROOT` | unset | Where the executor's operating-rules reminder reads the live corpus, and the filesystem bridge's third root if you register that bridge. |
-| `COWORK_PW_PROFILE` | `%USERPROFILE%\pw-sso-profile` | The browser bridge's persistent profile, if registered. |
-| `COWORK_ROOT` | derived | Only to point the bridges at a different tree. |
+| `COWORK_CONFIG_ROOT` | unset | Where the executor's operating-rules reminder reads the live corpus. |
+| `COWORK_ROOT` | derived | Only to point the executor at a different tree. |
 
 `public_scan.py` refuses any tracked file containing a real `C:\Users\<name>` path;
 `cowork-env.cmd` is where yours belongs.
@@ -143,19 +141,54 @@ moved the corpus (a value it must ask you for, never guess), register the launch
 it with `install_check.py --route local`. This is the claim v0.3 makes; running it is the
 test.
 
-**Option B — by hand.** In the host's connector settings, add the executor as a **stdio**
-server, and any optional bridge you want:
+**Option B — by hand.** One server is registered on this route, and one only:
 
-| Bridge | Command | Register it? |
+| What | Command | Register it? |
 |---|---|---|
 | Approved batch executor | `<tooling root>\Startup\exec-server.cmd` | **Yes.** One tool: `run_batch_file`. Runs `.bat`/`.cmd` only. Plain `node`, no dependencies, fetches nothing at start. |
-| Browser | `<tooling root>\Startup\pw-server.cmd` | Optional — a signed-in Edge profile with traces to disk. Uses `npx -y`, so its **first** start downloads a package and needs the network. |
-| Filesystem | `<tooling root>\Startup\fs-server.cmd` | Optional — only for tool parity with the hosted route. Connect the clone as a folder instead and the host's own file tools cover it. |
 
-These are the `stdio` entries in `docs/bridge-facts.json`; the commands above should match
-it exactly, and if they do not, the facts file wins and this page is wrong. If the client
-cannot spawn a `.cmd` file directly, use `cmd /c <path>` as the command. `[verify: how this
-client spawns a stdio server on Windows]`
+Nothing else. The repository's other launchers exist for the hosted Copilot route; on this
+route the host reads and writes connected folders and drives a browser itself, so
+registering them would add an `npx` fetch and a second set of file roots for no capability.
+This is the `stdio` entry in `docs/bridge-facts.json`; if the command above does not match
+it, the facts file wins and this page is wrong.
+
+Settings › Developer › Edit Config opens `%APPDATA%\Claude\claude_desktop_config.json`.
+The complete file, with your own user name and your own `node` directory:
+
+```json
+{
+  "mcpServers": {
+    "aor-batch-exec": {
+      "command": "cmd",
+      "args": [
+        "/c",
+        "C:\\Users\\YOURUSER\\agent-of-record\\Startup\\exec-server.cmd"
+      ],
+      "env": {
+        "PATH": "C:\\Program Files\\nodejs;C:\\Windows\\system32;C:\\Windows"
+      }
+    }
+  }
+}
+```
+
+Four things that are not optional here, each learned by getting it wrong on macOS:
+
+- **The key must not begin with `cowork`.** Claude Desktop reserves that prefix and refuses
+  the entry at every launch, silently as far as the chat is concerned.
+- **Absolute paths only.** No `%USERPROFILE%`, no `~`. The app does not expand them.
+- **`cmd /c`**, because a client that spawns a stdio server cannot always exec a `.cmd`
+  directly.
+- **`env.PATH` must contain your `node` directory.** The app hands its child a minimal
+  environment, and a launcher that cannot find `node` dies with a bare "command not found"
+  in a log you have to go looking for.
+
+If you already had `aor-filesystem` or `aor-playwright` registered from an earlier version
+of this repository, delete those two entries. They are no longer part of this route, and
+`install-mac.sh --register` removes them automatically on the macOS side.
+
+Quit Claude completely and reopen it; the config is read only at launch.
 
 ## 7. Skills, instructions and memory on this host
 
@@ -163,7 +196,7 @@ The repo ships a complete configuration under `CoworkConfig\`:
 
 ```
 CoworkConfig\
-  Skills\<skill-name>\SKILL.md      ten skills, the three bridge skills among them
+  Skills\<skill-name>\SKILL.md      five skills, the command executor among them
   copilot-instructions.md           standing instructions (the Copilot host's filename)
   cowork-memory\cowork-lessons.md   the lessons corpus, beside the memory files
   README.md                         which files are generated from which
@@ -179,11 +212,16 @@ the wrong thing to operate under.
 python scripts\build_plugin.py --strict --platform windows
 ```
 
-Open `Outputs\Skills Plugin\agent-of-record-skills-windows.plugin` in Claude, accept it,
-restart the app, and confirm `ListSkills` returns all ten repository skills. The same ten
-skills ship on Windows and macOS; each skill states the platform-specific launcher, path or
-job-script shape in the same instructions. A directory copy into `~/.claude/skills/` does
-nothing.
+In Claude, open **Customize -> Plugins -> Add -> Upload plugin** and select
+`Outputs\Skills Plugin\agent-of-record-skills-windows.plugin`. Restart the app and confirm
+`ListSkills` returns all five repository skills. The same five skills ship on Windows and
+macOS; each skill states the platform-specific launcher, path or job-script shape in the
+same instructions.
+
+Do not double-click the `.plugin` file; Claude registers no document type for that
+extension. The upload picker inside Claude is the install path. A directory copy into
+`~/.claude/skills/` is not an install either -- Cowork sessions do not read that directory
+(Claude Code does).
 
 **Instructions.** `copilot-instructions.md` is the Copilot host's file and has no
 equivalent here *(expected)*. It carries the lessons digest, and that digest is also
@@ -238,8 +276,6 @@ until it exists, paste the result into your pull-request description instead.
   any name containing a shell metacharacter (`& | < > ^ " ' * ? ; $`, a backtick, CR, LF or
   TAB). Containment is decided on canonical paths, never by string prefix, so
   `CommandJobsEvil` cannot masquerade as `CommandJobs`.
-- The filesystem bridge, if registered, reads and writes only inside the directories you
-  allow when you register it. Everything else is refused.
 - A refusal is the control working. Do not widen a scan or a check to make a run pass.
 
 **This configuration in particular:**
@@ -255,3 +291,15 @@ until it exists, paste the result into your pull-request description instead.
   executor is the only host path, which is the point of registering it.
 - No Microsoft 365 surface. Skills that assume mail, calendar, Teams or SharePoint tools
   will not find them here.
+
+
+## Addendum 2026-09-15 - skills by configuration, and the model behind the session
+
+Every skill in the repository ships to this route; the ones that duplicate a host capability
+here say so in their own "When this skill is redundant" section, and the matrix is in
+`docs/skills-by-configuration.md`. Disable a redundant skill in the host; re-enable it when
+the configuration changes. If the session runs under third-party inference (a gateway or a
+local model), the route is identical - the host, its folders, browser, plugins and MCP
+servers are unchanged - but keep `persistent-memory` enabled until account memory is
+confirmed present when signed out, and expect enforced controls to carry more weight than
+delivered rules with a smaller model.

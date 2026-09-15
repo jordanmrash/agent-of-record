@@ -83,16 +83,19 @@ at `~/agent-of-record/Outputs/agent-of-record-next-steps.txt`.
 2. Start a **new** Cowork chat **in the desktop app** (choose Cowork in the message
    box). A chat started on the web cannot reach this Mac.
 3. Click the **+** at the bottom of the message box, then **Connectors**. You should see
-   three connectors: `aor-batch-exec` with one tool, `run_batch_file`; `aor-filesystem`;
-   and `aor-playwright`.
+   one connector: `aor-batch-exec`, with one tool, `run_batch_file`. That is the whole
+   list — Claude reads and writes your connected folders and drives a browser on its own,
+   so this repository registers nothing for those.
 4. Ask Claude: *Use run_batch_file to run hello-mac.sh*. Approve it when asked. The
    result should name `~/agent-of-record/Outputs/Executor Test/result.txt`.
 5. The first time a job controls another application (AppleScript), macOS asks for
    permission once. Click OK.
 6. In Terminal, build the skills plugin:
    `cd ~/agent-of-record && python3 scripts/build_plugin.py --strict --platform macos`.
-   Open `Outputs/Skills Plugin/agent-of-record-skills-macos.plugin`, accept it, restart
-   Claude, and confirm `ListSkills` returns all ten repository skills.
+   Then in Claude: **Customize -> Plugins -> Add -> Upload plugin**, select
+   `Outputs/Skills Plugin/agent-of-record-skills-macos.plugin`, restart Claude, and
+   confirm `ListSkills` returns all five repository skills. Double-clicking the file
+   does not work; use the upload picker.
 
 ## 4. If the connector is not there
 

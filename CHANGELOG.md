@@ -6,9 +6,57 @@ entry summarizes a release.
 
 ## Unreleased
 
-Three bridges on a Mac, not one; the filesystem bridge pinned to a release this
-client can actually call; and the reserved-name entry the 0.3.2 installer left
-behind is retired on upgrade.
+The Claude Cowork route narrows to the approved command executor, reversing the
+three-bridge scope recorded further down this section; every skill ships to every
+product, with redundancy documented per configuration instead of resolved by deletion;
+the model behind a session may be Claude or a third-party gateway; and the reserved-name
+entry the 0.3.2 installer left behind is retired on upgrade.
+
+- **The Claude route is one bridge, `aor-batch-exec`. This reverses three entries below
+  from the 2026-09-13/14 work: "Three bridges on a Mac, not one", "`install-mac.sh`
+  registers all three bridges" and "the Claude pages and the macOS setup page describe
+  three bridges".** Measured on macOS 2026-09-15 (`docs/evidence/mac-operated-2026-09-15.md`):
+  Claude Cowork reads and writes connected folders and drives a browser first-party, so
+  `aor-filesystem` and `aor-playwright` duplicated the host while adding an `npx` fetch and
+  an upstream dependency - and the pinned `server-filesystem@2025.8.21` was unusable there
+  regardless: 13 of its 14 tools emit an `inputSchema` carrying only a draft-07 `$schema`,
+  which the 2026-09-13 measurement missed by reading output schemas alone. The executor has
+  no first-party equivalent - the session's own shell is a sandboxed Linux VM; the executor
+  runs natively as the user. `docs/bridge-facts.json` now carries 8931 and 8932 as
+  `products: ["copilot"]`, `platforms: ["windows"]`; `Startup/posix/fs-server.sh`,
+  `pw-server.sh` and `GO.sh` are removed; `install-mac.sh --register` registers the executor
+  only and retires `aor-filesystem` and `aor-playwright` entries that point at this
+  repository's launchers. Nothing changes for the Windows hosted route: the `.cmd`
+  launchers, `tasks.json`, the connector packages and the watchdog are untouched, and
+  Copilot Cowork keeps all four bridges.
+- **Every skill ships to every product; redundancy is documented, not deleted.**
+  `persistent-memory`, `local-file-bridge`, `playwright-skill`, `git-bridge` and `skill-menu`
+  duplicate a host capability in some configurations - account memory, connected folders, the
+  built-in browser, git through the executor, the Customize list under Claude Cowork signed in
+  to an Anthropic account - and none of it on Copilot Cowork or, until tested, under
+  third-party inference where the session is signed out. Each carries a "When this skill is
+  redundant" section, `docs/skills-by-configuration.md` holds the matrix, and the person
+  disables a skill in the host rather than the repository deleting it. `build_plugin.py
+  --product` remains for a narrower build. This supersedes `6e0d58d`, which deleted four of
+  the five, and the interim `products: ["copilot"]` scoping.
+- **The model behind the session may not be Claude.** Claude Desktop's third-party inference
+  mode runs Cowork against a gateway or a local model with the same harness, folders,
+  browser, plugins and MCP servers, so the route and the executor are unchanged. The install
+  pages carry an addendum: keep `persistent-memory` enabled until account memory is confirmed
+  when signed out; a smaller model leans on the enforced controls rather than delivered
+  rules; a local model or an approved enterprise gateway keeps data inside the operator's
+  boundary. Written on the assumption Windows reaches parity; every claim still needs one
+  real call before it is marked operated.
+- **Lessons carry optional `Routes:` and `Platforms:` fields; absent means everywhere.**
+  The executor filters the operating-rules block it returns with each job by platform, and
+  by route when `COWORK_ROUTE` is set (`exec-server.sh` sets `claude`; the Windows launcher
+  sets nothing, so Copilot keeps serving every rule). `lesson_check.py` fails on an unknown
+  value; `lesson_scope_selftest.py` joins the gate, now `RELEASE_CHECK: CLEAN (25 checks)`.
+- **Real-device evidence and two corrected instructions.** `docs/evidence/mac-operated-2026-09-15.md`
+  records `run_batch_file`, the install check, the release gate and the plugin build running
+  on a Mac through `aor-batch-exec`. A built `.plugin` is installed through Customize >
+  Plugins > Add > Upload plugin, never by opening the file. `install_check.py` now
+  handshakes every stdio server it can start and reports schema faults instead of skipping.
 
 - **Upgrading from 0.3.2 on a Mac.** The 0.3.2 installer registered the executor
   under the name `cowork-batch-exec`. Claude Desktop reserves the `cowork` prefix

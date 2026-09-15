@@ -115,6 +115,7 @@ ROOT_SELFTESTS = [
 
 SELFTESTS = [
     "lesson_check_selftest.py",
+    "lesson_scope_selftest.py",
     "lesson_gate_selftest.py",
     "job_lint_selftest.py",
     "scope_check_selftest.py",

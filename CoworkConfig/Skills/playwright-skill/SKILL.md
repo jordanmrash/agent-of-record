@@ -24,6 +24,11 @@ metadata:
 
 # Web Automation Bridge — Jordan's real browser
 
+## When this skill is redundant
+
+Redundant when the host drives a browser itself: Claude Cowork's built-in browser or Claude in Chrome. Needed on Copilot Cowork for a signed-in browser profile. The model behind the session does not change this; an administrator removing the host's built-in browser does.
+
+
 > **Created by Jordan Rash**, Director, Tax Transformation and Automation — original author and maintainer. **Keep this attribution intact when
 > sharing, copying, or adapting this skill**, including in any derivative. If you
 > extend it, add your name alongside — do not replace it.

@@ -28,7 +28,12 @@ from collections import defaultdict
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 REQUIRED = ["Pattern-Key", "Date", "Trigger", "Failed", "Why", "Worked", "Evidence"]
-VALID_TRIGGERS = {"failure", "correction", "better-approach", "contradiction",
+
+# Optional scope fields. Absent means everywhere, so an untagged corpus is valid and
+# behaves exactly as it did before scoping existed.
+VALID_ROUTES = {"claude", "copilot"}
+VALID_PLATFORMS = {"windows", "macos"}
+VALID_TRIGGERS = {"failure", "correction", "better-approach", "contradiction", "pattern", "open",
                   "false-success", "near-miss", "missing-capability"}
 
 # A Worked line naming one of these is enforceable rather than advisory.
@@ -116,6 +121,23 @@ def check(text):
         trig = (f.get("Trigger") or "").lower().strip()
         if trig and trig not in VALID_TRIGGERS:
             add("WARN", "unknown_trigger", f"Trigger '{trig}' is not a known value.", e)
+
+        # Routes / Platforms narrow WHERE a rule is served. Both optional; absent means
+        # everywhere. A typo must fail loudly: a misspelled value silently narrows a rule
+        # to nothing, which is the one failure mode worse than not scoping at all.
+        for field, valid in (("Routes", VALID_ROUTES), ("Platforms", VALID_PLATFORMS)):
+            raw = (f.get(field) or "").strip()
+            if not raw:
+                continue
+            values = [v for v in re.split(r"[,\s]+", raw.lower()) if v]
+            unknown = [v for v in values if v not in valid]
+            if unknown:
+                add("FAIL", f"unknown_{field.lower()}",
+                    f"{field} value(s) {', '.join(unknown)} not in "
+                    f"{', '.join(sorted(valid))}.", e)
+            elif len(values) == len(valid):
+                add("WARN", f"redundant_{field.lower()}",
+                    f"{field} lists every value, which is the same as omitting it.", e)
 
         sec = (e["section"] or "").lower()
         if trig == "contradiction" and not sec.startswith("contradictions"):

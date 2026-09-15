@@ -7,10 +7,11 @@
     "Filesystem roots are launcher-derived on both platforms: the tooling root comes from the launcher's own location (COWORK_ROOT), Downloads from the user profile, and the config root from COWORK_CONFIG_ROOT set in the gitignored Startup/cowork-env.cmd or Startup/posix/cowork-env.sh. The roots below are the Windows variable names as they appear in fs-server.cmd; the POSIX launcher passes $COWORK_ROOT, $HOME/Downloads and $COWORK_CONFIG_ROOT.",
     "Files that still carry the repository placeholder YOURUSER (the watchdog, the connector manifests, the shipped jobs, the skills) are personalized by scripts/copilot/personalize.py; no launcher, task file or root in this manifest does.",
     "connector_id is the tool namespace the skills address; plugin_manifest is the Cowork connector package that must carry it and the port.",
-    "stdio is the Windows launcher; stdio_posix is its macOS/Linux sibling under Startup/posix, present only for a bridge whose platforms include macos. facts_check.py verifies each exists and that neither hard-codes a root.",
-    "products and platforms are two different cuts and every bridge carries both: 8934 Power Automate is Copilot Cowork on Windows only; the other three run under either product on either platform. Bridge counts are DERIVED from these lists and never stated - four for the whole repository, three for any Claude Cowork surface and for any macOS surface.",
+    "stdio is the Windows launcher; stdio_posix is its macOS/Linux sibling under Startup/posix, present only for a bridge whose platforms include macos - now the Command bridge alone. facts_check.py verifies each exists and that neither hard-codes a root.",
+    "products and platforms are two different cuts and every bridge carries both. As of 2026-09-15 only the Command bridge runs under Claude Cowork: the Playwright and Filesystem bridges are Copilot Cowork on Windows only, because Claude Cowork ships browsing and connected-folder file access first-party and the repository bridges only duplicated them. 8934 Power Automate was already Copilot/Windows. Bridge counts are DERIVED from these lists and never stated - four for the whole repository, one for any Claude Cowork surface, one for any macOS surface.",
     "scopes lists the surfaces written for one product or platform. facts_check.py checks each against the bridges that exist for it: the port and the '<name> bridge' of every bridge outside the scope are stale phrases there, on top of the scope's own count words.",
-    "The watchdog and personalizer are Copilot Cowork on Windows only. Claude Cowork owns stdio server lifetime and has no tunnel ports to watch; the hosted-route personalizer lives at scripts/copilot/personalize.py."
+    "The watchdog and personalizer are Copilot Cowork on Windows only. Claude Cowork owns stdio server lifetime and has no tunnel ports to watch; the hosted-route personalizer lives at scripts/copilot/personalize.py.",
+    "Third-party inference behind Claude Cowork changes the model, not the host: the bridge scope above is unchanged. If an administrator removes the host's built-in file or browser tools, the Windows launchers still exist and the POSIX launchers can be restored from 6cfc77c; register only what the host then lacks. Skills are not scoped by product; see docs/skills-by-configuration.md."
   ],
   "bridges": [
     {
@@ -22,18 +23,15 @@
       "implementation": "upstream",
       "package": "@playwright/mcp",
       "products": [
-        "claude",
         "copilot"
       ],
       "platforms": [
-        "windows",
-        "macos"
+        "windows"
       ],
       "task_label": "Cowork Playwright Bridge (8931)",
       "connector_id": "jordan-local-playwright-8931-v1",
       "plugin_manifest": "Startup/Plugins/playwright-8931/manifest.json",
-      "watchdog_name": "Playwright",
-      "stdio_posix": "posix/pw-server.sh"
+      "watchdog_name": "Playwright"
     },
     {
       "port": 8932,
@@ -43,25 +41,21 @@
       "stateful": false,
       "implementation": "upstream",
       "package": "@modelcontextprotocol/server-filesystem",
-      "posix_package_pin": "2025.8.21",
       "roots": [
         "%COWORK_ROOT%",
         "%USERPROFILE%\\Downloads",
         "%COWORK_CONFIG_ROOT%"
       ],
       "products": [
-        "claude",
         "copilot"
       ],
       "platforms": [
-        "windows",
-        "macos"
+        "windows"
       ],
       "task_label": "Cowork Filesystem Bridge (8932)",
       "connector_id": "jordan-local-filesystem-8932-v1",
       "plugin_manifest": "Startup/Plugins/filesystem-8932/manifest.json",
-      "watchdog_name": "Filesystem",
-      "stdio_posix": "posix/fs-server.sh"
+      "watchdog_name": "Filesystem"
     },
     {
       "port": 8933,
@@ -125,10 +119,7 @@
       "SECURITY.md",
       "CoworkConfig/copilot-instructions.md",
       "CoworkConfig/Skills/command-bridge/SKILL.md",
-      "CoworkConfig/Skills/local-file-bridge/SKILL.md",
-      "CoworkConfig/Skills/git-bridge/SKILL.md",
       "CoworkConfig/Skills/gamma-tango/SKILL.md",
-      "CoworkConfig/Skills/playwright-skill/SKILL.md",
       "docs/setup.md",
       "docs/install/README.md",
       "docs/install/copilot-cowork.md",
@@ -156,7 +147,13 @@
         "all four",
         "the four ports",
         "8931-8934",
-        "one bridge, not four"
+        "one bridge, not four",
+        "three bridges",
+        "all three",
+        "the three ports",
+        "8931-8933",
+        "playwright bridge",
+        "filesystem bridge"
       ]
     },
     "macos": {
@@ -168,8 +165,7 @@
         "macos"
       ],
       "surfaces": [
-        "docs/setup-macos.md",
-        "Startup/posix/GO.sh"
+        "docs/setup-macos.md"
       ],
       "stale_phrases": [
         "four bridges",

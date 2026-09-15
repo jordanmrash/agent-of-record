@@ -789,6 +789,44 @@ function markReminderSent() {
   catch (_) { /* never let bookkeeping affect a job */ }
 }
 
+// ---- rule scope --------------------------------------------------------
+//  A rules block is spent attention: it is prepended to a job result, every job,
+//  and an operator reads it or does not. Measured 2026-09-15 on macOS under Claude
+//  Cowork: eight rules were served and two applied. The other six were about a dev
+//  tunnel, setting ports PUBLIC, resyncing tasks.json and running bridge-health.bat
+//  - none of which exist on that route. A rule that cannot apply is not neutral;
+//  it competes with the ones that can.
+//
+//  So an entry may carry "Routes:" and/or "Platforms:". BOTH ARE OPTIONAL and
+//  absent means everywhere, so an untagged corpus behaves exactly as it did before
+//  this existed. Narrowing is opt-in per entry and never deletes anything.
+//
+//  Platform is known here: this process is the bridge. Route is not - the Windows
+//  launcher serves both products - so COWORK_ROUTE is read when the launcher sets
+//  it and no route filtering happens when it does not. Guessing a route would drop
+//  rules an operator needs; not guessing only keeps a few they do not.
+const THIS_PLATFORM = process.platform === 'win32' ? 'windows'
+                    : process.platform === 'darwin' ? 'macos' : 'linux';
+const THIS_ROUTE = (process.env.COWORK_ROUTE || '').trim().toLowerCase() || null;
+
+function inScope(block) {
+  try {
+    const routes = (block.match(/^- \*\*Routes:\*\* (.+)$/m) || [])[1];
+    if (routes && THIS_ROUTE) {
+      const list = routes.toLowerCase().split(/[,\s]+/).filter(Boolean);
+      if (list.length && !list.includes(THIS_ROUTE)) return false;
+    }
+    const plats = (block.match(/^- \*\*Platforms:\*\* (.+)$/m) || [])[1];
+    if (plats) {
+      const list = plats.toLowerCase().split(/[,\s]+/).filter(Boolean);
+      if (list.length && !list.includes(THIS_PLATFORM)) return false;
+    }
+    return true;
+  } catch (_) {
+    return true;   // a malformed scope line must never cost a rule
+  }
+}
+
 function loadOperatingRules() {
   if (RULES_CACHE !== null) return RULES_CACHE;
   RULES_CACHE = [];
@@ -811,6 +849,7 @@ function loadOperatingRules() {
       const rule = (block.match(/^- \*\*Rule:\*\* (.+)$/m) || [])[1];
       if (!key || !rule) continue;
       if (!/^(bridge|git)-/.test(key)) continue;   // rules about USING this bridge
+      if (!inScope(block)) continue;               // and applicable to THIS route/platform
       const hits = parseInt((block.match(/^- \*\*Hits:\*\* (\d+)/m) || [])[1] || '1', 10);
       found.push({ key, rule: rule.trim(), hits: isNaN(hits) ? 1 : hits });
     }

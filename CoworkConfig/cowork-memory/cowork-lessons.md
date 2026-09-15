@@ -9,9 +9,95 @@ when the **Why** is reasoning rather than something probed.
 
 **Key format:** `<subsystem>-<short-behavior>` — subsystem first, so dedupe works.
 
+**Scope:** `Routes:` and `Platforms:` narrow where a rule is served. Both are optional and
+absent means everywhere, so an untagged entry behaves exactly as before. `Routes: copilot`
+marks a rule about hosted-route machinery — the dev tunnel, `supergateway`, the Ports
+panel, the watchdog, `tasks.json`, the 8931/8932/8934 bridges, the OneDrive delivery
+surface — none of which exist on the Claude route. `Platforms: windows` marks a rule about
+a Windows job shape. Scope on what the **Rule** says, not on what the example cites: a
+universal rule whose `Failed:` block happens to show a `.bat` stays universal. The entry is
+never deleted or moved; only its delivery is narrowed.
+
 ---
 
 ## Failures
+
+### A product-capability claim was asserted as a correction without checking
+- **Pattern-Key:** verify-product-claim-before-correcting-the-operator
+- **Date:** 2026-09-15
+- **Trigger:** failure
+- **Rule:** Before telling the operator a product cannot do something, search once. A capability claim is a fact to check, not an inference to make.
+- **Delivered-to:** self-improvement, gamma-tango
+- **Failed:** Jordan asked about an open LLM inside Claude Cowork. The reply opened by correcting him: the model cannot be swapped. It can - Claude Desktop's third-party inference mode runs Cowork against any gateway or a local model, and Ollama documents the integration. The rest of the answer stood on the false premise and had to be withdrawn.
+- **Why:** The premise sounded like product knowledge and was a stale assumption. No lookup was made because the answer felt certain, and certainty was treated as evidence.
+- **Worked:** One web search before answering. Two results settled it in under a minute, and the corrected answer changed the design conclusion: the host stays Claude, so the narrowing stands; what changes is memory availability under a gateway and the data boundary.
+- **Evidence:** measured - the exchange of 2026-09-15 21:16-21:22 UTC; Ollama blog 2026-08-25 and docs.ollama.com/integrations/claude-desktop.
+
+### The `.plugin` file is uploaded, never opened
+- **Pattern-Key:** plugin-install-is-upload-not-open
+- **Date:** 2026-09-15
+- **Trigger:** failure
+- **Rule:** Install a built `.plugin` through Customize → Plugins → Add → Upload plugin. Never tell anyone to open or double-click the file.
+- **Delivered-to:** command-bridge
+- **Failed:** `open "Outputs/Skills Plugin/agent-of-record-skills-macos.plugin"` → `kLSApplicationNotFoundErr: E.g. no application claims the file`. The install pages and the `build_plugin.py` epilogue had said "open it in Claude and accept it" since the file format was invented.
+- **Why:** Claude 1.52386.3 declares `CFBundleDocumentTypes` for `.dxt`/`.mcpb` and `.skill`, and nothing for `.plugin`, so macOS assigns the dynamic UTI `dyn.ah62d4rv4ge81a5dzq7y06` and no handler exists. A Finder double-click fails the same way.
+- **Worked:** The app's own upload picker. The file is read by Claude, not handed to it by the OS.
+- **Evidence:** measured — `open` exit 1 with the LaunchServices error, and the `Info.plist` document types read directly.
+
+### A skipped handshake makes a CLEAN install check meaningless
+- **Pattern-Key:** install-check-skipped-handshake-hides-dead-bridge
+- **Date:** 2026-09-15
+- **Trigger:** failure
+- **Rule:** A check that skips the thing that can fail is not a check. Handshake every stdio server and inspect the tool schemas it returns.
+- **Delivered-to:** command-bridge, self-improvement
+- **Failed:** `INSTALL_CHECK: CLEAN (18 passed, 4 skipped)` on a machine where `aor-filesystem` was in a `failed` state and every one of its 14 tools was unusable. Two of the four skips were the 8931 and 8932 stdio handshakes, skipped because npx fetches those servers on first run.
+- **Why:** The check proved the launcher existed and was executable. Nothing started the server, so nothing saw that its tool list was rejected. The failure was invisible until a tool was called.
+- **Worked:** `install_check.py` now starts the launcher, completes a real MCP `initialize` plus `tools/list`, and reports two distinct faults: an `inputSchema` with no `type: object`, and a declared `$schema` dialect other than 2020-12. Only an unresponsive server is skipped. Against the then-current pin it failed correctly and immediately.
+- **Evidence:** measured — the new check failed on the pinned server on the same machine that had just passed the old one.
+
+### The filesystem pin was measured on the wrong axis
+- **Pattern-Key:** fs-server-pin-measured-output-schema-only
+- **Date:** 2026-09-15
+- **Trigger:** failure
+- **Rule:** When pinning a dependency against a schema fault, measure every schema the server emits, not the one that prompted the investigation.
+- **Delivered-to:** command-bridge, self-improvement
+- **Failed:** `@modelcontextprotocol/server-filesystem@2025.8.21` was pinned on 2026-09-13 as the last release with no output schemas, and documented as safe. It is the worst of the measured releases. Thirteen of its fourteen tools emit an `inputSchema` of literally `{"$schema": "...draft-07..."}` — no `type`, no `properties` — and Cowork rejects the whole `tools/list` at `tools[0].inputSchema.type`.
+- **Why:** The 2026-09-13 measurement read `outputSchema` dialects only. On that axis 2025.8.21 is genuinely clean, because it has no output schemas at all. The breakage was always on the input side and was never looked at. Root cause: the package declares `zod-to-json-schema ^3.23.5` and no `zod`, so npx resolves zod 4.x through `@modelcontextprotocol/sdk` 1.30.0, and `zod-to-json-schema@3` cannot read zod 4 internals — it emits an empty schema and no error.
+- **Worked:** Nothing, on that route. Installing the same version with an npm `overrides` of `zod` to `^3.25.0` restores complete schemas on all 14 tools (measured: `missing-type=0`), but the bridge was retired from the Claude route instead, because it duplicated capability the host already had. Retiring it removed the whole class of failure rather than working around it.
+- **Evidence:** measured — three releases handshaked and their tool lists read: 2025.8.21 (13 of 14 missing `type`), 2025.11.25 and 2026.8.31 (0 missing, 14 draft-07 on both axes); dependency tree read from a clean install.
+
+### The Cowork session's own shell is not the machine
+- **Pattern-Key:** device-shell-is-a-linux-vm-not-the-host
+- **Date:** 2026-09-15
+- **Trigger:** failure
+- **Rule:** Evidence that a thing works "on the Mac" must come through the approved executor. The session's own shell runs in a sandboxed Linux VM with the folders mounted.
+- **Delivered-to:** command-bridge
+- **Failed:** A first run of `install_check.py` from the session shell reported `host: Linux 6.8.0-136-generic`. As real-device evidence it was worthless, and it would have been filed as a passing macOS run.
+- **Why:** The desktop workspace mounts connected folders into a Linux VM. Same files, different kernel, different interpreters — that run used Python 3.10.12 where the Mac has 3.14.7.
+- **Worked:** The same script through `run_batch_file`: `host: Darwin 25.6.0 arm64 / macOS 26.6.2`, Python 3.14.7, running as the user. That is the only path in this repository that reaches the machine itself.
+- **Evidence:** measured — both runs performed, both `uname` lines read.
+
+### Check branch protection before pushing, because the undo may be blocked
+- **Pattern-Key:** git-protected-branch-bypass-not-reversible
+- **Date:** 2026-09-15
+- **Trigger:** failure
+- **Rule:** Read the branch's protection rules before pushing to it. An admin bypass that succeeds does not imply an undo that succeeds.
+- **Delivered-to:** command-bridge
+- **Failed:** `git push origin main` succeeded with `Bypassed rule violations for refs/heads/main: Changes must be made through a pull request. 2 of 2 required status checks are expected.` The correction — rewinding `main` and reopening the change as a PR — was then rejected: `GH006: Protected branch update failed. Cannot force-push to this branch.`
+- **Why:** The ruleset allows an admin to bypass the pull-request requirement but not to force-push. The two permissions are independent, so a bypass can be one-way.
+- **Worked:** Nothing rewound it. The commit stayed on `main` and the duplicate branch was deleted. Every later change went to a branch first. Additional damage was caused by `git reset --hard` during the attempted undo, which stripped the committed files out of the working tree; it was recoverable only because the commit was already on the remote.
+- **Evidence:** measured — both remote responses read verbatim.
+
+### Editing a skill description can silently cross the 1024-character cap
+- **Pattern-Key:** skill-description-cap-crossed-by-edit
+- **Date:** 2026-09-15
+- **Trigger:** failure
+- **Rule:** After editing any skill's frontmatter description, re-run the cap check. The loader drops an over-cap skill with no error.
+- **Delivered-to:** self-improvement, gamma-tango
+- **Failed:** An edit to `gamma-tango`'s description to name the per-product behaviour took it to 1038 characters. `release_check.py` passed; the skill would have been dropped at load with no message.
+- **Why:** The cap is enforced by the loader, silently. `release_check` checks repository integrity; only `install_check` reads the descriptions.
+- **Worked:** `install_check.py` caught it on the commit that introduced it. Trimmed to 953, 71 characters of margin. Leave margin deliberately — a later edit that adds one clause should not cross it.
+- **Evidence:** measured — the failing check and the passing re-check both read.
 
 ### Do not pass `path` to the batch bridge — the parameter is `file`
 - **Pattern-Key:** bridge-8933-arg-name
@@ -49,6 +135,7 @@ when the **Why** is reasoning rather than something probed.
 
 ### Files written through the filesystem bridge arrive LF-only and break cmd
 - **Pattern-Key:** bridge-8932-writes-lf
+- **Routes:** copilot
 - **Date:** 2026-08-18
 - **Trigger:** failure
 - **Rule:** Files written through 8932 arrive LF-only and cmd mis-parses them. Run the CRLF fix job after writing any new .bat.
@@ -60,6 +147,7 @@ when the **Why** is reasoning rather than something probed.
 
 ### `-WindowStyle Hidden` does not suppress a scheduled task's console flash
 - **Pattern-Key:** schtask-hidden-window
+- **Routes:** copilot
 - **Delivered-to:** command-bridge
 - **Date:** 2026-08-18
 - **Trigger:** better-approach
@@ -70,6 +158,7 @@ when the **Why** is reasoning rather than something probed.
 
 ### Read skills and memory from the local mirror, not by downloading
 - **Pattern-Key:** onedrive-read-mount-locally
+- **Routes:** copilot
 - **Supersedes key:** read-user-folder-locally
 - **Date:** 2026-08-24
 - **Trigger:** better-approach
@@ -82,6 +171,7 @@ when the **Why** is reasoning rather than something probed.
 
 ### Writing to the user surface does not reach OneDrive on its own
 - **Pattern-Key:** onedrive-user-surface-not-live
+- **Routes:** copilot
 - **Supersedes key:** user-surface-not-onedrive
 - **Date:** 2026-08-18
 - **Trigger:** false-success
@@ -172,6 +262,7 @@ when the **Why** is reasoning rather than something probed.
 
 ### A cloud write can take minutes to reach the laptop — never commit a partial set
 - **Pattern-Key:** onedrive-cloud-to-laptop-lag
+- **Routes:** copilot
 - **Rule:** Both sync legs cost minutes, so pick the one that does not block you. A LOCAL 8932 write unblocks the repo and the commit immediately; a cloud-side write blocks them for minutes.
 - **Delivered-to:** local-file-bridge
 - **Date:** 2026-08-24
@@ -198,6 +289,7 @@ when the **Why** is reasoning rather than something probed.
 
 ### Vanishing tools mean an expired session, not a dead bridge
 - **Pattern-Key:** bridge-idle-session-expiry
+- **Routes:** copilot
 - **Date:** 2026-08-21
 - **Trigger:** correction
 - **Rule:** Check PID creation times and listening state before restarting anything.
@@ -212,6 +304,7 @@ when the **Why** is reasoning rather than something probed.
 
 ### A VS Code restart alone does not apply a tasks.json change
 - **Pattern-Key:** bridge-restart-needs-pid-kill
+- **Routes:** copilot
 - **Date:** 2026-08-21
 - **Trigger:** failure
 - **Rule:** Restarting VS Code does not replace a bridge listener that already holds the port. Kill the old PIDs, then prove the edit is live by comparing netstat PIDs before and after - identical PIDs mean the old process is still serving.
@@ -224,6 +317,7 @@ when the **Why** is reasoning rather than something probed.
 
 ### Changing a config also means changing everything that restores it
 - **Pattern-Key:** bridge-recovery-scripts-revert-config
+- **Routes:** copilot
 - **Date:** 2026-09-02
 - **Trigger:** failure
 - **Rule:** After ANY edit to `tasks.json`, resync `Startup\KnownGood\tasks.json` from live in the SAME job and prove it byte-identical. An unsynced snapshot turns `bridge-restore-tasksjson.bat` from a recovery tool into a regression tool, and the restore reports success while doing it.
@@ -238,6 +332,7 @@ when the **Why** is reasoning rather than something probed.
 
 ### Transport drops are the devtunnel hop, not the bridge processes
 - **Pattern-Key:** bridge-drops-are-tunnel-not-bridge
+- **Routes:** copilot
 - **Date:** 2026-08-21
 - **Trigger:** correction
 - **Rule:** Drops are the devtunnel hop, not the bridge process. 0% local, 1-2% tunnel. Retry once, but verify before retrying a write.
@@ -262,6 +357,7 @@ when the **Why** is reasoning rather than something probed.
 
 ### Editing a file through PowerShell can silently re-encode the rest of it
 - **Pattern-Key:** file-edit-reencodes-existing-characters
+- **Platforms:** windows
 - **Date:** 2026-08-21
 - **Trigger:** failure
 - **Rule:** Never round-trip a UTF-8 file through PowerShell `Get-Content`/`Set-Content`. 5.1 decodes a BOM-less UTF-8 file as ANSI and re-encodes the damage into content the edit never touched, so exit 0 and a plausible size delta prove nothing. Use `[System.IO.File]::ReadAllText`/`WriteAllText` with an explicit no-BOM UTF8Encoding, and verify by diffing a known non-ASCII line against the backup.
@@ -362,6 +458,7 @@ when the **Why** is reasoning rather than something probed.
 
 ### A tool missing from the visible list is not an absent bridge — call it before declaring failure
 - **Pattern-Key:** deferred-tools-read-as-absent-bridge
+- **Platforms:** windows
 - **Date:** 2026-09-01
 - **Trigger:** correction
 - **Rule:** Prove a bridge by CALLING it, never by reading a tool list. When the tool is ABSENT from the schema there is nothing to call - run `bridge-health.bat` through 8933 as the callable substitute. Re-probe before saying it is down AND again before closing out. Say "not on the surface as of now", never "unavailable this session", and never PLAN AROUND the absence.
@@ -657,6 +754,7 @@ when the **Why** is reasoning rather than something probed.
 
 ### Unexplained ~5-minute terminal flash
 - **Pattern-Key:** schtask-unexplained-5min-flash
+- **Routes:** copilot
 - **Delivered-to:** command-bridge
 - **Supersedes key:** unexplained-5min-flash
 - **Date:** 2026-08-18
@@ -680,6 +778,7 @@ when the **Why** is reasoning rather than something probed.
 
 ### A SharePoint folder's Modified date does not track edits to files inside it
 - **Pattern-Key:** onedrive-folder-mtime-not-child-mtime
+- **Routes:** copilot
 - **Delivered-to:** local-file-bridge
 - **Date:** 2026-08-24
 - **Trigger:** failure
@@ -691,6 +790,7 @@ when the **Why** is reasoning rather than something probed.
 
 ### Two approval-gated bridge writes sent in one tool block: the second is auto-denied
 - **Pattern-Key:** bridge-8932-parallel-writes-denied
+- **Routes:** copilot
 - **Date:** 2026-08-26
 - **Trigger:** failure
 - **Rule:** Send approval-gated 8932 writes ONE per tool block. A second write batched beside the first is auto-denied while that approval is still pending.
@@ -743,6 +843,7 @@ when the **Why** is reasoning rather than something probed.
 
 ### The user-config mount lags behind writes - its absence is not evidence
 - **Pattern-Key:** onedrive-user-mount-read-lag
+- **Routes:** copilot
 - **Supersedes key:** copyartifact-mount-read-lag
 - **Date:** 2026-08-28
 - **Trigger:** failure
@@ -857,6 +958,7 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 
 ### A stateless bridge spawns a fresh process per call, so in-process state never persists
 - **Pattern-Key:** bridge-8933-stateless-defeats-in-process-state
+- **Routes:** copilot
 - **Date:** 2026-08-28
 - **Trigger:** failure
 - **Rule:** 8931/8932/8933 run stateless, so a module-level variable in a bridge server resets on EVERY call. Persist any cross-call state to a file.
@@ -885,6 +987,7 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 
 ### Both OneDrive legs are slow, so choose the one that does not block the commit
 - **Pattern-Key:** onedrive-pick-the-leg-that-does-not-block
+- **Routes:** copilot
 - **Date:** 2026-08-28
 - **Trigger:** better-approach
 - **Rule:** Route a write by PAYLOAD: small or new file, write_file local. Existing large file, edit_file local so only the diff crosses. Bulk or binary, CopyArtifact. Verify a local write THROUGH THE BRIDGE, never the mount.
@@ -1015,6 +1118,7 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 
 ### The standing close job reports OK even when its commit fails, and deletes the message
 - **Pattern-Key:** cowork-close-reports-ok-on-failed-commit
+- **Platforms:** windows
 - **Date:** 2026-08-29
 - **Trigger:** failure
 - **Rule:** Test every exit code; never echo one. A job that prints `git commit exit` and then unconditionally prints `COWORK_RESULT: OK` cannot tell a failed close from a good one. This is the DISCIPLINE, not a live warning about cowork-close.bat: that job was fixed on 2026-08-30 and now tests each code, preserves `_commit-msg.txt` on any failure, and guards staging with a negative-controlled check.
@@ -1030,6 +1134,7 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 
 ### A dropped call was reported as a down bridge, repeatedly, until Jordan said so
 - **Pattern-Key:** bridge-call-failure-reported-as-bridge-down
+- **Routes:** copilot
 - **Date:** 2026-08-30
 - **Trigger:** correction
 - **Rule:** The error "couldn't be reached, so its tools may be unavailable" is ONE CALL failing on the devtunnel hop, not a bridge state. RETRY the call before saying anything about the bridge. Never tell Jordan a bridge is down on the strength of a single failed call.
@@ -1081,6 +1186,7 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 
 ### A hosted scheduler's success describes the trigger, not the work
 - **Pattern-Key:** schtask-hosted-success-describes-the-trigger
+- **Routes:** copilot
 - **Date:** 2026-08-31
 - **Trigger:** false-success
 - **Rule:** A scheduler reporting success proves a TRIGGER fired, never that work happened. Require an artifact the job itself wrote - a report, a heartbeat - and treat its absence as failure however green the scheduler looks.
@@ -1107,6 +1213,7 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 
 ### A scheduled prompt cannot pre-authorize a side-effecting tool
 - **Pattern-Key:** schtask-scheduled-prompt-cannot-preauthorize-a-send
+- **Routes:** copilot
 - **Date:** 2026-08-31
 - **Trigger:** missing-capability
 - **Rule:** An unattended run must WRITE A FILE AND END. `SetupEventTrigger` has `requested_tool_permissions`; the scheduled-prompt tools do not, so any send stalls forever waiting for an approval nobody is present to give.
@@ -1120,6 +1227,7 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 
 ### EditScheduledPrompt silently ignores a nested recurrence object
 - **Pattern-Key:** schtask-editscheduledprompt-ignores-nested-recurrence
+- **Routes:** copilot
 - **Date:** 2026-08-31
 - **Trigger:** false-success
 - **Rule:** Pass recurrence to the scheduled-prompt tools as FLAT frequency/interval/hours/minutes. A nested recurrence object is ignored and still reports success - the only signal is the message text: "still on its schedule" means IGNORED, "now on its new schedule" means APPLIED.
@@ -1173,6 +1281,7 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 
 ### WakeToRun reads True and is vetoed by the power scheme on battery
 - **Pattern-Key:** schtask-waketorun-vetoed-by-power-scheme-on-dc
+- **Routes:** copilot
 - **Date:** 2026-08-31
 - **Trigger:** failure
 - **Rule:** `WakeToRun` on a task is a REQUEST. Before trusting it, read `powercfg /query SCHEME_CURRENT SUB_SLEEP RTCWAKE` - the AC and DC indices are separate, and a DC index of 0x0 means no task will ever wake this machine on battery however the task reads back.
@@ -1205,6 +1314,7 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 
 ### A placeholder that will not hydrate means a stuck CLIENT - restart it before repairing any file
 - **Pattern-Key:** onedrive-placeholder-cannot-hydrate
+- **Routes:** copilot
 - **Date:** 2026-09-01
 - **Trigger:** failure
 - **Rule:** ERROR 389 `0x185` "The cloud operation was unsuccessful" is a DEHYDRATED PLACEHOLDER that cannot be fetched - not a lock, not a robocopy fault, and `attrib +P -U` does NOT recover it. FIRST count how many placeholders fail: if several across different folders fail, and each fails in well under a second, the OneDrive CLIENT is stuck and one restart fixes every file at once. Only rebuild individual files from the cloud copy when a restart has been tried and the failure is genuinely confined.
@@ -1281,6 +1391,7 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 
 ### A rule demoted to ENFORCED is only as wide as the thing enforcing it
 - **Pattern-Key:** digest-enforced-demotion-outruns-the-enforcer
+- **Platforms:** windows
 - **Date:** 2026-09-01
 - **Trigger:** failure
 - **Rule:** Before classing a rule ENFORCED in `digest-tiers.txt`, name every surface the mistake can be made on and confirm the enforcer reads all of them. `job_lint` inspects `.bat`/`.cmd` files only, so an ENFORCED rule is unenforced everywhere a session acts directly - and the demotion removes the prose from precisely the surface left unguarded.
@@ -1317,6 +1428,7 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 
 ### The digest repair a close demands cannot be applied from the read-only mount
 - **Pattern-Key:** memory-digest-repair-blocked-by-its-own-gate
+- **Routes:** copilot
 - **Date:** 2026-09-02
 - **Trigger:** failure
 - **Rule:** Repair a stale digest by computing it on a WRITABLE scratch copy, proving the repair with `lesson_gate preflight` against that copy into a SEPARATE receipt dir, then applying the difference to the PC file through the 8932 bridge with `edit_file` - never by pointing `digest_apply.py` at `/mnt/user-config/`, which is read-only. Afterwards expect the mount to keep serving the OLD file: hash it against the pre-repair copy to tell sync lag from a failed write, and never read that fresh exit 1 as a second failure.
@@ -1332,6 +1444,7 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 
 ### Check whether a capability is ALLOWED before spending turns on whether it works
 - **Pattern-Key:** tooling-install-researched-before-approval-checked
+- **Routes:** copilot
 - **Date:** 2026-09-02
 - **Trigger:** correction
 - **Rule:** Before researching, pricing or proposing any software install on the firm-managed machine, ask whether it is approved. Availability is not permission, and a clean install path is no evidence the install is allowed. Dev Tunnels specifically is NOT approved - do not re-propose it.
@@ -1436,6 +1549,7 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 
 ### `where <tool>` in an 8933 job misses every per-user installed tool
 - **Pattern-Key:** bridge-8933-user-path-not-inherited
+- **Routes:** copilot
 - **Refines key:** bridge-8933-env-partially-stripped
 - **Date:** 2026-09-02
 - **Trigger:** failure
@@ -1481,6 +1595,7 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 
 ### A recursive scan of the OneDrive tree is a download, not a search
 - **Pattern-Key:** onedrive-recursive-scan-hydrates-tree
+- **Routes:** copilot
 - **Date:** 2026-09-01
 - **Trigger:** failure
 - **Rule:** Never recurse the Cowork tree to READ file CONTENTS - not in a PC job, and not as a session-side grep of the `/mnt/user-config/` mount, which is the same tree and hydrates the same way. Scope to named files or one folder. Walking metadata is cheap; opening contents is the download.
@@ -1536,6 +1651,7 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 
 ### The 8933 environment is PARTIALLY stripped — PATH is intact
 - **Pattern-Key:** bridge-8933-env-partially-stripped
+- **Platforms:** windows
 - **Supersedes key:** bridge-8933-stripped-environment
 - **Date:** 2026-08-20
 - **Trigger:** contradiction
@@ -1604,6 +1720,7 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 
 ### The 8932 devtunnel was not dead - all three tunnels answer
 - **Pattern-Key:** bridge-devtunnel-declared-dead-without-reprobe
+- **Routes:** copilot
 - **Date:** 2026-08-21
 - **Trigger:** contradiction
 - **Rule:** Run `bridge-health.bat` before characterising tunnel state. It is read-only and measures all three legs.
@@ -1635,6 +1752,7 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 
 ### The watchdog was not responsible for the midday outage
 - **Pattern-Key:** watchdog-exonerated
+- **Routes:** copilot
 - **Date:** 2026-08-18
 - **Trigger:** contradiction
 - **Failed:** Suspecting the watchdog of killing bridges or sessions.
@@ -1681,6 +1799,19 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 
 ## Open questions
 
+### Does Cowork accept a well-formed draft-07 tool schema?
+- **Pattern-Key:** cowork-draft07-well-formed-untested
+- **Date:** 2026-09-15
+- **Trigger:** open
+- **Failed:** Not established either way. The observed rejection was of a structurally empty `inputSchema` — no `type`, no `properties` — which would be refused whatever dialect it declared.
+- **Why:** The `fs-server.sh` note of 2026-09-13 asserts that Cowork supports 2020-12 only and that draft-07 fails every call. Nothing in this repository has tested that against a schema that is complete and merely labelled draft-07.
+- **Worked:** UNKNOWN. `install_check.py` treats a non-2020-12 dialect as a failure, which is the safe default and may be stricter than the client. Do not relax it on reasoning alone.
+- **Still open:** Install `server-filesystem@2025.8.21` with an npm `overrides` of `zod` to `^3.25.0`, register it, and call one tool. If it works, well-formed draft-07 is accepted and the dialect check should warn rather than fail. This matters to the Copilot route, which uses that bridge unpinned every day.
+- **Evidence:** measured — the override restores complete schemas; whether the client then accepts them is unprobed.
+- **See also:** fs-server-pin-measured-output-schema-only
+
+---
+
 ### A verified-absent artifact deletion came back on its own
 - **Pattern-Key:** artifact-deletion-reverts-after-verified-absent
 - **Date:** 2026-08-28
@@ -1692,3 +1823,28 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 - **Evidence:** measured - the reversion was seen in a directory listing that was read, as was the delete verification before it; the cause is unprobed
 - **Hits:** 1
 - **See also:** artifact-delete-recursive-skips-file-paths, onedrive-user-surface-not-live, cleanup-quarantine-instead-of-delete
+
+## Patterns
+
+### A rule served where it cannot apply costs the rules that can
+- **Pattern-Key:** lessons-served-out-of-scope-dilute-the-block
+- **Date:** 2026-09-15
+- **Trigger:** pattern
+- **Rule:** Scope a lesson to the route and platform where its rule can fire. A delivery block is spent attention, not free shelf space.
+- **Delivered-to:** self-improvement, dream-cycle, command-bridge
+- **Failed:** Every `run_batch_file` result on macOS under Claude Cowork carried an eight-rule operating block of which two applied. The other six told the operator to check tunnel drops, set ports PUBLIC, resync `tasks.json` and run `bridge-health.bat` — on a route with no tunnel, no ports, no `tasks.json` and no `.bat`. Across the corpus, 77 of 123 entries referenced machinery that route does not have.
+- **Why:** The corpus grew on the hosted route, where all of it was true, and the delivery mechanism was written to serve the top rules by hit count with no notion of where a rule applies. Hit count measures how often a rule mattered *somewhere*, which on a different route selects for exactly the wrong entries.
+- **Worked:** Optional `Routes:` and `Platforms:` fields, absent meaning everywhere, filtered at delivery. Nothing deleted, nothing moved. 27 entries scoped to the Copilot route and 5 to Windows; a Mac job went from 27 candidate rules to the 16 that apply, and the served block became the arg-name rule, the transport-retry rule and the git-status rule instead of six about a tunnel. Scope on what the **Rule** says, never on what the example cites — a first pass keyed on the whole entry scoped a universal rule to Windows because its `Failed:` block showed a `.bat`.
+- **Evidence:** measured — the block read before and after, and the corpus counted both ways.
+- **See also:** narrow-before-fixing-duplicated-capability
+
+### Narrow before fixing a capability the host already has
+- **Pattern-Key:** narrow-before-fixing-duplicated-capability
+- **Date:** 2026-09-15
+- **Trigger:** pattern
+- **Rule:** Before repairing a component, ask whether the host now does the same job. A duplicated component is worth deleting, not fixing.
+- **Delivered-to:** self-improvement, dream-cycle
+- **Failed:** Hours went into the filesystem bridge — diagnosing the schema fault, finding the zod root cause, preparing to vendor a dependency tree — before anyone asked whether the bridge should exist. Each finding justified the next step, and none of them questioned the goal.
+- **Why:** A handoff that names a component as the task makes the component the frame. The repository was built when Cowork shipped none of connected folders, a browser, memory or a plugin installer; three of its four bridges had since become duplicates, and the port-and-tunnel vocabulary was carried over from the hosted route where it still belongs.
+- **Worked:** Asking what each component adds that the host does not. Three of four bridges and five of ten skills turned out to be scaffolding; the approved executor is the one thing with no first-party equivalent. Narrowing removed the schema fault, the npx fetch and the upstream dependency from the Claude route without fixing any of them.
+- **Evidence:** measured — `bridges in scope 1 of 4`, `INSTALL_CHECK: CLEAN`, and the executor confirmed running natively on Darwin while the session shell runs on Linux.

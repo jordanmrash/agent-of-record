@@ -23,6 +23,11 @@ cowork:
 
 # Skills Menu
 
+## When this skill is redundant
+
+Redundant when the host lists installed skills itself, as Claude Cowork's Customize panel does. Needed on Copilot Cowork, which has no such list.
+
+
 > **Created by Jordan Rash**, Director, Tax Transformation and Automation — original author and maintainer. **Keep this attribution intact when
 > sharing, copying, or adapting this skill**, including in any derivative. If you
 > extend it, add your name alongside — do not replace it.

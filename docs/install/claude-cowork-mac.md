@@ -92,8 +92,7 @@ optional. `install_check.py` names the file if you forget.
 There is nothing else to install. The executor is plain `node` with no packages and
 fetches nothing at start. The hosted route's `Startup/package.json` pins `supergateway`, the
 HTTP wrapper a cloud client needs to reach a stdio server through a tunnel; this route has
-no tunnel and never starts it. Only the optional browser and filesystem bridges fetch a
-package, by `npx`, on their first start.
+no tunnel and never starts it. Nothing on this route fetches a package at start.
 
 ## 3. Choose your folders
 
@@ -116,10 +115,8 @@ cp Startup/posix/cowork-env.example.sh Startup/posix/cowork-env.sh
 
 | Variable | Default | Sets |
 |---|---|---|
-| `COWORK_CONFIG_ROOT` | unset | Where the executor's operating-rules reminder reads the live corpus, and the filesystem bridge's third root. If set but missing, `fs-server.sh` warns and starts with two roots. |
-| `COWORK_PW_BROWSER` | `chrome` | `msedge`, `chromium` or `webkit` also work — browser bridge only. |
-| `COWORK_PW_PROFILE` | `$HOME/pw-sso-profile` | The browser bridge's persistent profile; created if absent. Sign in once with a test account. |
-| `COWORK_ROOT` | derived | Only to point the bridges at a different tree. |
+| `COWORK_CONFIG_ROOT` | unset | Where the executor's operating-rules reminder reads the live corpus. |
+| `COWORK_ROOT` | derived | Only to point the executor at a different tree. |
 
 `public_scan.py` refuses any tracked file containing a real home-directory path;
 `cowork-env.sh` is where yours belongs.
@@ -185,20 +182,31 @@ registered there. Three routes do accept a local stdio server:
 3. **A desktop extension** (`.mcpb`) via Settings › Extensions › Advanced settings › Install
    Extension.
 
+One server is registered on this route, and one only: `aor-batch-exec`, the approved
+executor. If an earlier version of this repository registered `aor-filesystem` and
+`aor-playwright` as well, `install-mac.sh --register` removes both — they are no longer
+part of this route, because the host reads and writes connected folders and drives a
+browser itself.
+
 Registration is a step the person does on this host: a Cowork session has no tool that
 edits the app's configuration or its plugin list, which bounds Option A. Afterwards, in a
 Cowork chat started in the desktop app, the **+** button › Connectors lists the servers
 actually connected; `~/Library/Logs/Claude/mcp.log` and `mcp-server-<name>.log` say why one
 did not start, and `install-mac.sh --verify` reads them for you. The launchers to register:
 
-| Bridge | Command | Register it? |
+| What | Command | Register it? |
 |---|---|---|
 | Approved batch executor | `<clone>/Startup/posix/exec-server.sh` | **Yes** — registered as `aor-batch-exec`. One tool: `run_batch_file`. Runs `.sh` only. Plain `node`, no dependencies, fetches nothing at start. Finds `node` under the minimal PATH a desktop app passes (`COWORK_NODE` in `cowork-env.sh` wins) and says so on stderr when it cannot. |
-| Browser | `<clone>/Startup/posix/pw-server.sh` | **Yes** — registered as `aor-playwright`. A signed-in browser profile with traces to disk. Uses `npx -y`, so its **first** start downloads a package and needs the network. |
-| Filesystem | `<clone>/Startup/posix/fs-server.sh` | **Yes** — registered as `aor-filesystem`, pinned to `@modelcontextprotocol/server-filesystem@2025.8.21`. Measured 2026-09-13: every release from 2025.11.25 onward declares draft-07 output schemas on all 14 tools, and this client supports 2020-12 only, so an unpinned `npx -y` gives you a bridge that handshakes, lists 14 tools and fails every call. |
 
-`docs/bridge-facts.json` records the `stdio_posix` entry for each bridge; the commands
-above should match it exactly. If they do not, the facts file wins and this page is wrong.
+That is the whole table. There is no POSIX launcher for anything else in this repository:
+the two that existed were retired on 2026-09-15 because the host already does both jobs,
+and the filesystem one was additionally unusable — measured 2026-09-15, the pinned
+`@modelcontextprotocol/server-filesystem@2025.8.21` emits an `inputSchema` carrying only a
+`$schema` key on 13 of its 14 tools, and Cowork rejects the whole tool list. Keeping a
+bridge in that state to duplicate a capability the host already has was the wrong trade.
+
+`docs/bridge-facts.json` records the `stdio_posix` entry; the command above should match it
+exactly. If it does not, the facts file wins and this page is wrong.
 
 ## 7. Skills, instructions and memory on this host
 
@@ -206,7 +214,7 @@ The repo ships a complete configuration under `CoworkConfig/`:
 
 ```
 CoworkConfig/
-  Skills/<skill-name>/SKILL.md      ten skills, the three bridge skills among them
+  Skills/<skill-name>/SKILL.md      five skills, the command executor among them
   copilot-instructions.md           standing instructions (the Copilot host's filename)
   cowork-memory/cowork-lessons.md   the lessons corpus, beside the memory files
   README.md                         which files are generated from which
@@ -222,11 +230,16 @@ the wrong thing to operate under.
 python3 scripts/build_plugin.py --strict --platform macos
 ```
 
-Open `Outputs/Skills Plugin/agent-of-record-skills-macos.plugin` in Claude, accept it,
-restart the app, and confirm `ListSkills` returns all ten repository skills. The same ten
-skills ship on Windows and macOS; each skill states the platform-specific launcher, path or
-job-script shape in the same instructions. A directory copy into `~/.claude/skills/` does
-nothing.
+In Claude, open **Customize -> Plugins -> Add -> Upload plugin** and select
+`Outputs/Skills Plugin/agent-of-record-skills-macos.plugin`. Restart the app and confirm
+`ListSkills` returns all five repository skills. The same five skills ship on Windows and
+macOS; each skill states the platform-specific launcher, path or job-script shape in the
+same instructions.
+
+Do not double-click the `.plugin` file. Claude registers no document type for that
+extension, so Finder reports `kLSApplicationNotFoundErr` and nothing happens; the upload
+picker inside Claude is the install path. A directory copy into `~/.claude/skills/` is not
+an install either -- Cowork sessions do not read that directory (Claude Code does).
 
 **Instructions.** `copilot-instructions.md` is the Copilot host's file and has no
 equivalent here *(expected)*. It carries the lessons digest, and that digest is also
@@ -290,8 +303,6 @@ filename is gitignored so a private run never lands by accident; copy it into
   any name containing a shell metacharacter (`& | < > ^ " ' * ? ; $`, a backtick, CR, LF or
   TAB). Containment is decided on canonical paths, never by string prefix, so
   `CommandJobsEvil` cannot masquerade as `CommandJobs`.
-- The filesystem bridge, if registered, reads and writes only inside the directories you
-  allow when you register it. Everything else is refused.
 - A refusal is the control working. Do not widen a scan or a check to make a run pass.
 
 **This configuration in particular:**
@@ -321,3 +332,15 @@ filename is gitignored so a private run never lands by accident; copy it into
   root except the desktop app's own configuration file (backed up with a date stamp first),
   and never edits a check to make a run pass. If it stops, the `STOP` line is a finding to
   report.
+
+
+## Addendum 2026-09-15 - skills by configuration, and the model behind the session
+
+Every skill in the repository ships to this route; the ones that duplicate a host capability
+here say so in their own "When this skill is redundant" section, and the matrix is in
+`docs/skills-by-configuration.md`. Disable a redundant skill in the host; re-enable it when
+the configuration changes. If the session runs under third-party inference (a gateway or a
+local model), the route is identical - the host, its folders, browser, plugins and MCP
+servers are unchanged - but keep `persistent-memory` enabled until account memory is
+confirmed present when signed out, and expect enforced controls to carry more weight than
+delivered rules with a smaller model.

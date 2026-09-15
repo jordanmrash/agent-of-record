@@ -79,3 +79,15 @@ controls, and a refusal is the control working. The host determines how far away
 agent is; the repository determines what it may do once it gets here.
 
 Agents: the install contract is in [`AGENTS.md`](../../AGENTS.md); it names both routes.
+
+
+## Addendum 2026-09-15 - skills by configuration, and the model behind the session
+
+Every skill in the repository ships to this route; the ones that duplicate a host capability
+here say so in their own "When this skill is redundant" section, and the matrix is in
+`docs/skills-by-configuration.md`. Disable a redundant skill in the host; re-enable it when
+the configuration changes. If the session runs under third-party inference (a gateway or a
+local model), the route is identical - the host, its folders, browser, plugins and MCP
+servers are unchanged - but keep `persistent-memory` enabled until account memory is
+confirmed present when signed out, and expect enforced controls to carry more weight than
+delivered rules with a smaller model.

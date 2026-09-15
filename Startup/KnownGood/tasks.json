@@ -60,34 +60,20 @@
       "label": "Cowork Playwright Bridge (8931)",
       "type": "shell",
       "command": "node",
+      // 8931 is Copilot Cowork on Windows only (docs/bridge-facts.json: products,
+      // platforms). Claude Cowork ships this capability first-party, so the bridge
+      // only duplicated it; the POSIX launcher was removed 2026-09-15. On macOS and
+      // Linux this task prints one line and exits.
       "args": [
+        "-e", "console.log('8931 Playwright: Windows only - nothing to start on this platform')"
+      ],
+      "windows": { "args": [
         "${workspaceFolder}\\node_modules\\supergateway\\dist\\index.js",
         "--port", "8931",
         "--outputTransport", "streamableHttp",
         "--stateful",
         "--sessionTimeout", "1800000",
         "--stdio", "${workspaceFolder}\\pw-server.cmd"
-      ],
-      // Every platform uses ${workspaceFolder} rather than an absolute path, so a
-      // clone needs no personalization to start: VS Code opens this Startup folder
-      // and the launchers derive their own root from their location (the .cmd
-      // files via %~dp0, the .sh files via $HERE). Machine-specific values go in
-      // the gitignored cowork-env.cmd / posix/cowork-env.sh, never here.
-      "osx": { "args": [
-        "${workspaceFolder}/node_modules/supergateway/dist/index.js",
-        "--port", "8931",
-        "--outputTransport", "streamableHttp",
-        "--stateful",
-        "--sessionTimeout", "1800000",
-        "--stdio", "${workspaceFolder}/posix/pw-server.sh"
-      ] },
-      "linux": { "args": [
-        "${workspaceFolder}/node_modules/supergateway/dist/index.js",
-        "--port", "8931",
-        "--outputTransport", "streamableHttp",
-        "--stateful",
-        "--sessionTimeout", "1800000",
-        "--stdio", "${workspaceFolder}/posix/pw-server.sh"
       ] },
       "isBackground": true,
       "presentation": {
@@ -105,23 +91,18 @@
       "label": "Cowork Filesystem Bridge (8932)",
       "type": "shell",
       "command": "node",
+      // 8932 is Copilot Cowork on Windows only (docs/bridge-facts.json: products,
+      // platforms). Claude Cowork ships this capability first-party, so the bridge
+      // only duplicated it; the POSIX launcher was removed 2026-09-15. On macOS and
+      // Linux this task prints one line and exits.
       "args": [
+        "-e", "console.log('8932 Filesystem: Windows only - nothing to start on this platform')"
+      ],
+      "windows": { "args": [
         "${workspaceFolder}\\node_modules\\supergateway\\dist\\index.js",
         "--port", "8932",
         "--outputTransport", "streamableHttp",
         "--stdio", "${workspaceFolder}\\fs-server.cmd"
-      ],
-      "osx": { "args": [
-        "${workspaceFolder}/node_modules/supergateway/dist/index.js",
-        "--port", "8932",
-        "--outputTransport", "streamableHttp",
-        "--stdio", "${workspaceFolder}/posix/fs-server.sh"
-      ] },
-      "linux": { "args": [
-        "${workspaceFolder}/node_modules/supergateway/dist/index.js",
-        "--port", "8932",
-        "--outputTransport", "streamableHttp",
-        "--stdio", "${workspaceFolder}/posix/fs-server.sh"
       ] },
       "isBackground": true,
       "presentation": {
