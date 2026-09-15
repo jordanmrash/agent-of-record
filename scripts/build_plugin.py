@@ -59,7 +59,7 @@ WINDOWS_ONLY = [
     # digit run inside a hyphenated identifier. `bridge-8933-arg-name` is a lesson key,
     # `command-bridge-8933` a route id, `bridge-8931-` a route prefix: names, not claims
     # about a platform, and a key may never be renamed to satisfy a gate. Measured
-    # 2026-09-14: 71 of 141 port hits across the ten skills were identifiers.
+    # 2026-09-14: 71 of 141 port hits across the then-ten skills were identifiers.
     (re.compile(r"(?<![\w-])893[1-4](?![\w-])"), "bridge port"),
     # The Copilot connector ids exist only on the Windows hosted route. They carry a port
     # digit the rule above now ignores, so they are named on their own.

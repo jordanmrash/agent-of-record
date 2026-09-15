@@ -27,7 +27,7 @@ key (`isLocalDevMcpEnabled`), which disables this route entirely.
 
 | Already there | So the repository does not ship |
 |---|---|
-| Reads and writes connected folders, permission-gated | A filesystem bridge as a requirement — connect the clone instead |
+| Reads and writes connected folders, permission-gated | Any file-access bridge — connect the clone instead |
 | A shell and code execution, in the Linux VM | Anything for computing, parsing or file generation |
 | Web fetch; the device's browser through the desktop app *(expected)* | A browser bridge as a requirement |
 | One memory shared with chat, editable topic files | A pointer-tier workaround. Use the host's memory for preferences and standing context; on Team and Enterprise plans it is off until the user turns it on |
@@ -79,16 +79,18 @@ closer to the work: shell commands execute in the session's own VM, so the close
 can run there if the connected folder is visible to it (*unverified*) — otherwise as a job
 through the executor, as on the hosted route.
 
-**Optional — the browser bridge.** A persistent signed-in profile, structured actions,
-traces and screenshots to disk. Register it if you automate a site you are signed into.
-
-**Optional — the filesystem bridge.** Named roots. Register it only if you want the same
-file tools the hosted route uses so shared skills and jobs behave identically; the host's
-own file tools cover ordinary work once the clone is a connected folder.
+**Removed from this route on 2026-09-15 — browsing and file access.** The table above says
+why: the host already browses and already reads and writes connected folders, so the two
+bridges that offered those only duplicated first-party capability, while adding an `npx`
+fetch, an upstream dependency and a second set of file roots to reason about. Both remain
+Copilot Cowork on Windows, where the hosted route has no equivalent.
 
 **Not on this host — Power Automate.** The fourth bridge in this repository administers
 Power Platform flows and is Copilot Cowork on Windows only: this host cannot reach a tenant,
 and the bridge has no POSIX launcher. Nothing on this route registers it.
+
+So this route registers exactly one bridge: the approved command executor. That is the
+single thing the host cannot do for itself.
 
 **Not applicable here.** The dev tunnel, `supergateway`, the Ports panel, the connector
 packages, the watchdog, the personalizer, the pointer-tier memory conventions written for
@@ -105,7 +107,7 @@ python  scripts\build_plugin.py --strict --platform windows  # Windows
 ```
 
 Install it through **Customize -> Plugins -> Add -> Upload plugin**, restart Claude, and
-confirm `ListSkills` returns all ten. Each `SKILL.md` is one portable instruction set: where
+confirm `ListSkills` returns all six. Each `SKILL.md` is one portable instruction set: where
 a mechanism differs, the Windows and macOS forms are stated together.
 
 Opening the `.plugin` file from Finder or Explorer does not work -- Claude registers no

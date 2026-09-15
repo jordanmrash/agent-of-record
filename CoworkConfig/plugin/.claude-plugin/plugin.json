@@ -1,8 +1,8 @@
 {
   "$schema": "https://json.schemastore.org/claude-plugin.json",
   "name": "agent-of-record-skills",
-  "version": "0.4.0",
-  "description": "The agent-of-record skill set: bridge operation, memory, self-improvement and authoring skills for Claude Cowork on macOS and Windows.",
+  "version": "0.5.0",
+  "description": "The agent-of-record skill set: approval-gated host command execution, memory and self-improvement, and authoring skills for Claude Cowork on macOS and Windows.",
   "author": {
     "name": "Jordan Rash",
     "url": "https://github.com/jordanmrash/agent-of-record"
@@ -21,9 +21,6 @@
       "name": "not-a-robot"
     },
     {
-      "name": "skill-menu"
-    },
-    {
       "name": "persistent-memory"
     },
     {
@@ -36,16 +33,7 @@
       "name": "gamma-tango"
     },
     {
-      "name": "playwright-skill"
-    },
-    {
-      "name": "git-bridge"
-    },
-    {
       "name": "command-bridge"
-    },
-    {
-      "name": "local-file-bridge"
     }
   ]
 }

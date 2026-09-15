@@ -24,9 +24,9 @@ the folders you connect, fetches the web, remembers across sessions and runs she
 commands — in a Linux virtual machine, never on Windows. Nothing it does natively can run
 a `.bat`, read the registry, or drive a Windows application. The approved batch executor
 is the only path from a session to `cmd.exe`, so it is the one required component, and
-with it come the job conventions, the release gate and the lessons machinery. The browser
-and filesystem bridges are optional here. The fourth bridge in this repository, Power Automate,
-is Copilot Cowork only and not part of this route. What
+with it come the job conventions, the release gate and the lessons machinery. The
+repository's other bridges are Copilot Cowork only and are not part of this route.
+What
 each part lets you do is in [What this repository adds to Claude Cowork](claude-cowork.md).
 
 ---
@@ -65,8 +65,7 @@ than working around it. Do not adjust a check to make it pass.
 There is nothing to install. The executor is plain `node` with no packages and fetches
 nothing at start. The hosted route's `Startup/package.json` pins `supergateway`, the HTTP
 wrapper a cloud client needs to reach a stdio server through a tunnel; this route has no
-tunnel and never starts it. Only the optional browser and filesystem bridges fetch a
-package, by `npx`, on their first start.
+tunnel and never starts it. Nothing on this route fetches a package at start.
 
 ## 3. Choose your folders
 
@@ -89,9 +88,8 @@ copy Startup\cowork-env.example.cmd Startup\cowork-env.cmd
 
 | Variable | Default | Sets |
 |---|---|---|
-| `COWORK_CONFIG_ROOT` | unset | Where the executor's operating-rules reminder reads the live corpus, and the filesystem bridge's third root if you register that bridge. |
-| `COWORK_PW_PROFILE` | `%USERPROFILE%\pw-sso-profile` | The browser bridge's persistent profile, if registered. |
-| `COWORK_ROOT` | derived | Only to point the bridges at a different tree. |
+| `COWORK_CONFIG_ROOT` | unset | Where the executor's operating-rules reminder reads the live corpus. |
+| `COWORK_ROOT` | derived | Only to point the executor at a different tree. |
 
 `public_scan.py` refuses any tracked file containing a real `C:\Users\<name>` path;
 `cowork-env.cmd` is where yours belongs.
@@ -163,7 +161,7 @@ The repo ships a complete configuration under `CoworkConfig\`:
 
 ```
 CoworkConfig\
-  Skills\<skill-name>\SKILL.md      ten skills, the three bridge skills among them
+  Skills\<skill-name>\SKILL.md      six skills, the command executor among them
   copilot-instructions.md           standing instructions (the Copilot host's filename)
   cowork-memory\cowork-lessons.md   the lessons corpus, beside the memory files
   README.md                         which files are generated from which
@@ -181,7 +179,7 @@ python scripts\build_plugin.py --strict --platform windows
 
 In Claude, open **Customize -> Plugins -> Add -> Upload plugin** and select
 `Outputs\Skills Plugin\agent-of-record-skills-windows.plugin`. Restart the app and confirm
-`ListSkills` returns all ten repository skills. The same ten skills ship on Windows and
+`ListSkills` returns all six repository skills. The same six skills ship on Windows and
 macOS; each skill states the platform-specific launcher, path or job-script shape in the
 same instructions.
 
@@ -243,8 +241,6 @@ until it exists, paste the result into your pull-request description instead.
   any name containing a shell metacharacter (`& | < > ^ " ' * ? ; $`, a backtick, CR, LF or
   TAB). Containment is decided on canonical paths, never by string prefix, so
   `CommandJobsEvil` cannot masquerade as `CommandJobs`.
-- The filesystem bridge, if registered, reads and writes only inside the directories you
-  allow when you register it. Everything else is refused.
 - A refusal is the control working. Do not widen a scan or a check to make a run pass.
 
 **This configuration in particular:**
