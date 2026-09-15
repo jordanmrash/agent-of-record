@@ -206,16 +206,6 @@ never deleted or moved; only its delivery is narrowed.
 - **Worked:** `powershell.exe -NoProfile -Command "$d=Get-PSDrive C; '{0:N2} GB free of {1:N2} GB' -f ($d.Free/1GB),(($d.Used+$d.Free)/1GB)"` — same answer, no elevation. Prefer PowerShell/CIM over elevation-gated console utilities generally.
 - **Evidence:** measured
 
-### Classify a skill by scanning its CONTENT, not by reading its folder name
-- **Pattern-Key:** skill-classification-needs-content-scan
-- **Date:** 2026-08-20
-- **Trigger:** failure
-- **Failed:** Treating `CoworkConfig\` as generic tooling and widening the config-sync filter without checking what was in it. The widened pass went from 24 to 102 files and pulled engagement material into the git mirror.
-- **Why:** Some skills are engagement-specific. `<client>-apportionment` names a client in the FOLDER PATH — a repo tree discloses the engagement in a directory listing, before anyone opens a file. Worse, `tax-provision-report-replication` sounds generic and still carries client references inside `SKILL.md` and `OTP_REFERENCE.md`, so a name-based rule misses it entirely.
-- **Worked:** Content-scan every skill folder, then exclude engagement-specific ones at the SOURCE with robocopy `/XD` (a `.gitignore` is too late — the mirror already holds the file). After adding `/XD`, delete what already landed: `/XD` stops future copies but does not purge existing ones. Verify with a residual scan and a re-run that copies nothing. Prefer an ALLOWLIST over a blocklist, because a new client skill fails open under a blocklist.
-- **Evidence:** measured — 102 → 56 files, residual scan reported CLEAN, re-run copied nothing
-- **See also:** git-deletion-does-not-sanitize-history
-
 ### Deleting a file does not remove it from git history
 - **Pattern-Key:** git-deletion-does-not-sanitize-history
 - **Date:** 2026-08-20
@@ -227,18 +217,6 @@ never deleted or moved; only its delivery is narrowed.
 - **Worked:** Accept that this repo can never be the one pushed. Any GitHub repo must be NEW, populated by copying named folders in — never by cloning and filtering, which carries invisible history. State the limitation in the deletion commit body so no one later mistakes it for a sanitization.
 - **Evidence:** measured — tracked-deletion status read after the commit
 
-### A slide render cannot be shown inline in chat — it reaches the user as a FILE
-- **Pattern-Key:** render-not-inline-in-chat
-- **Date:** 2026-08-20
-- **Trigger:** failure
-- **Failed:** Running the `deck-builder` §11.5 slide-by-slide review as written — "publish the renders and show them one per row." The agent published 39 JPGs to `output/review/` and then wrote prose describing three options per slide as though Jordan could see them. He could not. The review looked functional for two slides before he said "after the second slide i no longer see slides to select."
-- **Why:** There is no path from a workspace image to the conversation. `RenderSlide` returns a file PATH — opening it shows the image to the AGENT only. `render_ui` renders allowlisted image URLs, and a workspace path is not a URL. The skill instructed a step the environment cannot perform, and the agent improvised something that resembled it instead of naming the limit.
-- **Rule:** Never describe a visual as though the user can see it. A workspace image reaches him only as a named file - name the file, or put the comparison in a chat table instead.
-- **Delivered-to:** deck-builder
-- **Worked:** Rewrote §11.5 (skill v3.0 → v3.1, uploaded and re-listed to confirm). §11.5a states the constraint and adds the hard rule *never describe a visual as though the user can see it*; §11.5b makes a comparison TABLE in chat the default review, with self-describing filenames (`slide-12-A-table.jpg`) and a per-slide A/B/C comparison strip; §11.5c keeps the sequential loop only on explicit request and requires a `Glob` of the review folder before the first question. Added `reference/review_strip.py` (5,578 bytes) so the mechanics cannot be skipped — it builds the renames, the strips, and prints the table, and exits non-zero naming missing files.
-- **Evidence:** measured — script run end to end, 52 files over 13 slides; a tofu-box glyph from an em dash in the strip label was caught in the render and fixed to ASCII
-- **See also:** skill-alwayson-defeated-by-routing
-
 ### Do not narrate an action as done before it has been done
 - **Pattern-Key:** agent-claims-action-before-doing-it
 - **Date:** 2026-08-20
@@ -248,17 +226,7 @@ never deleted or moved; only its delivery is narrowed.
 - **Rule:** State an action as done only after its confirming call returns. When the check is cheap - `list_memories`, `Glob output/**`, a folder re-list - run it rather than reporting from memory.
 - **Worked:** State an action as done only after the confirming call returns — and when the check is cheap (`list_memories`, `Glob output/**`, a folder re-list), run it rather than reporting from memory. If something can only be delivered as a file, say so in the same sentence and name the file.
 - **Evidence:** measured — the missed save was found by listing memories, then actually written
-- **See also:** render-not-inline-in-chat, onedrive-user-surface-not-live
-
-### The deck layout engine refuses long copy rather than overflowing it
-- **Pattern-Key:** deck-engine-refuses-long-copy
-- **Delivered-to:** deck-builder
-- **Date:** 2026-08-20
-- **Trigger:** failure
-- **Failed:** Treating build errors like `cards: no column count fits this region` and `kpi label ... too long for a 2.85 in tile` as bugs to work around, which cost roughly ten build cycles on a 15-slide, 3-version deck.
-- **Why:** `layout.js` measures text and refuses any placement that would collide, overflow, or break a word — by design. The error names the element and states the remedy; it is the engine working, not failing.
-- **Worked:** Read the error's stated fix and shorten the CONTENT (KPI labels to ~4 words, card headings to ~3), or swap the device for one that suits the region — a narrow split-panel region takes a table or icon rows, not four cards. Reach past the engine to hand-place a box only for a device it has no primitive for. Cap `s.region.bottom` before a device when a chevron banner must sit beneath it.
-- **Evidence:** measured — final three versions each pre-flighted 0 failures
+- **See also:** onedrive-user-surface-not-live
 
 ### A cloud write can take minutes to reach the laptop — never commit a partial set
 - **Pattern-Key:** onedrive-cloud-to-laptop-lag
@@ -539,42 +507,6 @@ never deleted or moved; only its delivery is narrowed.
 
 ---
 
-### A converted workflow is not converted until it has RUN on real data
-- **Pattern-Key:** alteryx-static-audits-miss-runtime-defects
-- **Delivered-to:** alteryx-to-python
-- **Date:** 2026-08-28
-- **Trigger:** failure
-- **Failed:** Treating a PASSing coverage audit plus a clean `py_compile` as evidence the conversion was sound. On a 139-node sample workflow both passed on a script that could not complete a single stage. Three separate defects only appeared on execution against the real 1.69 GB source set: (1) the Join helper renamed `Right_DC State` back to `DC State` while the left's own `DC State` was still present, so `pd.concat` raised "cannot reindex on an axis with duplicate labels"; (2) after ToolIDs 185 and 227 the stream already carried a `Right_State`, so ToolID 229's prefixing produced "The column label 'Right_State' is not unique"; (3) ToolID 109's declared `ImportLine=5` had been transcribed into CONFIG as `1`, giving `KeyError: 'Customer'`.
-- **Why:** Coverage is a static diff of ToolIDs against a registry and `py_compile` only parses syntax. Neither touches data, so neither can see a column-name collision or a wrong header row. The failures surface only when real frames flow through the joins.
-- **Worked:** Run the generated script end to end on the real source data before reporting anything, and treat each traceback as a finding rather than a nuisance. Where the data cannot come into the session, run it on the user's machine through the 8933 bridge. Three run-fix cycles took ~10 minutes and turned a plausible-looking script into a working one.
-- **Evidence:** measured
-- **Hits:** 1
-- **See also:** alteryx-skip-schema-check-costs-a-run-cycle
-
-### Run the schema pre-flight before writing conversion code, not after it fails
-- **Pattern-Key:** alteryx-skip-schema-check-costs-a-run-cycle
-- **Delivered-to:** alteryx-to-python
-- **Date:** 2026-08-28
-- **Trigger:** failure
-- **Failed:** Skipping gate G2 (`schema_check.py`) on Sales Workflow 2024 because the source data was a 1.69 GB zip on the user's PC rather than in the session, and going straight from the conversion brief to writing code. ToolID 109's header row was transcribed as 1 when the workflow declares `ImportLine=5`; the error surfaced ~3.5 minutes into a full run as `KeyError: 'Customer'`.
-- **Why:** The brief reports which fields each tool CONSUMES but does not verify them against the actual files, and `ImportLine` is a per-source attribute that is easy to lose when transcribing five sources into a CONFIG block by hand. G2 exists precisely to catch that class of mistake before any code is written.
-- **Worked:** When the data is not reachable in-session, push a small probe script to the machine that holds it and dump every declared sheet's first three rows plus the sheet list. That probe took 18 seconds and revealed the title block above ToolID 109's header, the duplicate `Billing type` columns on the BEX sheets, and the real BEX file count - all before another run cycle.
-- **Evidence:** measured
-- **Hits:** 1
-- **See also:** alteryx-static-audits-miss-runtime-defects
-
-### Transcribing a literal table by hand fabricates data that looks right
-- **Pattern-Key:** alteryx-handwritten-lookup-table-is-fabrication
-- **Date:** 2026-08-28
-- **Trigger:** false-success
-- **Failed:** Writing ToolID 418's 82-row State/Recode table into the generated script from memory of a truncated config dump. The hand-written version listed ~25 foreign codes and ~56 US states, all plausible, none checked.
-- **Why:** The config dump had been printed with a character limit, so only the first rows were ever visible, and a US-state list is easy to reconstruct convincingly from general knowledge. The result compiles, runs, and produces wrong apportionment silently.
-- **Rule:** Never transcribe a data table by hand from a dump that may have been truncated - extract it programmatically from the source. A plausible reconstruction compiles, runs, and is silently wrong.
-- **Delivered-to:** alteryx-to-python
-- **Worked:** Extract every Text Input table programmatically from the manifest (`Data/r[i]/c[j]` keys, sized by `NumRows@value`) and write it into the script from the extracted values. The real table was entirely different: 82 rows ALL flagged Foreign, including `MEX`, `GTO`, `NSW`, `KZN`, `YUC`, bare numeric codes like `00`/`13`/`020`, a literal `N/A`, a `WI,` with a trailing comma, and one row whose key cell is null. Not one of those was guessable.
-- **Evidence:** measured
-- **Hits:** 1
-
 ### A 1.69 GB source zip does not need to cross the wire
 - **Pattern-Key:** bridge-extract-on-pc-instead-of-downloading
 - **Date:** 2026-08-28
@@ -596,7 +528,7 @@ never deleted or moved; only its delivery is narrowed.
 - **Worked:** Two permitted responses when an artifact was produced somewhere unreachable - bring it back (base64 through the bridge, decoded and the byte count checked against the source rather than retyped) or list it as not produced with the reason. Nothing in between. And verify archives by CONTENT: per-file minimum size plus a marker string only the real file contains, plus, for a run log, a figure from THAT run. The recovered file decoded to exactly 6,532 bytes matching the source.
 - **Evidence:** measured
 - **Hits:** 1
-- **See also:** verifier-ignores-structural-diff, alteryx-handwritten-lookup-table-is-fabrication
+- **See also:** verifier-ignores-structural-diff
 
 ### A verification that cannot fail on the thing you fear is not a verification
 - **Pattern-Key:** verification-scoped-away-from-the-risk
@@ -612,7 +544,7 @@ never deleted or moved; only its delivery is narrowed.
 - **Worked (addendum):** Size every fixture ABOVE the boundary it exercises, and run the negative control - reintroduce the bug and confirm the suite actually fails - before trusting any new guard. `sed` the default back, re-run, assert a non-zero exit.
 - **Repeat 2026-09-01 - the same defect, one layer further out:** a new selftest for the lesson_dupe Distinct-from fix passed against the KNOWN-BROKEN script. The fixture held 7 entries, and lesson_dupe's floor is the p99.5 of pairwise similarity, which on 21 pairs is simply the maximum. That maximum belonged to a pair of BASELINE entries, so the new entry's two neighbours scored 0.9863 and 0.9846 against a floor of 0.9976 and neither was ever "above floor". The gate therefore never reached the branch under test. Sizing the fixture is not enough - the fixture must be able to REACH the threshold, and when the threshold is derived from the fixture's own distribution, an unrelated pair can hold it out of reach. Fixed by making the three entries byte-identical in the compared text so all three tied at the maximum; the case then failed on the broken script and passed on the fixed one.
 - **Promoted-to:** copilot-instructions.md, "Rules already paid for" (LESSON-DIGEST block) - 2026-08-28.
-- **See also:** delivery-pointer-file-passes-as-artifact, alteryx-static-audits-miss-runtime-defects, lessons-digest-default-limit-truncates
+- **See also:** delivery-pointer-file-passes-as-artifact, lessons-digest-default-limit-truncates
 
 ### Reconcile every requested path after a DeleteArtifact - `ok:true` can hide skipped files
 - **Pattern-Key:** artifact-delete-recursive-skips-file-paths
@@ -697,21 +629,6 @@ never deleted or moved; only its delivery is narrowed.
 - **Worked:** Judge each reported conflict by hand, and resolve a real one by adding a reciprocal pointer in the delegated-to skill's description ("for the combined open/close routine use gamma-tango"). Treat single-word keyword overlaps as noise.
 - **Evidence:** measured — scan output read in full
 
-### Calibrate a voice profile from a real user rewrite, not from invented examples
-- **Pattern-Key:** skill-voiceprofile-calibrate-from-user-diff
-- **Date:** 2026-08-21
-- **Trigger:** better-approach
-- **Rule:** Calibrate a voice profile by mechanically diffing his real rewrite, never from description. Test any proposed rule against the whole finished document.
-- **Delivered-to:** myvoice
-- **Hits:** 2   (2026-08-21 first hand-rewrite; 2026-08-28, which carried TWO passes - a hand-edited .docx with red comments and a second pasted edit pass. Hits counts SESSIONS, not passes.)
-- **Failed:** Trusting the `myvoice` profile's nine rules, several of which carried invented illustrative quotes rather than Jordan's own sentences. Drafts kept reading close-but-wrong, and one rule was actively backwards — it mandated a wry rhetorical-question close on every piece, which he deleted from a long technical article and replaced with practical advice.
-- **Why:** A profile written from description rather than from a measured diff encodes the writer's theory of the voice, not the voice. Nothing in the file was falsifiable, so no rule ever got disproved.
-- **Worked:** Have him rewrite a full AI draft by hand, then diff it mechanically. Count punctuation before reading for tone — that surfaced zero em dashes and zero semicolons across 2,542 words, the single strongest tell, which no amount of reading for "feel" had caught. Replace invented examples with his actual sentences, scope any rule he contradicted rather than deleting it, and add a restraint cap since he removed roughly as much colour as he added. Profile went from 9 rules to 21, score 100.
-- **Promoted-to:** `myvoice` SKILL.md - the punctuation ban and the count-before-rewriting rule are the encoded form of this method.
-- **Evidence:** measured — punctuation counted in Python across the pasted rewrite
-- **Held on two further passes 2026-08-28:** the same mechanical diff (`difflib.SequenceMatcher` over paragraph lists, then read the opcodes) surfaced what reading for tone did not - a structural complaint he wrote three times in one document, and on the second pass a spelling register nobody thought to check. Profile is now 42 rules, score 100. The method's value rises with each pass rather than falling, because the cheap tells get taken early and what is left is the non-obvious.
-- **See also:** skill-score-needs-literal-guardrails-heading, voice-us-register-sweep, assumption-from-the-brief-encoded-as-a-durable-rule
-
 ### A "No tools found" probe is a reading of NOW, never a verdict on the session
 - **Pattern-Key:** bridge-absent-probe-is-not-permanent
 - **Date:** 2026-08-28
@@ -735,7 +652,6 @@ never deleted or moved; only its delivery is narrowed.
 - **Why:** A credential scan and credential theft look identical to endpoint detection - same process, same pattern list, same target extensions. The control is legitimate and the alert is correct, which is exactly why re-running it casually is expensive.
 - **Worked:** Hash instead. `certutil -hashfile <path> MD5` on each file about to be staged, compared against the hash of the content the agent itself authored. A match proves the repo copy is byte-identical to known content, which is a STRONGER guarantee than a pattern grep, since it rules out anything riding along rather than only the patterns someone thought to list. Pair it with a `forfiles` size check for the 10 MB rule. Four files verified this way before commit 8d42c40, all four matching. Use the grep only for content the agent did NOT author and therefore cannot hash against a known good.
 - **Evidence:** measured - the SOC email quotes the exact findstr command line; the four MD5 values matched the container-side hashes exactly
-- **See also:** work-is-an-exercise-not-an-engagement
 
 ### A connector can vanish mid-session, not just fail to load at start
 - **Pattern-Key:** bridge-connector-removed-midsession
@@ -874,72 +790,6 @@ never deleted or moved; only its delivery is narrowed.
 - **Promoted-to:** Skills/alteryx-to-python/SKILL.md - the `gate_check_selftest.py` paragraph (17 deliberately-broken workspaces each failing on the expected gate with the expected message) and "Every zero reported to the user needs a positive control". Read on the mount 2026-08-28 and already present in concrete form, so no move is proposed; this entry is now the evidence trail. The generic form is NOT stated in `copilot-instructions.md`.
 - **See also:** delivery-pointer-file-passes-as-artifact, verification-scoped-away-from-the-risk
 
-### Alteryx is the reference - fix the conversion, document the workflow's own defects
-- **Pattern-Key:** alteryx-fix-conversion-not-original-defect
-- **Delivered-to:** alteryx-to-python
-- **Date:** 2026-08-28
-- **Trigger:** correction
-- **Failed:** Read the alteryx-to-python skill's "flag defects, never fix them" boundary as a blanket rule covering every wrong number. Acting on that, one bad line found on review got written up as the skill breaking its own guarantee, and a true statement in a published article was softened to accommodate the imagined violation. Jordan corrected it twice before it was right.
-- **Why:** Two different failures were collapsed into one word. "Defect" in that boundary means a defect in the ORIGINAL Alteryx workflow. A wrong number in the generated Python is a CONVERSION error, an entirely different thing, and it is meant to be fixed.
-- **Worked:** Hold the loop in this exact shape. The Alteryx workflow is the reference. If the Python does not give the same answer, that is a conversion error - analyse it and fix the conversion until the two agree. A defect in the underlying Alteryx workflow is detected, written into the generated documentation, and LEFT IN the Python, because silently improving on what the original workflow produced makes the reconciliation impossible. The remediation path is not the agent's to take: the workflow owner reads the write-up, fixes the Alteryx, and re-runs the skill, at which point the Python comes back corrected because it still tracks its source. Authority stays with the owner and the conversion follows it. Corollary worth carrying: with no Alteryx baseline there is no parity comparison, so a conversion error in a delivered script has nothing to catch it, which is exactly how one survived into a finished script on 2026-08-28.
-- **Evidence:** measured - Jordan stated the loop directly; the conversion it describes was parity UNVERIFIED and the defect surfaced only when he ran the finished script
-- **Corrected 2026-08-28:** this entry originally attributed the bad line to a client's report and to a client desk. Jordan states plainly that NONE of this work was for a client - the skill build was an exercise in what can be built inside Cowork, and the bad line was found on his own review. Key left unchanged so existing references still resolve; see `work-is-an-exercise-not-an-engagement`.
-- **Hits:** 1
-- **See also:** alteryx-static-audits-miss-runtime-defects, verification-scoped-away-from-the-risk
-
-### Sweep for US spelling and contractions the same way you sweep for em dashes
-- **Pattern-Key:** voice-us-register-sweep
-- **Date:** 2026-08-28
-- **Trigger:** failure
-- **Rule:** Final mechanical pass on his writing is three greps: em dash and semicolon, British spellings, then contractions by judgement.
-- **Delivered-to:** myvoice
-- **Hits:** 1
-- **Failed:** Delivered a 4,500-word article for Jordan carrying organised, behaviour, realisation, licence, organisation and the verb "reckons", plus zero contractions. He corrected every one by hand. The `myvoice` punctuation sweep for em dashes and semicolons ran and passed, so the piece was reported as voice-compliant while the register was visibly wrong.
-- **Why:** The voice profile had a mechanical final-pass rule for punctuation only. Spelling and contraction register are equally mechanical and equally invisible to a read-for-tone check, but nothing in the file named them, so nothing looked for them.
-- **Worked:** Extend the final mechanical pass to three greps, not one. (1) em dash and semicolon, (2) `-ise/-isation/-our/licence` and British idiom, (3) where an uncontracted clause reads stiff, prefer the contraction, as he did with exactly one clause on this pass. Do NOT treat a low contraction count as a defect on its own. Greps (1) and (2) run in one Python pass over the paragraph list before delivery; (3) is a judgement call, not a gate. Encoded as `myvoice` rules 37 and 38.
-- **Evidence:** MIXED. Measured - his edit pass corrected 5 spellings and 1 idiom, and a regex over the rebuilt article confirms zero British forms remain. INFERRED and now partly DISPROVED - the contraction guidance was generalised from a single observed conversion and was never run as a gate on the deliverable.
-- **Corrected 2026-08-28 by a fresh-context review:** the first version of this entry told the reader to treat zero contractions across a long piece as a defect. His own hand-finished article carries TWO verbal contractions in 4,534 words, so the deliverable he shipped fails the rule this entry derived from it. A rule taken from one sentence in a diff is a sample of one, and the artifact was sitting right there to test it against. Test a proposed rule against the whole finished document before writing it down, not only against the diff hunk that suggested it.
-- **See also:** skill-voiceprofile-calibrate-from-user-diff
-
-### Never encode an unstated premise from the opening request into a durable rule
-- **Pattern-Key:** assumption-from-the-brief-encoded-as-a-durable-rule
-- **Date:** 2026-08-28
-- **Trigger:** correction
-- **Rule:** Never write a premise from the opening request into a skill file as if it were verified. Confirm it first, or constrain the rule to what was observed.
-- **Hits:** 1
-- **Failed:** The session opened with "convert this workflow for a client that does not have an Alteryx license." That premise was carried forward as established fact for the whole session, written as client framing through an article, and then written into `myvoice` as a PERMANENT rule - a clause explicitly protecting the word "client" as legitimate domain vocabulary. Jordan then stated that none of the work was for a client at all. The rule just written would have defended the exact phrasing he was asking to have removed.
-- **Why:** A premise stated once in an opening request has the same surface form as a verified fact, and nothing downstream re-checks it. Writing it into a skill file promotes an inference to a standing instruction, applied silently by future sessions that never saw the conversation it came from. The blast radius of a wrong durable rule is far larger than a wrong sentence in a draft.
-- **Worked:** Before a framing assumption goes into a skill file, name it back to the user as an assumption and get it confirmed. Cheaper still, write the rule so it constrains only what was actually observed: "cut third-party attribution" was observed, "the word client is fine as background colour" was invention. When correcting the rule, grep every other artifact the assumption reached - here it had spread to an article, a lesson entry and a memory file. Corrected form is `myvoice` rules 35 and 36 plus `work-is-an-exercise-not-an-engagement`.
-- **Evidence:** measured - Jordan's correction is explicit; the wrong exception clause was published and then replaced, and the stale attributions were found in three files by grep
-- **See also:** work-is-an-exercise-not-an-engagement, alteryx-fix-conversion-not-original-defect
-
-### The skill builds are exercises, not engagements - never write them as client work
-- **Pattern-Key:** work-is-an-exercise-not-an-engagement
-- **Date:** 2026-08-28
-- **Trigger:** correction
-- **Rule:** Jordan's builds are exercises in what Cowork can do. Never write them up as client or engagement work.
-- **Delivered-to:** myvoice
-- **Hits:** 1
-- **Failed:** Framing the alteryx-to-python build and its outputs as work performed for a client, in an article, in a lesson entry and in conversation. Also staging a third party as a reviewer of the output.
-- **Why:** Jordan builds these to find out what can be built inside Cowork. Nobody is waiting on the result, which is precisely what makes the accuracy-over-speed stance affordable and defensible. Client framing misstates the motive and imports an engagement that does not exist.
-- **Worked:** Write the build as something he made because he wanted to know whether it could be done, and write every finding as something he found on his own review. State it once, early, in any write-up: what was being tested, and that nobody was waiting on the output. NOT a blanket ban on the word in every context - a corpus note recording where a baseline workflow came from is a different claim, and those were deliberately left alone rather than rewritten on an over-broad reading of the correction.
-- **Evidence:** measured - Jordan stated it twice in consecutive turns
-- **See also:** assumption-from-the-brief-encoded-as-a-durable-rule
-
-### Build a .docx with python-docx, not a 90-element insert_paragraph patch array
-- **Pattern-Key:** docx-build-with-python-docx-not-patch-array
-- **Date:** 2026-08-28
-- **Trigger:** better-approach
-- **Rule:** Build a .docx with python-docx from the source text, then verify paragraph-by-paragraph. Never hand-write a long insert_paragraph patch array.
-- **Delivered-to:** deck-builder
-- **Hits:** 1
-- **Failed:** Rebuilding the same 92-paragraph article twice by hand-writing a `host-EditArtifact` patch array with one `insert_paragraph` op per paragraph, each carrying the full paragraph text plus an `after` index and a style. Every revision meant re-emitting the entire body verbatim, and `host-GetArtifactModel` then returned 57 KB that had to be parsed out of a temp file just to verify it.
-- **Why:** The patch-array path makes the model the transport for the document body, so cost scales with document length on every rebuild, and the index arithmetic (`after: max(0, i-1)`) is hand-maintained and silently wrong the moment a paragraph is inserted.
-- **Worked:** `python-docx` 1.2.0 is present in the container. Build in `working/` from the source text file with a script - set section size and margins, `add_paragraph(style='Title'|'Heading 1')` off a heading set, set core properties - then verify by re-opening with python-docx and comparing paragraph-by-paragraph against the source, then `host-CopyArtifact(surface="output")`. The third rebuild took one short script instead of a full-body emission, matched the source with zero mismatches, and asserted the heading count (17 of 17) rather than eyeballing it.
-- **Evidence:** measured - all three rebuilds ran in the same session; the python-docx build verified 93/93 paragraphs identical and 17 headings styled
-- **See also:** skill-editartifact-patch-rejected-republish-folder
-
-
 ### Anchor a section insert on the FULL heading, never a prefix
 - **Pattern-Key:** lessons-file-section-anchor-must-be-exact
 - **Date:** 2026-08-28
@@ -984,7 +834,6 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 - **Sharpened 2026-09-02, then CORRECTED the same hour - read both halves:** 8934 was edited from v0.2.0 to v0.3.0 mid-session. The BEHAVIOUR changes landed instantly and were confirmed on the next call - new version string, eight environments parsed from a rewritten config, and a production guard that correctly refused `ProdCRM`. Three tools added in the SAME edit (`analyze_flow`, `find_flows_using_connector`, `list_environments`) were rejected as "Tool ... does not exist". I wrote that up as "the tool surface is fixed at session start, so a new tool needs a NEW CHAT" - and that was WRONG. All three arrived in the SAME chat about two to three minutes later (edit ~18:26Z, tools announced 18:29Z), with no restart, no new session and no action of any kind, and all three then worked first time. The surface is not fixed; it REFRESHES, and it does so in both directions - `bridge-connector-removed-midsession` records the same thing happening in reverse. The correct response to a missing new tool is to WAIT and retry, exactly as that entry says for a vanished one. Recording the wrong version too, because the mistake is the instructive part: a first observation was generalised into a permanent-sounding rule after one reading, when the difference between "not there" and "not there YET" needed only a second look a few minutes later.
 - **See also:** bridge-8933-stateless-defeats-in-process-state, bridge-session-bound-to-pid, bridge-connector-removed-midsession
 
-
 ### Both OneDrive legs are slow, so choose the one that does not block the commit
 - **Pattern-Key:** onedrive-pick-the-leg-that-does-not-block
 - **Routes:** copilot
@@ -1000,7 +849,6 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 - **Down-leg is VARIABLE, do not quote a single number:** measured 2026-08-28 at roughly 5 minutes early in the session and roughly 10 minutes later the same hour; 20 to 35 minutes was recorded on 2026-08-24. Plan for tens of minutes, never for five.
 - **Evidence:** measured 2026-08-28 - a probe written to the local path at 23:11:14Z became visible on the container mount at 23:14:24Z, 3 min 10 s for the UP leg. The DOWN leg was observed at roughly 5 minutes twice the same day. Both are minutes; only one of them blocks the commit.
 - **See also:** onedrive-cloud-to-laptop-lag, onedrive-user-surface-not-live, onedrive-user-mount-read-lag
-
 
 ### Classify by an authored key, never by matching content substrings
 - **Pattern-Key:** classifier-substring-match-silently-misfiles
@@ -1025,7 +873,7 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 - **Why:** A rule feels most certain at the moment of writing, because it was distilled from a case still fresh in mind. That is also the moment it has been tested against exactly one example. Encoding it into a skill file or a script promotes a hypothesis to a standing instruction, and standing instructions are applied silently by sessions that never saw the case that produced them. Three of the four above were caught only because someone used the rule immediately; a rule written and then not exercised would have sat there being wrong.
 - **Worked:** Test the candidate rule against material already available before writing it down. For a writing rule, count the pattern across the whole finished document, not the diff hunk that suggested it, which is `myvoice` rule 43. For a code rule, run it over the full corpus and diff the before and after, which is how the classifier's second wrong fix was caught before shipping. For a process rule, do the very next instance of that process deliberately and watch whether the rule holds. Where the rule survives none of that, write it as a scoped observation rather than an absolute.
 - **Evidence:** measured - all four instances occurred and were corrected in this session, each with the correction recorded in its own entry
-- **See also:** assumption-from-the-brief-encoded-as-a-durable-rule, classifier-substring-match-silently-misfiles, onedrive-pick-the-leg-that-does-not-block, voice-us-register-sweep
+- **See also:** classifier-substring-match-silently-misfiles, onedrive-pick-the-leg-that-does-not-block
 
 ### The digest generator truncates to 24 rules unless told otherwise
 - **Pattern-Key:** lessons-digest-default-limit-truncates
@@ -1253,19 +1101,6 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 - **Distinct-from:** verification-scoped-away-from-the-risk - that is a guard whose FIXTURE or threshold can never reach the defect, so it was born unable to fire. This one fired correctly for weeks and was disabled by an edit ELSEWHERE in the same function, which means the defence is re-running the suite after a refactor rather than designing the fixture better.
 - **See also:** verifier-ignores-structural-diff, integration-defects-outnumber-logic-errors
 
-### A format migrator must accept the format it is replacing
-- **Pattern-Key:** migrator-strict-on-the-old-format-cannot-migrate
-- **Date:** 2026-08-31
-- **Trigger:** failure
-- **Rule:** When a marker or schema changes, the MIGRATOR must match old and new while the GATE matches new only. Tightening both at once leaves the old format unreadable by the one tool that exists to replace it.
-- **Delivered-to:** alteryx-to-python
-- **Hits:** 1
-- **Failed:** Changed `digest_apply.END_RE` to the three-number tiered marker at the same time as `lesson_gate.END_RE`. Running the flip against the live file gave `FATAL: expected exactly one END marker, found 0` - the instructions file still carried the two-number marker, and the only tool able to rewrite it had just been taught not to recognise it.
-- **Why:** A migrator has two distinct jobs - LOCATE the old thing and WRITE the new thing - and one regex was serving both. Tightening it improved the write and broke the read.
-- **Worked:** Split the roles by intent: `digest_apply.END_RE` became a liberal locator matching `\d+ (?:always-on of \d+ )?rules from \d+ entries`, while the emitted marker still comes only from `cmd_digest` and `lesson_gate.END_RE` stayed strict so an out-of-date digest still FAILS the gate. Rehearsed on a copy of the live file first: 60 -> 26 always-on, marker upgraded, then gate audit and preflight both passed.
-- **Evidence:** measured - the strict version failed on the live file; the dual-form locator migrated a copy and then the real file, 24110 -> 18731 bytes, gate PASSED after
-- **Distinct-from:** integration-defects-outnumber-logic-errors - that is a dependency named in one section and absent from another, found by checking acquisition alongside use. This is a single component correctly updated for its FUTURE inputs and thereby made unable to read its PRESENT ones, which no manifest check would catch because nothing is missing.
-
 ### A new consumer of a guarded artifact did not consult the guard
 - **Pattern-Key:** guard-exists-but-the-new-consumer-never-reads-it
 - **Date:** 2026-08-31
@@ -1277,7 +1112,7 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 - **Worked:** Read the marker BEFORE running the analyser, strip-then-match `^[0-9a-f]{64}$`, compare against a fresh hash of the file, and on any mismatch skip the analyser entirely with a distinct exit code (3, a deliberate refusal) rather than reusing exit 2 (an accident). Every figure the analyser would have produced is then recorded as null, never 0, because "0 findings" and "findings not measured" are opposite claims. Proven on the PC in both directions: 32/32 selftest, a live negative control that moved the real marker aside and confirmed exit 3, then restored it.
 - **Evidence:** measured - the gap was found by re-reading the deployed job against the skill's own routine; the fix was verified by a live refuse-and-restore run on the machine
 - **Distinct-from:** integration-defects-outnumber-logic-errors - that one is about ACQUISITION, a routine naming a file its manifest never fetches, and `manifest_check.py` catches it by comparing two lists in one document. This is the opposite shape: every file was present and fetched, nothing was missing, and the defect is that an EXISTING protection was not invoked by a newly written caller. A manifest check passes cleanly on it.
-- **See also:** verification-scoped-away-from-the-risk, migrator-strict-on-the-old-format-cannot-migrate
+- **See also:** verification-scoped-away-from-the-risk
 
 ### WakeToRun reads True and is vetoed by the power scheme on battery
 - **Pattern-Key:** schtask-waketorun-vetoed-by-power-scheme-on-dc
@@ -1454,7 +1289,7 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 - **Evidence:** measured - the search and the doc fetch both happened before any approval question was asked, and the correction arrived immediately after the install offer. The generalisation to other unapproved software is inference unverified.
 - **Hits:** 1
 - **Distinct-from:** probe-env-vars-blank-false-negative and bridge-devtunnel-declared-dead-without-reprobe - all three sit on devtunnel, which is exactly why they invite being filed together, and both of those are MEASUREMENT failures with a measurement fix. There a probe searched blank `%LOCALAPPDATA%` paths and wrongly reported the CLI absent; there a stale stored open item was repeated without re-probing. Both are answered by measuring better, and both were: the 2026-08-21 reprobe confirmed devtunnel really is absent. This entry starts where those finish. The absence is correctly measured and not in dispute; what was never asked is whether installing it is PERMITTED. No probe, however well scoped, returns that - so a better measurement is the wrong instrument, and reading this as another hit on either of them would prescribe exactly the fix that does not apply.
-- **See also:** work-is-an-exercise-not-an-engagement, bridge-restart-authorisation-needs-bounds
+- **See also:** bridge-restart-authorisation-needs-bounds
 
 ### A GUI launcher exits clean, so a hang-timeout guard never fires and reports success
 - **Pattern-Key:** batch-gui-launcher-defeats-timeout-guard

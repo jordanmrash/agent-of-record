@@ -92,7 +92,6 @@ at the moment it applies.
 
 **skills**
 - Never edit a SKILL.md or the lessons file in place with EditArtifact. Edit a local copy, republish the folder, confirm by hash. _(2x)_
-- Calibrate a voice profile by mechanically diffing his real rewrite, never from description. Test any proposed rule against the whole finished document. _(2x)_
 
 **memory**
 - Keep a memory under 512 characters and read the success field of every save - an over-length save stores nothing. _(4x)_
@@ -117,7 +116,7 @@ at the moment it applies.
 **other**
 - When a lesson's Rule text is sharpened - or when the THING it counts is redefined - grep for the CHECK that enforces it and update it in the same pass. A check is a frozen copy of the rule as it read on the day it was written. Two ways it goes stale: the wording is sharpened and the check keeps the old wording, or the population is re-tiered and the check keeps counting the old population. In both cases the check keeps firing confidently and its output reads as a measurement. _(2x)_
 
-<!-- LESSON-DIGEST:END - 32 always-on of 102 rules from 133 entries -->
+<!-- LESSON-DIGEST:END - 31 always-on of 94 rules from 120 entries -->
 
 **Before acting on a surface above, one call gets the detail:**
 `python /mnt/user-config/skills/self-improvement/scripts/lesson_brief.py <lessons.md> --for bridge`
