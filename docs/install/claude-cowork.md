@@ -113,3 +113,15 @@ a mechanism differs, the Windows and macOS forms are stated together.
 Opening the `.plugin` file from Finder or Explorer does not work -- Claude registers no
 document type for the extension -- and copying the directory into `~/.claude/skills/` is not
 an installation for Cowork, which does not read that directory.
+
+
+## Addendum 2026-09-15 - skills by configuration, and the model behind the session
+
+Every skill in the repository ships to this route; the ones that duplicate a host capability
+here say so in their own "When this skill is redundant" section, and the matrix is in
+`docs/skills-by-configuration.md`. Disable a redundant skill in the host; re-enable it when
+the configuration changes. If the session runs under third-party inference (a gateway or a
+local model), the route is identical - the host, its folders, browser, plugins and MCP
+servers are unchanged - but keep `persistent-memory` enabled until account memory is
+confirmed present when signed out, and expect enforced controls to carry more weight than
+delivered rules with a smaller model.

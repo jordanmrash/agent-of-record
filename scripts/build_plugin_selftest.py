@@ -143,19 +143,16 @@ def main() -> int:
     # THE REAL TREE: all five manifest skills exist, carry no temporary platforms field, and scan clean.
     repo_root = HERE.parent
     manifest_real = json.loads((repo_root / "CoworkConfig" / "plugin" / ".claude-plugin" / "plugin.json").read_text(encoding="utf-8"))
-    # 2026-09-15: the Claude route narrowed to the executor, so five skills ship to Claude.
-    # The five that only duplicate first-party Claude capability - persistent-memory (host
-    # memory), local-file-bridge (connected folders), playwright-skill (the built-in browser),
-    # git-bridge (the host runs git directly) and skill-menu (Customize lists skills) - stay
-    # in the repository declared products: [copilot], because Copilot Cowork has none of it.
+    # 2026-09-15: every skill ships to every product. A skill that duplicates a host capability
+    # in one configuration is kept and marked (docs/skills-by-configuration.md), and the person
+    # disables it in the host; the products axis stays available for a narrower build.
     case(len(manifest_real["skills"]) == 10, f"real manifest names ten skills ({len(manifest_real['skills'])})")
     claude_skills = bp.select(manifest_real, None, "claude")
     copilot_skills = bp.select(manifest_real, None, "copilot")
-    case(len(claude_skills) == 5, f"five skills ship to claude ({len(claude_skills)})")
+    case(len(claude_skills) == 10, f"ten skills ship to claude ({len(claude_skills)})")
     case(len(copilot_skills) == 10, f"ten skills ship to copilot ({len(copilot_skills)})")
-    case({s["name"] for s in copilot_skills} - {s["name"] for s in claude_skills}
-         == {"persistent-memory", "local-file-bridge", "playwright-skill", "git-bridge", "skill-menu"},
-         "the five copilot-only skills are exactly the ones Claude covers first-party")
+    case({s["name"] for s in copilot_skills} - {s["name"] for s in claude_skills} == set(),
+         "no skill is product-scoped: every skill ships to both products, redundancy is documented per configuration")
     case(bp.select({"skills": [{"name": "x"}]}, None, "claude")[0]["name"] == "x",
          "a manifest entry with no products field defaults to both")
     case(all("platforms" not in e for e in manifest_real["skills"]), "the temporary per-skill platforms field is gone")

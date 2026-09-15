@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/claude-plugin.json",
   "name": "agent-of-record-skills",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "The agent-of-record skill set: approval-gated host command execution, memory and self-improvement, and authoring skills for Claude Cowork on macOS and Windows.",
   "author": {
     "name": "Jordan Rash",
@@ -15,7 +15,7 @@
     "bridges",
     "agent-of-record"
   ],
-  "_comment_skills": "Source of truth for what ships. Each entry names a directory under CoworkConfig/Skills/. All skills are portable: each Windows-specific instruction states its macOS counterpart in the same unit, enforced by scripts/build_plugin.py --strict.",
+  "_comment_skills": "Source of truth for what ships. Each entry names a directory under CoworkConfig/Skills/. Every skill ships to every product. A skill that duplicates a host capability in some configuration stays in the set and says so in a 'When this skill is redundant' section; the person disables it in the host and re-enables it when the configuration changes (docs/skills-by-configuration.md). The optional products axis remains for a narrower build. All skills are portable: each Windows-specific instruction states its macOS counterpart in the same unit, enforced by scripts/build_plugin.py --strict.",
   "skills": [
     {
       "name": "not-a-robot"
@@ -33,34 +33,19 @@
       "name": "command-bridge"
     },
     {
-      "name": "persistent-memory",
-      "products": [
-        "copilot"
-      ]
+      "name": "persistent-memory"
     },
     {
-      "name": "local-file-bridge",
-      "products": [
-        "copilot"
-      ]
+      "name": "local-file-bridge"
     },
     {
-      "name": "playwright-skill",
-      "products": [
-        "copilot"
-      ]
+      "name": "playwright-skill"
     },
     {
-      "name": "git-bridge",
-      "products": [
-        "copilot"
-      ]
+      "name": "git-bridge"
     },
     {
-      "name": "skill-menu",
-      "products": [
-        "copilot"
-      ]
+      "name": "skill-menu"
     }
   ]
 }

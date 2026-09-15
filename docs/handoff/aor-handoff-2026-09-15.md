@@ -1,5 +1,9 @@
 # agent-of-record handoff — 2026-09-15
 
+> Superseded in part on 2026-09-15 by PR #19 and `aor-handoff-2026-09-15-mac.md`: the skill set
+> ships whole to every product (see Part 2, Skills), and Part 3's entries are now in the
+> repository corpus.
+
 Written on the Mac, for two readers: whoever finishes the work on that Mac, and the
 Windows PC that runs Copilot Cowork and keeps the live corpus.
 

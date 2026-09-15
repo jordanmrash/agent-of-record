@@ -10,7 +10,8 @@
     "stdio is the Windows launcher; stdio_posix is its macOS/Linux sibling under Startup/posix, present only for a bridge whose platforms include macos - now the Command bridge alone. facts_check.py verifies each exists and that neither hard-codes a root.",
     "products and platforms are two different cuts and every bridge carries both. As of 2026-09-15 only the Command bridge runs under Claude Cowork: the Playwright and Filesystem bridges are Copilot Cowork on Windows only, because Claude Cowork ships browsing and connected-folder file access first-party and the repository bridges only duplicated them. 8934 Power Automate was already Copilot/Windows. Bridge counts are DERIVED from these lists and never stated - four for the whole repository, one for any Claude Cowork surface, one for any macOS surface.",
     "scopes lists the surfaces written for one product or platform. facts_check.py checks each against the bridges that exist for it: the port and the '<name> bridge' of every bridge outside the scope are stale phrases there, on top of the scope's own count words.",
-    "The watchdog and personalizer are Copilot Cowork on Windows only. Claude Cowork owns stdio server lifetime and has no tunnel ports to watch; the hosted-route personalizer lives at scripts/copilot/personalize.py."
+    "The watchdog and personalizer are Copilot Cowork on Windows only. Claude Cowork owns stdio server lifetime and has no tunnel ports to watch; the hosted-route personalizer lives at scripts/copilot/personalize.py.",
+    "Third-party inference behind Claude Cowork changes the model, not the host: the bridge scope above is unchanged. If an administrator removes the host's built-in file or browser tools, the Windows launchers still exist and the POSIX launchers can be restored from 6cfc77c; register only what the host then lacks. Skills are not scoped by product; see docs/skills-by-configuration.md."
   ],
   "bridges": [
     {

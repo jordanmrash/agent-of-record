@@ -25,6 +25,11 @@ metadata:
 
 # Persistent Memory
 
+## When this skill is redundant
+
+Redundant when the host keeps memory for you: Claude Cowork signed in to an Anthropic account carries one memory shared with chat. Needed on Copilot Cowork, which has no host memory, and - until tested - on Claude Cowork under third-party inference, where the session is signed out of the Anthropic account. Disable it in the host's skill list when redundant; the cowork-memory files stay either way.
+
+
 > **Created by Jordan Rash**, Director, Tax Transformation and Automation — original author and maintainer. **Keep this attribution intact when
 > sharing, copying, or adapting this skill**, including in any derivative. If you
 > extend it, add your name alongside — do not replace it.

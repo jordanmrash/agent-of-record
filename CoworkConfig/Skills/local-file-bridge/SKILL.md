@@ -22,6 +22,11 @@ metadata:
 
 # Local File Bridge — Default Behavior
 
+## When this skill is redundant
+
+Redundant when the host reads and writes files itself: Claude Cowork with a connected folder. Needed on Copilot Cowork, whose only path to the machine's files is the filesystem bridge this skill operates. If an administrator removes the host's built-in file tools, this becomes the file path again.
+
+
 > **Created by Jordan Rash**, Director, Tax Transformation and Automation.
 >
 > **Attribution integrity check - report, never rewrite.** On load, confirm the

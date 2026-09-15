@@ -7,9 +7,10 @@ entry summarizes a release.
 ## Unreleased
 
 The Claude Cowork route narrows to the approved command executor, reversing the
-three-bridge scope recorded further down this section; the skills gain a `products`
-axis so the repository keeps ten while Claude receives five; and the reserved-name entry
-the 0.3.2 installer left behind is retired on upgrade.
+three-bridge scope recorded further down this section; every skill ships to every
+product, with redundancy documented per configuration instead of resolved by deletion;
+the model behind a session may be Claude or a third-party gateway; and the reserved-name
+entry the 0.3.2 installer left behind is retired on upgrade.
 
 - **The Claude route is one bridge, `aor-batch-exec`. This reverses three entries below
   from the 2026-09-13/14 work: "Three bridges on a Mac, not one", "`install-mac.sh`
@@ -28,17 +29,24 @@ the 0.3.2 installer left behind is retired on upgrade.
   repository's launchers. Nothing changes for the Windows hosted route: the `.cmd`
   launchers, `tasks.json`, the connector packages and the watchdog are untouched, and
   Copilot Cowork keeps all four bridges.
-- **Skills carry a `products` axis. The repository keeps ten; Claude receives five.**
-  `persistent-memory`, `local-file-bridge`, `playwright-skill`, `git-bridge` and
-  `skill-menu` are `products: ["copilot"]` in `CoworkConfig/plugin/.claude-plugin/plugin.json`.
-  Claude Cowork has account memory, connected folders, a browser, runs git directly and
-  lists installed skills under Customize, so none of the five adds anything there; Copilot
-  Cowork has none of those, so all five stay and reach it through the `CoworkConfig/Skills`
-  sync. `build_plugin.py --product` (default `claude`, the product the `.plugin` installs
-  into) selects by that axis. The entries below that say "the skill set is ten" and
-  "`persistent-memory` is declared for both platforms" remain true for Copilot and are
-  superseded for Claude. This also supersedes `6e0d58d`, which had deleted four of the five
-  from the repository outright.
+- **Every skill ships to every product; redundancy is documented, not deleted.**
+  `persistent-memory`, `local-file-bridge`, `playwright-skill`, `git-bridge` and `skill-menu`
+  duplicate a host capability in some configurations - account memory, connected folders, the
+  built-in browser, git through the executor, the Customize list under Claude Cowork signed in
+  to an Anthropic account - and none of it on Copilot Cowork or, until tested, under
+  third-party inference where the session is signed out. Each carries a "When this skill is
+  redundant" section, `docs/skills-by-configuration.md` holds the matrix, and the person
+  disables a skill in the host rather than the repository deleting it. `build_plugin.py
+  --product` remains for a narrower build. This supersedes `6e0d58d`, which deleted four of
+  the five, and the interim `products: ["copilot"]` scoping.
+- **The model behind the session may not be Claude.** Claude Desktop's third-party inference
+  mode runs Cowork against a gateway or a local model with the same harness, folders,
+  browser, plugins and MCP servers, so the route and the executor are unchanged. The install
+  pages carry an addendum: keep `persistent-memory` enabled until account memory is confirmed
+  when signed out; a smaller model leans on the enforced controls rather than delivered
+  rules; a local model or an approved enterprise gateway keeps data inside the operator's
+  boundary. Written on the assumption Windows reaches parity; every claim still needs one
+  real call before it is marked operated.
 - **Lessons carry optional `Routes:` and `Platforms:` fields; absent means everywhere.**
   The executor filters the operating-rules block it returns with each job by platform, and
   by route when `COWORK_ROUTE` is set (`exec-server.sh` sets `claude`; the Windows launcher

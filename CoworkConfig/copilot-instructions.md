@@ -117,7 +117,7 @@ at the moment it applies.
 **other**
 - When a lesson's Rule text is sharpened - or when the THING it counts is redefined - grep for the CHECK that enforces it and update it in the same pass. A check is a frozen copy of the rule as it read on the day it was written. Two ways it goes stale: the wording is sharpened and the check keeps the old wording, or the population is re-tiered and the check keeps counting the old population. In both cases the check keeps firing confidently and its output reads as a measurement. _(2x)_
 
-<!-- LESSON-DIGEST:END - 32 always-on of 93 rules from 123 entries -->
+<!-- LESSON-DIGEST:END - 32 always-on of 102 rules from 133 entries -->
 
 **Before acting on a surface above, one call gets the detail:**
 `python /mnt/user-config/skills/self-improvement/scripts/lesson_brief.py <lessons.md> --for bridge`
