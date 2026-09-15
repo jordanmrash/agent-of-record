@@ -203,6 +203,14 @@ corpus is at 123 entries / 93 rules; the live one was last reported at 150 / 115
 1. `git pull` once the PR is merged. Nothing in it changes the Windows hosted route.
 2. Merge Part 3 into the live `cowork-lessons.md` by `Pattern-Key`, then run the digest
    regeneration and the `SKILL-LESSONS` refresh so the rules reach the skills.
+2b. **Scope the live corpus.** Entries now take optional `Routes:` and `Platforms:`
+   fields; absent means everywhere, so the live corpus is valid untouched and nothing
+   changes on the PC until you tag it. Run
+   `python3 CoworkConfig/Skills/self-improvement/scripts/lesson_scope_tag.py` for a dry
+   run against the live file, review the entries it flags, then `--apply`. The repository
+   corpus came out at 27 `Routes: copilot` and 5 `Platforms: windows` out of 123. The PC
+   keeps serving everything either way: the executor only filters by route when
+   `COWORK_ROUTE` is set, and the Windows launcher does not set it.
 3. Expect the live counts to move from 150 entries / 115 rules to roughly 157 / 120.
    Re-run `lesson_check` and the digest currency check afterwards.
 4. `persistent-memory` is unchanged and still yours. If a future Claude-side change touches
