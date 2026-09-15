@@ -93,7 +93,7 @@ at `~/agent-of-record/Outputs/agent-of-record-next-steps.txt`.
    `cd ~/agent-of-record && python3 scripts/build_plugin.py --strict --platform macos`.
    Then in Claude: **Customize -> Plugins -> Add -> Upload plugin**, select
    `Outputs/Skills Plugin/agent-of-record-skills-macos.plugin`, restart Claude, and
-   confirm `ListSkills` returns all six repository skills. Double-clicking the file
+   confirm `ListSkills` returns all five repository skills. Double-clicking the file
    does not work; use the upload picker.
 
 ## 4. If the connector is not there

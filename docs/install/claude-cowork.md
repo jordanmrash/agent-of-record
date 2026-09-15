@@ -107,7 +107,7 @@ python  scripts\build_plugin.py --strict --platform windows  # Windows
 ```
 
 Install it through **Customize -> Plugins -> Add -> Upload plugin**, restart Claude, and
-confirm `ListSkills` returns all six. Each `SKILL.md` is one portable instruction set: where
+confirm `ListSkills` returns all five. Each `SKILL.md` is one portable instruction set: where
 a mechanism differs, the Windows and macOS forms are stated together.
 
 Opening the `.plugin` file from Finder or Explorer does not work -- Claude registers no

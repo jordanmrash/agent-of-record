@@ -10,7 +10,7 @@ description: |
   "don't do that again", or "have we hit this before"; after an approach fails in a
   non-obvious way, a stored memory proves wrong, or he corrects a belief acted on; and when
   creating any new skill.
-  Do NOT use for durable topic context or standing preferences (that is persistent-memory),
+  Do NOT use for durable topic context or standing preferences (those go to the host's own memory),
   transient noise, user performance judgments, or secrets.
 cowork:
   category: productivity
@@ -101,7 +101,7 @@ honest users.
 
 This is **not** a runtime learning loop. It changes no model, no weights, and no
 platform behavior. It is an instruction that a session chooses to follow, in the
-same way the persistent-memory directive is — that directive was observed firing
+same way the memory directive is — that directive was observed firing
 unprompted on 2026-08-18, which is evidence it works, not a guarantee.
 
 It observes **only what happens inside a Cowork session**. A job that fails on the
@@ -311,7 +311,7 @@ fixing only the file leaves the confident wrong version in play.
 | Index | `Documents/Cowork/cowork-memory/MEMORY-INDEX.md` | Must carry a `cowork-lessons` row |
 
 The lessons file deliberately lives **inside the memory folder** and is registered in
-`MEMORY-INDEX.md`. That is the integration: the persistent-memory skill already reads
+`MEMORY-INDEX.md`. That is the integration: the repository's memory tree already carries
 that index at the start of substantive work, so lessons ride an auto-load path that was
 observed firing once, on 2026-08-18. That is a precedent, not a guarantee — so treat
 the scan above as your obligation, not something the index does for you. If
@@ -351,7 +351,7 @@ in this order: `contradiction` > `false-success` > `correction` > `failure` >
 so the section an entry lands in stays predictable across sessions.
 
 **Standing preferences are not corrections.** "Actually, always use my work address"
-is a policy about how Jordan wants things done — it goes to persistent-memory. A
+is a policy about how Jordan wants things done — it goes to the host's own memory. A
 correction is about a *belief you acted on being wrong*. The word "actually" is not
 the test; the substance is.
 
@@ -619,7 +619,7 @@ on it. Handle these explicitly rather than skipping the step:
 ## When NOT to Use
 
 - **Durable topic context or a standing preference** ("always use my work address") →
-  `persistent-memory`, even when it arrives phrased as a correction.
+  the host's own memory, even when it arrives phrased as a correction.
 - **A one-off fact, a raw transcript, or a passing observation** — nothing recurs, nothing
   to log.
 - **Transient noise that resolved itself** — a retried call that then worked is not a lesson
@@ -635,7 +635,7 @@ on it. Handle these explicitly rather than skipping the step:
 - Client-confidential detail beyond the minimum needed to state the lesson
 - Judgments about people's performance or competence
 - Transient noise with no reusable rule ("the network blipped")
-- Standing preferences and durable topic context — those belong in persistent-memory
+- Standing preferences and durable topic context — those belong in the host's own memory
 
 
 ## Guardrails
@@ -668,7 +668,7 @@ on it. Handle these explicitly rather than skipping the step:
 
 | Skill | Owns |
 |-------|------|
-| `persistent-memory` | Durable topic context, standing preferences, judgment — the narrative |
+| the host's own memory | Durable topic context, standing preferences, judgment — the narrative |
 | `self-improvement` | Behavioral corrections — what not to do, and what to do instead |
 | `git-bridge` | File-level history of `COPILOT_COWORK` — the facts |
 

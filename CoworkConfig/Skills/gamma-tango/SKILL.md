@@ -3,17 +3,16 @@ name: gamma-tango
 description: |
   Jordan's session bookend command. When he types "gamma tango" (or "gt", "gamma tango
   open", "gamma tango close", "gamma tango me", "bookend this", "open the session", "close the
-  session"), run the three-skill routine in one pass: git-bridge, persistent-memory,
-  self-improvement.
-  OPEN (start of a task): load the matching memory file, scan cowork-lessons.md
-  Pattern-Keys, and report the repo's current git status as the baseline.
-  CLOSE (end of a task): log any lessons learned, update the memory file, then propose
-  and run a git commit of what changed.
+  session"), run the three-step routine in one pass: memory, self-improvement, git.
+  OPEN (start of a task): load the relevant standing context from the host's own memory,
+  scan cowork-lessons.md Pattern-Keys, and report the repo's current git status as the
+  baseline.
+  CLOSE (end of a task): log any lessons learned, record what the next session needs,
+  then propose and run a git commit of what changed.
   If the phrase arrives with no mode word, infer OPEN when no work has been done yet in
   the session and CLOSE when it has; say which mode was chosen.
   Do NOT use for a plain git question ("show me the diff"), a plain memory request
-  ("save memory"), or a plain lesson request ("log that") — route those to the single
-  owning skill instead.
+  ("save memory"), or a plain lesson request ("log that") — do those directly instead.
 cowork:
   category: automation
   icon: PlayCircle
@@ -61,18 +60,19 @@ session that loads this skill; it does not reach one that never does.
 
 ## What this is
 
-One typed phrase — **`gamma tango`** — that fires three skills in a fixed order so a
+One typed phrase — **`gamma tango`** — that fires three steps in a fixed order so a
 work session is always opened with context and always closed with the record written.
 
 | Mode | Trigger | Order of operations |
 |---|---|---|
-| **OPEN** | "gamma tango", "gamma tango open", "gt open" | persistent-memory → self-improvement → git-bridge |
-| **CLOSE** | "gamma tango close", "gt close", "gamma tango out" | self-improvement → persistent-memory → git-bridge |
+| **OPEN** | "gamma tango", "gamma tango open", "gt open" | memory → self-improvement → git |
+| **CLOSE** | "gamma tango close", "gt close", "gamma tango out" | self-improvement → memory → git |
 
-This skill **delegates**; it does not reimplement. Each step is executed by invoking the
-owning skill (`persistent-memory`, `self-improvement`, `git-bridge`) and following that
-skill's own rules — including the command-bridge approval flow for anything that runs on
-Jordan's PC.
+Two of these three were their own skills until 2026-09-15. `persistent-memory` was
+retired because the host carries one memory shared with chat, and `git-bridge` because
+the host runs git directly — through the approved executor where a job is warranted, and
+with its own tools otherwise. Only the lessons step still has a skill of its own, and
+this skill invokes `self-improvement` for it and follows that skill's rules.
 
 ## Mode selection
 
@@ -84,10 +84,11 @@ Jordan's PC.
 
 ## OPEN routine
 
-1. **Memory** — invoke `persistent-memory`. Read
-   `Documents/Cowork/cowork-memory/MEMORY-INDEX.md`, load the memory file(s) whose focus
-   area matches the task at hand. If the topic is not yet clear, load the index only and
-   say you will load the file once the topic lands. Do not invent a topic to justify a load.
+1. **Memory** — read the host's own memory for standing context on the task at hand:
+   who is involved, what was decided before, what the constraints are. If the topic is
+   not yet clear, say you will load it once the topic lands. Do not invent a topic to
+   justify a load. The repository's `cowork-memory/` tree is the durable record of this
+   project specifically; read it when the task is about this repository.
 2. **Lessons** — invoke `self-improvement` and run the targeted lookup rather than
    reading the file. The log passed 73 entries and 115 KB, so "read the Pattern-Key
    lines" is no longer a cheap instruction and was measured being skipped three sessions
@@ -123,11 +124,13 @@ Jordan's PC.
    unrelated.** Open a full entry only when a rule applies and you need its mechanism.
    Name the rules applied in one short line. Silence means the lookup found nothing,
    never that it was skipped.
-3. **Git baseline** — with the bridge rules from step 2 in hand, invoke `git-bridge`
-   for a read-only `git status` (plus
-   `git log --oneline -5`) on `C:\Users\YOURUSER\Documents\COPILOT_COWORK`, run as a `.bat`
-   through the 8933 command bridge. Report the branch, the working-tree state, and the
-   last commit — this is the baseline the CLOSE commit will be measured against.
+3. **Git baseline** — with the rules from step 2 in hand, take a read-only `git status`
+   plus `git log --oneline -5` on the tooling root. Under Copilot Cowork on Windows that
+   is a `.bat` through the approved executor on `C:\Users\YOURUSER\Documents\COPILOT_COWORK`;
+   under Claude Cowork it is a `.sh` through `aor-batch-exec`, or the host's own tools on
+   the connected folder when no job is warranted. Report the branch, the working-tree
+   state, and the last commit — this is the baseline the CLOSE commit will be measured
+   against.
 4. **Report** in four short lines: memory loaded, lessons applied, git baseline, ready.
 Platform counterpart: On macOS under Claude Cowork, the same step uses an approved `.sh` job through the `aor-batch-exec` stdio server; no Copilot connector id or bridge port is used.
 
@@ -164,11 +167,11 @@ Platform counterpart: On macOS under Claude Cowork, the same step uses an approv
    on, a stored memory proved wrong, or a better method was found for something
    recurring. Write the entry with both the FAILED and the WORKED approach. If there is
    nothing worth logging, say so — an empty log is a valid outcome, a skipped scan is not.
-2. **Memory third** — invoke `persistent-memory`. Update or create the focus-area memory
-   file with what was decided, what changed, and what the next session needs. Lessons are
-   written before memory so the memory file can reference the new Pattern-Key.
-3. **Git fourth** — invoke `git-bridge`, with the bridge rules from step 0 already
-   in hand. **Before the commit job runs, prove step 0 actually happened:**
+2. **Memory third** — record what was decided, what changed, and what the next session
+   needs: durable facts about Jordan or his work go to the host's own memory, facts about
+   this repository go to `cowork-memory/`. Lessons are written before memory so the
+   record can reference the new Pattern-Key.
+3. **Git fourth** — run git, with the rules from step 0 already in hand. **Before the commit job runs, prove step 0 actually happened:**
 
    ```bash
    python /mnt/user-config/skills/self-improvement/scripts/lesson_gate.py verify \
@@ -236,9 +239,9 @@ empty `Rules:` line is a defect in the run, not a tidy result.
 
 ## When NOT to Use
 
-- A plain git request ("show me the diff", "roll that back") → `git-bridge` alone.
-- A plain memory request ("save memory", "what do you remember about X") →
-  `persistent-memory` alone.
+- A plain git request ("show me the diff", "roll that back") → just run git.
+- A plain memory request ("save memory", "what do you remember about X") → just read or
+  write memory.
 - A plain lesson request ("log that", "show my lessons") → `self-improvement` alone.
 - Quick one-off questions that involve no work worth recording — do not bookend them.
 - Anything that needs a remote/GitHub operation — this repository has no remote.

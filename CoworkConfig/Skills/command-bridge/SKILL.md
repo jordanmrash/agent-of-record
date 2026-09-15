@@ -329,8 +329,11 @@ not, never summarizes away a failure, and never fabricates output.
 
 ## When NOT to Use
 
-- General file reading and writing → use the local-file-bridge skill (`jordan-local-filesystem-8932-v1`).
-- Browser automation → use the playwright-skill (`jordan-local-playwright-8931-v1`).
+- General file reading and writing → under Copilot Cowork on Windows, the filesystem
+  bridge (`jordan-local-filesystem-8932-v1`); under Claude Cowork, the host's own file
+  tools on a connected folder — there is no file bridge on that route.
+- Browser automation → under Copilot Cowork on Windows, the browser bridge
+  (`jordan-local-playwright-8931-v1`); under Claude Cowork, the host's own browser.
 - Arbitrary terminal commands, arbitrary executables, direct PowerShell command strings,
   and argument passing → not supported by this bridge in any form. If a task appears to
   need one, redesign it as an approved batch file under CommandJobs, or tell Jordan it

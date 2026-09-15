@@ -47,7 +47,8 @@ actually lives.
   succeeded.
 - **Load, then write back.** Once the topic is clear, read
   `Documents/Cowork/cowork-memory/MEMORY-INDEX.md` and load the deep file whose focus area
-  matches the work — or create one if none does — per the `persistent-memory` skill. When the
+  matches the work — or create one if none does — writing it directly under
+  `cowork-memory/`. When the
   work concludes, update and consolidate that file in the same session. Skip both entirely for
   quick one-off questions.
 - Both obligations live here, in instructions that load unconditionally — not in a skill

@@ -140,16 +140,18 @@ def main() -> int:
     case([e["name"] for e in bp.select(manifest_fixture, "macos")] == ["portable"], "a manifest entry with no platforms field defaults to both")
     case([e["name"] for e in bp.select(manifest_fixture, "windows")] == ["portable", "windows-only"], "the default-both entry also ships on Windows")
 
-    # THE REAL TREE: all six manifest skills exist, carry no temporary platforms field, and scan clean.
+    # THE REAL TREE: all five manifest skills exist, carry no temporary platforms field, and scan clean.
     repo_root = HERE.parent
     manifest_real = json.loads((repo_root / "CoworkConfig" / "plugin" / ".claude-plugin" / "plugin.json").read_text(encoding="utf-8"))
-    # 2026-09-15: ten became six. The browser, filesystem and git bridge skills, and the
-    # skill menu, were retired as duplicates of first-party Cowork capability.
-    case(len(manifest_real["skills"]) == 6, f"real manifest names six skills ({len(manifest_real['skills'])})")
+    # 2026-09-15: ten became five. The browser, filesystem and git bridge skills, the skill
+    # menu, and persistent-memory were retired as duplicates of first-party Cowork
+    # capability -- the host browses, reads connected folders, runs git, lists its own
+    # skills, and carries one memory shared with chat.
+    case(len(manifest_real["skills"]) == 5, f"real manifest names five skills ({len(manifest_real['skills'])})")
     case(all("platforms" not in e for e in manifest_real["skills"]), "the temporary per-skill platforms field is gone")
     dirty_real = {e["name"]: bp.scan_windows_text(repo_root / "CoworkConfig" / "Skills" / e["name"]) for e in manifest_real["skills"]}
     dirty_real = {k: v for k, v in dirty_real.items() if v}
-    case(dirty_real == {}, f"all six real skills have zero unpaired units ({dirty_real})")
+    case(dirty_real == {}, f"all five real skills have zero unpaired units ({dirty_real})")
 
     # END TO END through scan_windows_text, the function --strict actually calls: a skill
     # directory whose SKILL.md is all lesson keys is CLEAN; one line of prose is not.
