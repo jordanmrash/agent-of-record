@@ -62,4 +62,11 @@ fi
 mkdir -p "$COWORK_ROOT/CommandJobs" "$COWORK_ROOT/Outputs"
 cd "$COWORK_ROOT/CommandJobs"
 
+# The POSIX launcher is Claude-only: Copilot Cowork is Windows-only, and the hosted
+# route reaches a bridge through supergateway and a tunnel, neither of which exists
+# here. So the route is known, and the server can drop lessons scoped to the other
+# one instead of serving a Mac operator rules about a dev tunnel. Override in
+# cowork-env.sh if you are doing something this repository does not describe.
+export COWORK_ROUTE="${COWORK_ROUTE:-claude}"
+
 exec "$NODE_BIN" "$COWORK_ROOT/Startup/CommandBridge/batch-exec-server.js"

@@ -9,6 +9,15 @@ when the **Why** is reasoning rather than something probed.
 
 **Key format:** `<subsystem>-<short-behavior>` — subsystem first, so dedupe works.
 
+**Scope:** `Routes:` and `Platforms:` narrow where a rule is served. Both are optional and
+absent means everywhere, so an untagged entry behaves exactly as before. `Routes: copilot`
+marks a rule about hosted-route machinery — the dev tunnel, `supergateway`, the Ports
+panel, the watchdog, `tasks.json`, the 8931/8932/8934 bridges, the OneDrive delivery
+surface — none of which exist on the Claude route. `Platforms: windows` marks a rule about
+a Windows job shape. Scope on what the **Rule** says, not on what the example cites: a
+universal rule whose `Failed:` block happens to show a `.bat` stays universal. The entry is
+never deleted or moved; only its delivery is narrowed.
+
 ---
 
 ## Failures
@@ -49,6 +58,7 @@ when the **Why** is reasoning rather than something probed.
 
 ### Files written through the filesystem bridge arrive LF-only and break cmd
 - **Pattern-Key:** bridge-8932-writes-lf
+- **Routes:** copilot
 - **Date:** 2026-08-18
 - **Trigger:** failure
 - **Rule:** Files written through 8932 arrive LF-only and cmd mis-parses them. Run the CRLF fix job after writing any new .bat.
@@ -60,6 +70,7 @@ when the **Why** is reasoning rather than something probed.
 
 ### `-WindowStyle Hidden` does not suppress a scheduled task's console flash
 - **Pattern-Key:** schtask-hidden-window
+- **Routes:** copilot
 - **Delivered-to:** command-bridge
 - **Date:** 2026-08-18
 - **Trigger:** better-approach
@@ -70,6 +81,7 @@ when the **Why** is reasoning rather than something probed.
 
 ### Read skills and memory from the local mirror, not by downloading
 - **Pattern-Key:** onedrive-read-mount-locally
+- **Routes:** copilot
 - **Supersedes key:** read-user-folder-locally
 - **Date:** 2026-08-24
 - **Trigger:** better-approach
@@ -82,6 +94,7 @@ when the **Why** is reasoning rather than something probed.
 
 ### Writing to the user surface does not reach OneDrive on its own
 - **Pattern-Key:** onedrive-user-surface-not-live
+- **Routes:** copilot
 - **Supersedes key:** user-surface-not-onedrive
 - **Date:** 2026-08-18
 - **Trigger:** false-success
@@ -172,6 +185,7 @@ when the **Why** is reasoning rather than something probed.
 
 ### A cloud write can take minutes to reach the laptop — never commit a partial set
 - **Pattern-Key:** onedrive-cloud-to-laptop-lag
+- **Routes:** copilot
 - **Rule:** Both sync legs cost minutes, so pick the one that does not block you. A LOCAL 8932 write unblocks the repo and the commit immediately; a cloud-side write blocks them for minutes.
 - **Delivered-to:** local-file-bridge
 - **Date:** 2026-08-24
@@ -198,6 +212,7 @@ when the **Why** is reasoning rather than something probed.
 
 ### Vanishing tools mean an expired session, not a dead bridge
 - **Pattern-Key:** bridge-idle-session-expiry
+- **Routes:** copilot
 - **Date:** 2026-08-21
 - **Trigger:** correction
 - **Rule:** Check PID creation times and listening state before restarting anything.
@@ -212,6 +227,7 @@ when the **Why** is reasoning rather than something probed.
 
 ### A VS Code restart alone does not apply a tasks.json change
 - **Pattern-Key:** bridge-restart-needs-pid-kill
+- **Routes:** copilot
 - **Date:** 2026-08-21
 - **Trigger:** failure
 - **Rule:** Restarting VS Code does not replace a bridge listener that already holds the port. Kill the old PIDs, then prove the edit is live by comparing netstat PIDs before and after - identical PIDs mean the old process is still serving.
@@ -224,6 +240,7 @@ when the **Why** is reasoning rather than something probed.
 
 ### Changing a config also means changing everything that restores it
 - **Pattern-Key:** bridge-recovery-scripts-revert-config
+- **Routes:** copilot
 - **Date:** 2026-09-02
 - **Trigger:** failure
 - **Rule:** After ANY edit to `tasks.json`, resync `Startup\KnownGood\tasks.json` from live in the SAME job and prove it byte-identical. An unsynced snapshot turns `bridge-restore-tasksjson.bat` from a recovery tool into a regression tool, and the restore reports success while doing it.
@@ -238,6 +255,7 @@ when the **Why** is reasoning rather than something probed.
 
 ### Transport drops are the devtunnel hop, not the bridge processes
 - **Pattern-Key:** bridge-drops-are-tunnel-not-bridge
+- **Routes:** copilot
 - **Date:** 2026-08-21
 - **Trigger:** correction
 - **Rule:** Drops are the devtunnel hop, not the bridge process. 0% local, 1-2% tunnel. Retry once, but verify before retrying a write.
@@ -262,6 +280,7 @@ when the **Why** is reasoning rather than something probed.
 
 ### Editing a file through PowerShell can silently re-encode the rest of it
 - **Pattern-Key:** file-edit-reencodes-existing-characters
+- **Platforms:** windows
 - **Date:** 2026-08-21
 - **Trigger:** failure
 - **Rule:** Never round-trip a UTF-8 file through PowerShell `Get-Content`/`Set-Content`. 5.1 decodes a BOM-less UTF-8 file as ANSI and re-encodes the damage into content the edit never touched, so exit 0 and a plausible size delta prove nothing. Use `[System.IO.File]::ReadAllText`/`WriteAllText` with an explicit no-BOM UTF8Encoding, and verify by diffing a known non-ASCII line against the backup.
@@ -362,6 +381,7 @@ when the **Why** is reasoning rather than something probed.
 
 ### A tool missing from the visible list is not an absent bridge — call it before declaring failure
 - **Pattern-Key:** deferred-tools-read-as-absent-bridge
+- **Platforms:** windows
 - **Date:** 2026-09-01
 - **Trigger:** correction
 - **Rule:** Prove a bridge by CALLING it, never by reading a tool list. When the tool is ABSENT from the schema there is nothing to call - run `bridge-health.bat` through 8933 as the callable substitute. Re-probe before saying it is down AND again before closing out. Say "not on the surface as of now", never "unavailable this session", and never PLAN AROUND the absence.
@@ -657,6 +677,7 @@ when the **Why** is reasoning rather than something probed.
 
 ### Unexplained ~5-minute terminal flash
 - **Pattern-Key:** schtask-unexplained-5min-flash
+- **Routes:** copilot
 - **Delivered-to:** command-bridge
 - **Supersedes key:** unexplained-5min-flash
 - **Date:** 2026-08-18
@@ -680,6 +701,7 @@ when the **Why** is reasoning rather than something probed.
 
 ### A SharePoint folder's Modified date does not track edits to files inside it
 - **Pattern-Key:** onedrive-folder-mtime-not-child-mtime
+- **Routes:** copilot
 - **Delivered-to:** local-file-bridge
 - **Date:** 2026-08-24
 - **Trigger:** failure
@@ -691,6 +713,7 @@ when the **Why** is reasoning rather than something probed.
 
 ### Two approval-gated bridge writes sent in one tool block: the second is auto-denied
 - **Pattern-Key:** bridge-8932-parallel-writes-denied
+- **Routes:** copilot
 - **Date:** 2026-08-26
 - **Trigger:** failure
 - **Rule:** Send approval-gated 8932 writes ONE per tool block. A second write batched beside the first is auto-denied while that approval is still pending.
@@ -743,6 +766,7 @@ when the **Why** is reasoning rather than something probed.
 
 ### The user-config mount lags behind writes - its absence is not evidence
 - **Pattern-Key:** onedrive-user-mount-read-lag
+- **Routes:** copilot
 - **Supersedes key:** copyartifact-mount-read-lag
 - **Date:** 2026-08-28
 - **Trigger:** failure
@@ -857,6 +881,7 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 
 ### A stateless bridge spawns a fresh process per call, so in-process state never persists
 - **Pattern-Key:** bridge-8933-stateless-defeats-in-process-state
+- **Routes:** copilot
 - **Date:** 2026-08-28
 - **Trigger:** failure
 - **Rule:** 8931/8932/8933 run stateless, so a module-level variable in a bridge server resets on EVERY call. Persist any cross-call state to a file.
@@ -885,6 +910,7 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 
 ### Both OneDrive legs are slow, so choose the one that does not block the commit
 - **Pattern-Key:** onedrive-pick-the-leg-that-does-not-block
+- **Routes:** copilot
 - **Date:** 2026-08-28
 - **Trigger:** better-approach
 - **Rule:** Route a write by PAYLOAD: small or new file, write_file local. Existing large file, edit_file local so only the diff crosses. Bulk or binary, CopyArtifact. Verify a local write THROUGH THE BRIDGE, never the mount.
@@ -1015,6 +1041,7 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 
 ### The standing close job reports OK even when its commit fails, and deletes the message
 - **Pattern-Key:** cowork-close-reports-ok-on-failed-commit
+- **Platforms:** windows
 - **Date:** 2026-08-29
 - **Trigger:** failure
 - **Rule:** Test every exit code; never echo one. A job that prints `git commit exit` and then unconditionally prints `COWORK_RESULT: OK` cannot tell a failed close from a good one. This is the DISCIPLINE, not a live warning about cowork-close.bat: that job was fixed on 2026-08-30 and now tests each code, preserves `_commit-msg.txt` on any failure, and guards staging with a negative-controlled check.
@@ -1030,6 +1057,7 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 
 ### A dropped call was reported as a down bridge, repeatedly, until Jordan said so
 - **Pattern-Key:** bridge-call-failure-reported-as-bridge-down
+- **Routes:** copilot
 - **Date:** 2026-08-30
 - **Trigger:** correction
 - **Rule:** The error "couldn't be reached, so its tools may be unavailable" is ONE CALL failing on the devtunnel hop, not a bridge state. RETRY the call before saying anything about the bridge. Never tell Jordan a bridge is down on the strength of a single failed call.
@@ -1081,6 +1109,7 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 
 ### A hosted scheduler's success describes the trigger, not the work
 - **Pattern-Key:** schtask-hosted-success-describes-the-trigger
+- **Routes:** copilot
 - **Date:** 2026-08-31
 - **Trigger:** false-success
 - **Rule:** A scheduler reporting success proves a TRIGGER fired, never that work happened. Require an artifact the job itself wrote - a report, a heartbeat - and treat its absence as failure however green the scheduler looks.
@@ -1107,6 +1136,7 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 
 ### A scheduled prompt cannot pre-authorize a side-effecting tool
 - **Pattern-Key:** schtask-scheduled-prompt-cannot-preauthorize-a-send
+- **Routes:** copilot
 - **Date:** 2026-08-31
 - **Trigger:** missing-capability
 - **Rule:** An unattended run must WRITE A FILE AND END. `SetupEventTrigger` has `requested_tool_permissions`; the scheduled-prompt tools do not, so any send stalls forever waiting for an approval nobody is present to give.
@@ -1120,6 +1150,7 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 
 ### EditScheduledPrompt silently ignores a nested recurrence object
 - **Pattern-Key:** schtask-editscheduledprompt-ignores-nested-recurrence
+- **Routes:** copilot
 - **Date:** 2026-08-31
 - **Trigger:** false-success
 - **Rule:** Pass recurrence to the scheduled-prompt tools as FLAT frequency/interval/hours/minutes. A nested recurrence object is ignored and still reports success - the only signal is the message text: "still on its schedule" means IGNORED, "now on its new schedule" means APPLIED.
@@ -1173,6 +1204,7 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 
 ### WakeToRun reads True and is vetoed by the power scheme on battery
 - **Pattern-Key:** schtask-waketorun-vetoed-by-power-scheme-on-dc
+- **Routes:** copilot
 - **Date:** 2026-08-31
 - **Trigger:** failure
 - **Rule:** `WakeToRun` on a task is a REQUEST. Before trusting it, read `powercfg /query SCHEME_CURRENT SUB_SLEEP RTCWAKE` - the AC and DC indices are separate, and a DC index of 0x0 means no task will ever wake this machine on battery however the task reads back.
@@ -1205,6 +1237,7 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 
 ### A placeholder that will not hydrate means a stuck CLIENT - restart it before repairing any file
 - **Pattern-Key:** onedrive-placeholder-cannot-hydrate
+- **Routes:** copilot
 - **Date:** 2026-09-01
 - **Trigger:** failure
 - **Rule:** ERROR 389 `0x185` "The cloud operation was unsuccessful" is a DEHYDRATED PLACEHOLDER that cannot be fetched - not a lock, not a robocopy fault, and `attrib +P -U` does NOT recover it. FIRST count how many placeholders fail: if several across different folders fail, and each fails in well under a second, the OneDrive CLIENT is stuck and one restart fixes every file at once. Only rebuild individual files from the cloud copy when a restart has been tried and the failure is genuinely confined.
@@ -1281,6 +1314,7 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 
 ### A rule demoted to ENFORCED is only as wide as the thing enforcing it
 - **Pattern-Key:** digest-enforced-demotion-outruns-the-enforcer
+- **Platforms:** windows
 - **Date:** 2026-09-01
 - **Trigger:** failure
 - **Rule:** Before classing a rule ENFORCED in `digest-tiers.txt`, name every surface the mistake can be made on and confirm the enforcer reads all of them. `job_lint` inspects `.bat`/`.cmd` files only, so an ENFORCED rule is unenforced everywhere a session acts directly - and the demotion removes the prose from precisely the surface left unguarded.
@@ -1317,6 +1351,7 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 
 ### The digest repair a close demands cannot be applied from the read-only mount
 - **Pattern-Key:** memory-digest-repair-blocked-by-its-own-gate
+- **Routes:** copilot
 - **Date:** 2026-09-02
 - **Trigger:** failure
 - **Rule:** Repair a stale digest by computing it on a WRITABLE scratch copy, proving the repair with `lesson_gate preflight` against that copy into a SEPARATE receipt dir, then applying the difference to the PC file through the 8932 bridge with `edit_file` - never by pointing `digest_apply.py` at `/mnt/user-config/`, which is read-only. Afterwards expect the mount to keep serving the OLD file: hash it against the pre-repair copy to tell sync lag from a failed write, and never read that fresh exit 1 as a second failure.
@@ -1332,6 +1367,7 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 
 ### Check whether a capability is ALLOWED before spending turns on whether it works
 - **Pattern-Key:** tooling-install-researched-before-approval-checked
+- **Routes:** copilot
 - **Date:** 2026-09-02
 - **Trigger:** correction
 - **Rule:** Before researching, pricing or proposing any software install on the firm-managed machine, ask whether it is approved. Availability is not permission, and a clean install path is no evidence the install is allowed. Dev Tunnels specifically is NOT approved - do not re-propose it.
@@ -1436,6 +1472,7 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 
 ### `where <tool>` in an 8933 job misses every per-user installed tool
 - **Pattern-Key:** bridge-8933-user-path-not-inherited
+- **Routes:** copilot
 - **Refines key:** bridge-8933-env-partially-stripped
 - **Date:** 2026-09-02
 - **Trigger:** failure
@@ -1481,6 +1518,7 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 
 ### A recursive scan of the OneDrive tree is a download, not a search
 - **Pattern-Key:** onedrive-recursive-scan-hydrates-tree
+- **Routes:** copilot
 - **Date:** 2026-09-01
 - **Trigger:** failure
 - **Rule:** Never recurse the Cowork tree to READ file CONTENTS - not in a PC job, and not as a session-side grep of the `/mnt/user-config/` mount, which is the same tree and hydrates the same way. Scope to named files or one folder. Walking metadata is cheap; opening contents is the download.
@@ -1536,6 +1574,7 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 
 ### The 8933 environment is PARTIALLY stripped — PATH is intact
 - **Pattern-Key:** bridge-8933-env-partially-stripped
+- **Platforms:** windows
 - **Supersedes key:** bridge-8933-stripped-environment
 - **Date:** 2026-08-20
 - **Trigger:** contradiction
@@ -1604,6 +1643,7 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 
 ### The 8932 devtunnel was not dead - all three tunnels answer
 - **Pattern-Key:** bridge-devtunnel-declared-dead-without-reprobe
+- **Routes:** copilot
 - **Date:** 2026-08-21
 - **Trigger:** contradiction
 - **Rule:** Run `bridge-health.bat` before characterising tunnel state. It is read-only and measures all three legs.
@@ -1635,6 +1675,7 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 
 ### The watchdog was not responsible for the midday outage
 - **Pattern-Key:** watchdog-exonerated
+- **Routes:** copilot
 - **Date:** 2026-08-18
 - **Trigger:** contradiction
 - **Failed:** Suspecting the watchdog of killing bridges or sessions.
