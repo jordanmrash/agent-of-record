@@ -3,8 +3,8 @@
 Written on the Mac, for two readers: whoever finishes the work on that Mac, and the
 Windows PC that runs Copilot Cowork and keeps the live corpus.
 
-Branch: `refactor/narrow-to-command-bridge`, six commits on top of `6cfc77c`.
-All gates green at `49d1fd4`: `RELEASE_CHECK: CLEAN (24)`, `FACTS_CHECK: CLEAN`,
+Branch: `refactor/narrow-to-command-bridge`, nine commits on top of `6cfc77c`.
+All gates green at `492c52e`: `RELEASE_CHECK: CLEAN (25)`, `FACTS_CHECK: CLEAN`,
 `PUBLIC_SCAN: CLEAN`, `INSTALL_CHECK: CLEAN (15 passed, 2 skipped)` on Darwin 25.6.0.
 
 ---
@@ -13,7 +13,7 @@ All gates green at `49d1fd4`: `RELEASE_CHECK: CLEAN (24)`, `FACTS_CHECK: CLEAN`,
 
 | # | Action | Done when |
 |---|---|---|
-| 1 | Review and merge the PR for `refactor/narrow-to-command-bridge` | `main` carries the six commits and CI is green |
+| 1 | Review and merge the PR for `refactor/narrow-to-command-bridge` | `main` carries the nine commits and CI is green |
 | 2 | Build the plugin if the branch changed since the last build: `python3 scripts/build_plugin.py --strict --platform macos` | `OK 5 skill(s)` |
 | 3 | In Claude: **Customize → Plugins → Add → Upload plugin**, select `Outputs/Skills Plugin/agent-of-record-skills-macos.plugin` | The plugin appears under "Created by you" |
 | 4 | **Quit Claude completely and reopen it** (Cmd+Q, not just close the window) | — |
@@ -21,6 +21,7 @@ All gates green at `49d1fd4`: `RELEASE_CHECK: CLEAN (24)`, `FACTS_CHECK: CLEAN`,
 | 6 | Confirm the connector list shows **one**: `aor-batch-exec`, one tool `run_batch_file` | `aor-filesystem` and `aor-playwright` are gone |
 | 7 | Call `run_batch_file` on `hello-mac.sh` | Exit 0, writes `Outputs/Executor Test/result.txt` |
 | 8 | Re-run `python3 scripts/install_check.py --route local` | `INSTALL_CHECK: CLEAN` |
+| 8b | Read the operating-rules block on the first job after the restart | It carries rules that apply here — no dev tunnel, no Ports panel, no `tasks.json`, no `bridge-health.bat` |
 | 9 | Update `docs/install/claude-cowork-mac.md` and the quickstart from "not yet operated" to operated | Only after 5–8 pass |
 
 Steps 4–6 are the whole point: the config was rewritten but Claude reads it only at
@@ -93,6 +94,31 @@ packages, the watchdog, the personalizer, `docs/setup.md` and all four bridges a
 untouched. `persistent-memory` is intact. The only Copilot-visible edits are the two-answer
 wordings in the shared skills, which now say what to do on each product instead of assuming
 one.
+
+## Lessons are scoped by route and platform now
+
+Entries may carry `Routes:` and/or `Platforms:`. **Both optional; absent means everywhere**,
+so an untagged corpus is valid and behaves exactly as it did before this existed. Nothing is
+deleted or moved — only delivery is narrowed.
+
+Why: measured on macOS, every `run_batch_file` result carried an eight-rule operating block
+and two of the eight applied. The rest were about dev tunnel drops, setting ports PUBLIC,
+`tasks.json` resync and `bridge-health.bat`. Across the corpus, 63% of 123 entries reference
+machinery the Claude route no longer has. A rule that cannot fire is not neutral — the block
+is prepended to every job, so it competes with the rules that can.
+
+In the repository corpus: 27 entries tagged `Routes: copilot`, 5 `Platforms: windows`,
+91 left universal. A Mac job goes from 27 bridge/git rules to the 16 in scope.
+
+`batch-exec-server.js` filters on both axes. It knows its platform — it is the bridge. It
+does not know its route, because the Windows launcher serves both products, so it reads
+`COWORK_ROUTE` and does no route filtering when unset. `exec-server.sh` sets `claude`;
+`exec-server.cmd` sets nothing, so **the PC keeps serving every rule until someone decides
+otherwise**.
+
+Guards, because silent rule loss is the failure mode: `lesson_check.py` fails on an unknown
+value, and `lesson_scope_selftest.py` asserts absent-means-everywhere, unknown-route-serves,
+and malformed-costs-nothing, plus checks the real corpus declares no unknown value.
 
 ---
 
@@ -171,6 +197,18 @@ corpus is at 123 entries / 93 rules; the live one was last reported at 150 / 115
 - **Evidence:** measured — the failing check and the passing re-check both read.
 
 ## Patterns
+
+### A rule served where it cannot apply costs the rules that can
+- **Pattern-Key:** lessons-served-out-of-scope-dilute-the-block
+- **Date:** 2026-09-15
+- **Trigger:** pattern
+- **Rule:** Scope a lesson to the route and platform where its rule can fire. A delivery block is spent attention, not free shelf space.
+- **Delivered-to:** self-improvement, dream-cycle, command-bridge
+- **Failed:** Every `run_batch_file` result on macOS under Claude Cowork carried an eight-rule operating block of which two applied. The other six told the operator to check tunnel drops, set ports PUBLIC, resync `tasks.json` and run `bridge-health.bat` — on a route with no tunnel, no ports, no `tasks.json` and no `.bat`. Across the corpus, 77 of 123 entries referenced machinery that route does not have.
+- **Why:** The corpus grew on the hosted route, where all of it was true, and the delivery mechanism was written to serve the top rules by hit count with no notion of where a rule applies. Hit count measures how often a rule mattered *somewhere*, which on a different route selects for exactly the wrong entries.
+- **Worked:** Optional `Routes:` and `Platforms:` fields, absent meaning everywhere, filtered at delivery. Nothing deleted, nothing moved. 27 entries scoped to the Copilot route and 5 to Windows; a Mac job went from 27 candidate rules to the 16 that apply, and the served block became the arg-name rule, the transport-retry rule and the git-status rule instead of six about a tunnel. Scope on what the **Rule** says, never on what the example cites — a first pass keyed on the whole entry scoped a universal rule to Windows because its `Failed:` block showed a `.bat`.
+- **Evidence:** measured — the block read before and after, and the corpus counted both ways.
+- **See also:** narrow-before-fixing-duplicated-capability
 
 ### Narrow before fixing a capability the host already has
 - **Pattern-Key:** narrow-before-fixing-duplicated-capability
