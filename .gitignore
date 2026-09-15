@@ -98,3 +98,6 @@ release-results.json
 Startup/cowork-env.cmd
 Startup/posix/cowork-env.sh
 /install-results.json
+
+# Playwright bridge run artifacts
+playwright-output/
