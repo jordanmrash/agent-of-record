@@ -1,7 +1,7 @@
 ---
 name: gamma-tango
 description: |
-  Jordan's session bookend command. When he types "gamma tango" (or "gt", "gamma tango
+  The operator's session bookend command. When he types "gamma tango" (or "gt", "gamma tango
   open", "gamma tango close", "gamma tango me", "bookend this", "open the session", "close the
   session"), run the three-step routine in one pass: memory, lessons, git. On Copilot
   those are the persistent-memory, self-improvement and git-bridge skills; on Claude
@@ -81,7 +81,7 @@ its rules.
 
 ## Mode selection
 
-1. If Jordan says a mode word (open / start / begin / close / out / done / wrap), use it.
+1. If the operator says a mode word (open / start / begin / close / out / done / wrap), use it.
 2. Otherwise infer: **OPEN** if no substantive work has happened yet in this session,
    **CLOSE** if it has (files edited, jobs run, questions answered at length).
 3. State the inferred mode in one line before acting: "Gamma tango — OPEN." If the
@@ -169,13 +169,13 @@ Platform counterpart: On macOS under Claude Cowork, the same step uses an approv
    rather than skipping the verify.
 
 1. **Lessons second** — invoke `self-improvement`. Capture anything from this session
-   where an approach failed with a non-obvious fix, Jordan corrected a belief you acted
+   where an approach failed with a non-obvious fix, the operator corrected a belief you acted
    on, a stored memory proved wrong, or a better method was found for something
    recurring. Write the entry with both the FAILED and the WORKED approach. If there is
    nothing worth logging, say so — an empty log is a valid outcome, a skipped scan is not.
 2. **Memory third** — record what was decided, what changed, and what the next session
    needs. Under Copilot Cowork invoke `persistent-memory` and update or create the
-   focus-area file; under Claude Cowork put durable facts about Jordan or his work in the
+   focus-area file; under Claude Cowork put durable facts about the operator or his work in the
    host's own memory and facts about this repository in `cowork-memory/`. Lessons are
    written before memory so the record can reference the new Pattern-Key.
 3. **Git fourth** — run git, with the rules from step 0 already in hand. **Before the commit job runs, prove step 0 actually happened:**
@@ -190,7 +190,7 @@ Platform counterpart: On macOS under Claude Cowork, the same step uses an approv
    digest changed after the receipt was written. That is the whole point: an instruction
    to look something up can be skipped silently, a receipt cannot be faked by intending to
    have read it. Run it for `git` and for `bridge`. Then show `git status` first, and propose the commit
-   with the **exact message and file list**, wait for Jordan's approval, then write and
+   with the **exact message and file list**, wait for the operator's approval, then write and
    run the commit job. Report the commit hash, files committed, and exit code. This repo
    is local only and is never pushed.
 4. **Verify the log before calling it done.** The lessons step is not complete on

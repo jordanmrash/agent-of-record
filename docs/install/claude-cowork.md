@@ -13,8 +13,9 @@ executor is that path, and it is the reason to install this repository on this h
 Sources, read 2026-09-09: Anthropic's *Claude Cowork architecture overview* (Help Center),
 *Claude's memory works everywhere, and you decide what's in it* (blog), and *Browse skills,
 connectors, and plugins in one directory* (Help Center). Install pages:
-[Windows PC](claude-cowork-windows.md) · [Mac](claude-cowork-mac.md), both not yet
-operated. The route comparison is in [Choose your route](README.md).
+[Windows PC](claude-cowork-windows.md) · [Mac](claude-cowork-mac.md). Windows is not yet operated; on a Mac the executor route ran on
+2026-09-15 ([evidence](../evidence/mac-operated-2026-09-15.md)), with the skills-plugin upload
+not yet confirmed. The route comparison is in [Choose your route](README.md).
 
 **Two conditions before anything else.** Sessions now run in the cloud by default; local
 execution "remains available for existing desktop deployments", and local MCP servers do

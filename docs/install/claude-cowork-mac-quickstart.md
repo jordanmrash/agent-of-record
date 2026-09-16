@@ -1,9 +1,9 @@
 # Claude Cowork on a Mac: the short version
 
-> **Status: not yet operated on a Mac someone uses.** The installer on this page was
-> exercised end to end against a stand-in copy of the tree in a Linux container, and
-> the launcher it ships was proven to start, refuse and report under a minimal PATH
-> there. The first run on a real Mac is yours. Whatever happens, send it back (step 5).
+> **Status: the executor route ran on a Mac on 2026-09-15** ([evidence](../evidence/mac-operated-2026-09-15.md)):
+> `install-mac.sh --register`, `install_check.py --route local` (CLEAN) and `run_batch_file` on the
+> machine itself. Step 6 under "The things only you can do" - uploading the skills plugin and
+> confirming `ListSkills` - is not yet confirmed on a Mac. Whatever happens, send it back (step 5).
 
 One download, one command in Terminal, then a short list of clicks that only you can do.
 The long form of this page, with every design decision and every refusal the executor
@@ -94,7 +94,7 @@ at `~/agent-of-record/Outputs/agent-of-record-next-steps.txt`.
    `cd ~/agent-of-record && python3 scripts/build_plugin.py --strict --platform macos`.
    Then in Claude: **Customize -> Plugins -> Add -> Upload plugin**, select
    `Outputs/Skills Plugin/agent-of-record-skills-macos.plugin`, restart Claude, and
-   confirm `ListSkills` returns all five repository skills. Double-clicking the file
+   confirm `ListSkills` returns all ten repository skills. Double-clicking the file
    does not work; use the upload picker.
 
 ## 4. If the connector is not there

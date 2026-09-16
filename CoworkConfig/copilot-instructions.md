@@ -77,7 +77,7 @@ at the moment it applies.
 - Drops are the devtunnel hop, not the bridge process. 0% local, 1-2% tunnel. Retry once, but verify before retrying a write. _(2x)_
 - Run `bridge-health.bat` before characterising tunnel state. It is read-only and measures all three legs. _(2x)_
 - A connector can vanish OR arrive mid-session. Do not restart anything on the PC; start a new chat instead. _(2x)_
-- The error "couldn't be reached, so its tools may be unavailable" is ONE CALL failing on the devtunnel hop, not a bridge state. RETRY the call before saying anything about the bridge. Never tell Jordan a bridge is down on the strength of a single failed call. _(2x)_
+- The error "couldn't be reached, so its tools may be unavailable" is ONE CALL failing on the devtunnel hop, not a bridge state. RETRY the call before saying anything about the bridge. Never tell the operator a bridge is down on the strength of a single failed call. _(2x)_
 - After ANY edit to `tasks.json`, resync `Startup\KnownGood\tasks.json` from live in the SAME job and prove it byte-identical. An unsynced snapshot turns `bridge-restore-tasksjson.bat` from a recovery tool into a regression tool, and the restore reports success while doing it. _(2x)_
 - Call `run_batch_file` with `file=` holding a path relative to CommandJobs. There is no path, args, cwd or timeout parameter.
 - Files written through 8932 arrive LF-only and cmd mis-parses them. Run the CRLF fix job after writing any new .bat.

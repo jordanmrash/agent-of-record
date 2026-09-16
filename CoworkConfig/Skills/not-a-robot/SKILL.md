@@ -38,7 +38,7 @@ cowork:
 
 ## Purpose
 
-Not a Robot takes writing that sounds machine-made — stiff, generic, over-polished, jargon-stuffed — and makes it read like a real, capable person wrote it. Specifically, like Jordan.
+Not a Robot takes writing that sounds machine-made — stiff, generic, over-polished, jargon-stuffed — and makes it read like a real, capable person wrote it. Specifically, like the operator.
 
 It does two things at once:
 
@@ -75,7 +75,7 @@ After approval, analyze and present the review below. Never return a silently re
 
 1. **Get the text.** Use the pasted draft. If the user points at an email or Teams message, read it first (`GetMessage` / `ListMessages` / `ListChatMessages`). If a file, read it from `input/`.
 2. **(Optional) Refresh the voice.** If the user says "match how I've been writing," sample recent sent mail and Teams (`ListMessages` on `sentitems`; `SearchM365` with `from_user` on Teams). **Skip any sample that is itself pervasively jargon-heavy** — those aren't good voice models. If sampling adds nothing, rely on the Voice Profile below.
-3. **Detect** every passage that trips the Detection Library (below) — jargon, an AI tell, over-hedging, a formatting tell, chatbot residue, or anything that just doesn't sound like Jordan. Mark each with a short quote so the user knows exactly where it is.
+3. **Detect** every passage that trips the Detection Library (below) — jargon, an AI tell, over-hedging, a formatting tell, chatbot residue, or anything that just doesn't sound like the operator. Mark each with a short quote so the user knows exactly where it is.
 4. **Present each flagged passage with two options** (Gate 2 format). Offer two more if asked.
 5. **Apply the user's choices exactly.** Keep = leave verbatim. Never merge in an unpicked option.
 6. **Run the overused-words warning report** across the whole document.
@@ -102,7 +102,7 @@ Keep as-is, use A, use B, or see two more?
 
 - More → give **Option C** and **Option D**, materially different from A/B and each other.
 - Loop on that passage until the user picks or says keep.
-- Make the two options differ usefully (A = plainest/shortest; B = warmest/closest to Jordan).
+- Make the two options differ usefully (A = plainest/shortest; B = warmest/closest to the operator).
 
 ### Overused-words warning report
 
@@ -171,10 +171,10 @@ Removing tells is only half the job. Sterile, uniform writing reads as machine-m
 - **Be specific over vague** — but only with specifics the source already contains. "This is concerning" → name the concrete thing the writer already identified, not an invented one.
 
 **Audience dial:**
-- **Internal / casual (teammates, Teams):** more voice, contractions, brevity, the occasional "Hola" / "Outstanding!" — match how Jordan actually writes.
+- **Internal / casual (teammates, Teams):** more voice, contractions, brevity, the occasional "Hola" / "Outstanding!" — match how the operator actually writes.
 - **Client-facing / formal / tax / audit:** dial voice *down*. Warm and human, yes — but accuracy, diplomacy, and preserved caveats come first. Never trade correctness for personality here.
 
-## Jordan's Voice Profile (learned from real Outlook + Teams)
+## the operator's Voice Profile (learned from real Outlook + Teams)
 
 Default to this unless the user asks for a different voice. His real writing is already clean and jargon-light — match it, don't inflate it.
 
@@ -185,7 +185,7 @@ Default to this unless the user asks for a different voice. His real writing is 
 - **Check-ins:** "just wanted to check in," "touch base with you on," "Hope all is well."
 - **Human tells:** "Sorry for the delay," "the day got away from me," "totally fine," "Outstanding!," "here you go," and on Teams the occasional lowercase "i'll / i'm."
 - **Structure:** greeting → one line of context → the ask → thanks; numbered list for multiple items; Teams even shorter.
-- **Keep-list (authentic to Jordan — do NOT flag as jargon):** `touch base`, `check in`, `regroup`, `sooner rather than later`, `Hope all is well`, `just wanted to`, `Thanks!`, `Hola`, `from a high level`, `workplan`, `quick reminder`.
+- **Keep-list (authentic to the operator — do NOT flag as jargon):** `touch base`, `check in`, `regroup`, `sooner rather than later`, `Hope all is well`, `just wanted to`, `Thanks!`, `Hola`, `from a high level`, `workplan`, `quick reminder`.
 
 ## Output Rules
 
@@ -219,9 +219,9 @@ If the user is *creating* something new, route to the skill that owns it, then o
 - **Already clean or very short** → say it reads fine; don't manufacture flags to look busy.
 - **Pervasively jargon-heavy source** → review it, but tell the user it needs a heavier rewrite; consider offering the three-version option instead of dozens of prompts.
 - **A referenced email/message can't be read** → say so and ask for the pasted text.
-- **Ambiguous audience/tone** → default to Jordan's professional voice; only ask if it would materially change the rewrite (external client vs. internal teammate).
+- **Ambiguous audience/tone** → default to the operator's professional voice; only ask if it would materially change the rewrite (external client vs. internal teammate).
 - **User declines at Gate 1** → drop it and continue with their original request.
 
 ## Credits
 
-Detection taxonomy adapted from [Wikipedia: Signs of AI writing](https://en.wikipedia.org/wiki/Wikipedia:Signs_of_AI_writing) (WikiProject AI Cleanup) and the open-source `humanizer` skill by @blader, combined with Jordan's own voice and a consent-gated, no-fabrication workflow.
+Detection taxonomy adapted from [Wikipedia: Signs of AI writing](https://en.wikipedia.org/wiki/Wikipedia:Signs_of_AI_writing) (WikiProject AI Cleanup) and the open-source `humanizer` skill by @blader, combined with the operator's own voice and a consent-gated, no-fabrication workflow.

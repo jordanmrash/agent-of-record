@@ -2,7 +2,7 @@
 REM ============================================================
 REM  bridge-autorecover.bat
 REM  MEASURE the three bridges, then let bridge_policy.py decide
-REM  whether an automatic restart is authorised. Jordan authorised
+REM  whether an automatic restart is authorised. The operator authorised
 REM  automatic start/restart on 2026-08-30; the BOUNDS live in
 REM  bridge_policy.py so the decision is a tested table, not a
 REM  judgement made in the moment.
@@ -26,7 +26,7 @@ REM
 REM  This job NEVER runs bridge-restart-all.bat. That script drops
 REM  all three bridges including the one executing it and leaves the
 REM  tunnel ports PRIVATE - devtunnel.exe is not installed, so only
-REM  Jordan can set them Public again.
+REM  the operator can set them Public again.
 REM ============================================================
 REM COWORK_OUTPUT: C:\Users\YOURUSER\Documents\COPILOT_COWORK\Outputs\2026-08-30 - Bridge Autorecover
 setlocal enabledelayedexpansion

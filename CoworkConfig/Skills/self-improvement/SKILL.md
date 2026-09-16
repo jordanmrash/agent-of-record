@@ -1,12 +1,12 @@
 ---
 name: self-improvement
 description: |
-  Records and retrieves Jordan's lessons learned in
+  Records and retrieves the operator's lessons learned in
   Documents/Cowork/cowork-memory/cowork-lessons.md - the FAILED approach, the WORKED one,
   and a Pattern-Key for dedupe. Ships scripts/lesson_check.py, a fail-able check on the
   log itself; run it before reporting the lessons step done. Also applies the attribution
   template to every newly created skill.
-  Use when Jordan says "log that", "log a lesson", "what have we learned", "show my lessons",
+  Use when the operator says "log that", "log a lesson", "what have we learned", "show my lessons",
   "don't do that again", or "have we hit this before"; after an approach fails in a
   non-obvious way, a stored memory proves wrong, or he corrects a belief acted on; and when
   creating any new skill.
@@ -41,7 +41,7 @@ metadata:
 
 Turn failures into a permanent behavioral change instead of a repeated cost.
 
-Every session that works on Jordan's local bridges, batch jobs, skills, or memory
+Every session that works on the operator's local bridges, batch jobs, skills, or memory
 store burns turns rediscovering the same traps. This skill exists so a trap is paid
 for **once**. It records the approach that failed, the approach that worked, and
 enough of the mechanism that a future session can tell whether a new situation
@@ -86,7 +86,7 @@ working in this area: `prune-list-counts-drift-from-names`, `skill-alwayson-defe
 
 ## 0b. New skills carry attribution — apply the template
 
-Whenever you create a skill for Jordan, apply
+Whenever you create a skill for the operator, apply
 `Documents/Cowork/Skills/_ATTRIBUTION-TEMPLATE.md` before reporting it complete:
 the six `metadata:` fields AND the visible body notice under the H1. Use the
 engagement variant (template §3) when the skill is built for a client engagement —
@@ -295,7 +295,7 @@ Wrong memories cost more than missing ones: a session acts on them confidently.
 1. **Correct the source first** — edit the wrong memory file, memory entry, or lessons
    entry. Never leave true and false versions coexisting.
 2. **Then log** a `contradiction` entry naming the corrected item.
-3. **Say so in chat**, plainly: "correcting what I had on file." Jordan may still be
+3. **Say so in chat**, plainly: "correcting what I had on file." The operator may still be
    carrying the wrong version in his head; a silent file edit does not reach him.
 
 **When the wrong belief IS an entry in this file** (self-contradiction), steps 1 and 2
@@ -345,7 +345,7 @@ An event must pass **the gate** above *and* match a row here.
 | Trigger | Fires when | Record |
 |---------|-----------|--------|
 | `failure` | A tool, bridge call, or batch job fails **and the fix was non-obvious, or the same failure could plausibly recur** | The exact call/arguments, the error, what succeeded instead |
-| `correction` | Jordan corrects **a belief you acted on** — not a standing preference | What you believed, what is true, how the belief formed |
+| `correction` | The operator corrects **a belief you acted on** — not a standing preference | What you believed, what is true, how the belief formed |
 | `contradiction` | Evidence disproves something already stored | The wrong entry's key, the evidence, the correction |
 | `false-success` | A verification step reveals a reported success was false | What claimed success, how the check caught it |
 | `better-approach` | A materially better method is found for something **recurring** | The old way, the new way, why the new one wins |
@@ -357,7 +357,7 @@ in this order: `contradiction` > `false-success` > `correction` > `failure` >
 so the section an entry lands in stays predictable across sessions.
 
 **Standing preferences are not corrections.** "Actually, always use my work address"
-is a policy about how Jordan wants things done — it goes to `persistent-memory` under Copilot Cowork, the host's own memory under Claude Cowork. A
+is a policy about how the operator wants things done — it goes to `persistent-memory` under Copilot Cowork, the host's own memory under Claude Cowork. A
 correction is about a *belief you acted on being wrong*. The word "actually" is not
 the test; the substance is.
 
@@ -480,7 +480,7 @@ happens to scan the file, when it should be loading unconditionally.
   `config-contradiction-survives-in-second-file`.
 - **Never promote a `reported` lesson.** Promotion needs `measured` evidence; an inference
   hardened into a standing rule is how a wrong belief becomes permanent.
-- **Never write a new skill unprompted.** Propose it to Jordan with what it would do and
+- **Never write a new skill unprompted.** Propose it to the operator with what it would do and
   what it replaces, and let him decide. Autonomously generated skills are exactly the
   artefacts that look right and fail on first real use.
 
@@ -615,7 +615,7 @@ on it. Handle these explicitly rather than skipping the step:
 
 | Situation | Do this |
 |---|---|
-| The lessons file cannot be read (mount, bridge or OneDrive unavailable) | Say plainly that the scan did not happen — never let silence imply a clean scan — proceed with the task, and capture the session's lessons into the reply so Jordan can paste them if the file stays unreachable |
+| The lessons file cannot be read (mount, bridge or OneDrive unavailable) | Say plainly that the scan did not happen — never let silence imply a clean scan — proceed with the task, and capture the session's lessons into the reply so the operator can paste them if the file stays unreachable |
 | A write to the lessons file fails or is denied | Report it; do not claim the lesson was logged. An unlogged lesson stated in chat beats a fabricated confirmation |
 | Two entries give conflicting guidance | Follow the one with `measured` evidence and the later date, then reconcile them in the same session — a contradiction left standing will be followed at random next time |
 | An entry's `Worked` line no longer works | That is a `contradiction`: rewrite the entry in place, add `Supersedes key`, and say the old guidance was wrong. Never leave both versions readable |
@@ -660,10 +660,10 @@ on it. Handle these explicitly rather than skipping the step:
   old guidance was wrong), and never overwrite the file from memory of its contents — read
   it first. Prior versions exist as `.bak` siblings and in git; do not rely on that as a
   licence to be careless.
-- **Never edit a file Jordan did not ask you to change** to make a lesson true. Report the
+- **Never edit a file the operator did not ask you to change** to make a lesson true. Report the
   discrepancy instead.
 - **Promotion is a proposal, not a licence.** Changing `copilot-instructions.md`, another
-  skill, or creating a new skill is shown to Jordan first, with the exact wording.
+  skill, or creating a new skill is shown to the operator first, with the exact wording.
 - **When data is missing, stop and say so** — an unreadable lessons file, a denied write, or
   an entry whose facts you cannot reconstruct are all reported plainly. Never let silence
   imply the scan ran clean.

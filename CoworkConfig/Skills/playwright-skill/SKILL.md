@@ -1,7 +1,7 @@
 ---
 name: playwright-skill
 description: >
-  Drives a real browser on Jordan's Windows PC through the Playwright Web Automation
+  Drives a real browser on the operator's Windows PC through the Playwright Web Automation
   bridge (port 8931), using his signed-in Edge profile. Use when he says "open this in my
   browser", "go to <site> on my PC", "take a screenshot of this page", "log into <site>",
   "pull my <portal> data", "fill out this form", "download that file from the site", or
@@ -22,7 +22,7 @@ metadata:
   attribution: "Created by Jordan Rash, Director, Tax Transformation and Automation."
 ---
 
-# Web Automation Bridge — Jordan's real browser
+# Web Automation Bridge — the operator's real browser
 
 ## When this skill is redundant
 
@@ -49,7 +49,7 @@ Platform counterpart: On macOS under Claude Cowork, use the `aor-playwright` std
 Platform counterpart: On macOS under Claude Cowork, use the `aor-playwright` stdio server and the browser profile/output paths configured by `Startup/posix/pw-server.sh`; no tunnel or bridge port is used.
 
 No `--isolated`. That is deliberate: **the browser is persistent even though the transport
-is stateless.** Jordan's Microsoft and corporate sessions survive across calls, so this
+is stateless.** The operator's Microsoft and corporate sessions survive across calls, so this
 bridge can reach authenticated intranet pages, intranet portals, and anything behind SSO that
 `web_search` and `web_fetch` cannot.
 
@@ -67,7 +67,7 @@ session that loads this skill; it does not reach one that never does.
 
 | Pattern-Key | Rule |
 |---|---|
-| `bridge-call-failure-reported-as-bridge-down` **(repeat)** | The error "couldn't be reached, so its tools may be unavailable" is ONE CALL failing on the devtunnel hop, not a bridge state. RETRY the call before saying anything about the bridge. Never tell Jordan a bridge is down on the strength of a single failed call. |
+| `bridge-call-failure-reported-as-bridge-down` **(repeat)** | The error "couldn't be reached, so its tools may be unavailable" is ONE CALL failing on the devtunnel hop, not a bridge state. RETRY the call before saying anything about the bridge. Never tell the operator a bridge is down on the strength of a single failed call. |
 | `bridge-session-bound-to-pid` | A dead bridge costs the current chat, not the machine. |
 
 <!-- SKILL-LESSONS:end -->
@@ -76,7 +76,7 @@ session that loads this skill; it does not reach one that never does.
 
 Do **not** write Node scripts, run `npm install`, invoke `npx playwright`, or execute
 anything in the session container to satisfy a browser request. The container is a Linux
-sandbox with no access to Jordan's network, his identity, or his screen. Browser work is
+sandbox with no access to the operator's network, his identity, or his screen. Browser work is
 driven **only** through the bridge's `browser_*` MCP tools.
 
 If those tools are not present in the session, the connector did not load. Say plainly:
@@ -93,7 +93,7 @@ The bridge exposes the standard Playwright MCP surface. The ones that matter mos
 | `browser_navigate` | Go to a URL |
 | `browser_snapshot` | **Accessibility snapshot — your primary way to see the page.** Returns structured elements with `ref` handles |
 | `browser_click`, `browser_type`, `browser_select_option`, `browser_hover` | Interact, addressing elements by the `ref` from a snapshot |
-| `browser_take_screenshot` | Visual capture — for showing Jordan, not for reading the page |
+| `browser_take_screenshot` | Visual capture — for showing the operator, not for reading the page |
 | `browser_wait_for` | Wait for text to appear/disappear or a fixed delay |
 | `browser_console_messages` | Console output, filterable by level |
 | `browser_tabs` | List, open, close, switch tabs |
@@ -106,11 +106,11 @@ The bridge exposes the standard Playwright MCP surface. The ones that matter mos
    stale the moment the DOM changes — never reuse a `ref` from before an interaction.
 
 2. **Prefer the snapshot over screenshots for reading.** The accessibility tree is text
-   you can reason over precisely. Use `browser_take_screenshot` when Jordan wants to
+   you can reason over precisely. Use `browser_take_screenshot` when the operator wants to
    *see* something, not when you need to *read* it.
 
 3. **Expect to already be signed in.** The persistent profile usually means no login
-   step. If a login page appears anyway, the SSO session has expired — tell Jordan and
+   step. If a login page appears anyway, the SSO session has expired — tell the operator and
    ask him to sign in in that browser window rather than attempting to enter credentials.
 
 4. **Wait deliberately.** Corporate portals are slow. Use `browser_wait_for` on expected
@@ -128,7 +128,7 @@ The bridge exposes the standard Playwright MCP surface. The ones that matter mos
 `pw-server.cmd` sets `--output-dir C:\Users\YOURUSER\Documents\COPILOT_COWORK\playwright-output`,
 which sits inside the filesystem bridge's allowed directories. Anything this bridge writes —
 screenshots, traces, console logs, page snapshots — can be read back through
-`local-file-bridge` and, if Jordan asks for a deliverable, promoted into session `output/`.
+`local-file-bridge` and, if the operator asks for a deliverable, promoted into session `output/`.
 Worth preserving; do not change the output directory.
 Platform counterpart: On macOS under Claude Cowork, use the `aor-playwright` stdio server and the browser profile/output paths configured by `Startup/posix/pw-server.sh`; no tunnel or bridge port is used.
 
@@ -151,7 +151,7 @@ Platform counterpart: On macOS under Claude Cowork, use the `aor-playwright` std
 | Timeout / reset / 502 / 504 | Transport blip | Retry that one call once |
 | Same call fails twice | Tunnel or server down | Report disconnected; port 8931 must be running and PUBLIC On macOS under Claude Cowork, use the `aor-playwright` stdio server and the browser profile/output paths configured by `Startup/posix/pw-server.sh`; no tunnel or bridge port is used. |
 | Browser fails to launch | Another Playwright instance holds `pw-sso-profile` | Report it; the profile locks to one process — close the other |
-| Login page where none expected | SSO session expired | Ask Jordan to sign in himself; do not enter credentials |
+| Login page where none expected | SSO session expired | Ask the operator to sign in himself; do not enter credentials |
 | `ref` not found on click | Snapshot is stale | Re-snapshot and use the fresh `ref` |
 
 ## Output format
@@ -163,10 +163,10 @@ page. When a screenshot was taken, give its absolute Windows path under
 ## Guardrails
 
 - **Confirm before anything that submits, purchases, sends, or changes state** on a live
-  authenticated site. This is Jordan's real signed-in session with his real permissions —
+  authenticated site. This is the operator's real signed-in session with his real permissions —
   a submitted form is not reversible.
 - Never enter credentials, MFA codes, or secrets into a page. If authentication is needed,
-  hand control back to Jordan.
+  hand control back to the operator.
 - Never bypass a paywall, and never reproduce fetched page content verbatim at length.
 - Never fabricate page content — if the snapshot did not show it, say so.
 - Never fall back to the session container or a container-side browser, and never present

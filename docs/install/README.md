@@ -7,8 +7,8 @@ the repository adds to it, then follow the page for your platform.
 
 | Host | What the repository adds | Windows PC | Mac |
 |---|---|---|---|
-| **Copilot Cowork** — runs in Microsoft's cloud, reaches the bridges through a dev tunnel | [What this adds to Copilot Cowork](copilot-cowork.md) | [Setup from zero](../setup.md) · operated daily | [Setup on macOS and Linux](../setup-macos.md) · not yet operated |
-| **Claude Cowork** — runs on your machine in a local session, starts the bridges itself | [What this adds to Claude Cowork](claude-cowork.md) | [Claude Cowork on a Windows PC](claude-cowork-windows.md) · not yet operated | [Claude Cowork on a Mac](claude-cowork-mac.md) · not yet operated |
+| **Copilot Cowork** — runs in Microsoft's cloud, reaches the bridges through a dev tunnel | [What this adds to Copilot Cowork](copilot-cowork.md) | [Setup from zero](../setup.md) · operated daily | not supported - Copilot Cowork is Windows only ([why the hosted macOS page was retired](../setup-macos.md)) |
+| **Claude Cowork** — runs on your machine in a local session, starts the bridges itself | [What this adds to Claude Cowork](claude-cowork.md) | [Claude Cowork on a Windows PC](claude-cowork-windows.md) · not yet operated | [Claude Cowork on a Mac](claude-cowork-mac.md) · executor operated 2026-09-15 ([evidence](../evidence/mac-operated-2026-09-15.md)); skills-plugin upload not yet confirmed |
 
 **Not yet operated** means nobody has run that page end to end. If you do, open a pull
 request with your `install_check.py` result — that is what flips the status.

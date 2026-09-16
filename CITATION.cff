@@ -1,8 +1,8 @@
 cff-version: 1.2.0
 message: "If you use this reference implementation, please cite it as below."
 title: "Agent of Record"
-version: "0.3.2"
-date-released: "2026-09-11"
+version: "0.3.3"
+date-released: "2026-09-15"
 type: software
 authors:
   - family-names: Rash

@@ -38,7 +38,7 @@ $common = @(
  'Azure','Entra','Graph','GitHub','Git','Node','Python','PowerShell','JavaScript',
  'Playwright','Chromium','Edge','Chrome','Alteryx','Visio','Studio','Visual','Server',
  'Client','Bridge','Skill','Skills','Tool','Tools','File','Files','Folder','Path',
- 'Jordan','Rash','Director','Tax','Transformation',
+ 'the operator','Rash','Director','Tax','Transformation',
  'Automation','Partner','Manager','Senior','Local','Users','Program','System',
  'Flow','Flows','Agent','Plugin','Connector','Environment','Solution','Workflow',
  'Response','Request','Trigger','Action','Definition','Table','Row','Column','Cell',

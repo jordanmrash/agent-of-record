@@ -29,6 +29,7 @@ That arc supports the repository's positioning: a public-accounting practitioner
 | 2026-08-21 | [I Taught My AI Assistant to Remember Its Own Mistakes. It Forgot to Load.](https://www.linkedin.com/pulse/i-taught-my-ai-assistant-remember-its-own-mistakes-forgot-rash-cpa-opwbc) | Learning architecture, failed retrieval, and comparison with agent research | Direct precursor to routed lessons and behavioral verification |
 | 2026-08 | *Sometimes it's about the journey, not the destination* | Building a Cowork skill as a method: intake, hardening, validation testing | The skill design standard and the self-test discipline behind every checker |
 | 2026-08 | *Nobody Argues With a Speed Bump* | Control in AI design: a refusal that is not negotiable at call time | The refusal contract of the approved batch executor |
+| 2026-09-11 | [Enhancing Cowork with Script Execution and Local File Access](https://www.linkedin.com/pulse/behold-i-made-thing-jordan-rash-cpa-gxwlc) | Sorting the repository into what exists because host and machine sit apart and what exists because of what the agent is held to; the portable release and a second host | The install routes under `docs/install/` and the two-host, two-platform layer |
 
 ## Editorial strengths
 

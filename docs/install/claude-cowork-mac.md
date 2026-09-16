@@ -1,14 +1,17 @@
 # Claude Cowork on a Mac
 
-> **Status: not yet operated.** Written 2026-09-08 from the published files, revised
-> 2026-09-09 against Anthropic's published description of how Claude Cowork executes, and
-> corrected 2026-09-11 after the first run on a Mac someone uses. That run stopped one step
-> short: the executor was registered and never connected (the note below says what is known;
-> [the first-run record](claude-cowork-mac-first-run.md) is the evidence). The POSIX
+> **Status: executor operated on a Mac 2026-09-15; skills-plugin upload not yet confirmed.** Written
+> 2026-09-08 from the published files, revised 2026-09-09 against Anthropic's published
+> description of how Claude Cowork executes, corrected 2026-09-11 after the first run on a Mac
+> someone uses ([the first-run record](claude-cowork-mac-first-run.md)), and revised 2026-09-15
+> after [the operated run](../evidence/mac-operated-2026-09-15.md): the executor connected,
+> `run_batch_file` ran on the machine, `install_check.py --route local` came back CLEAN and
+> `install-mac.sh --register` retired the two entries this route no longer needs. The built
+> `.plugin` is verified but its upload into Claude and the `ListSkills` confirmation remain open. The POSIX
 > launchers and the executor's `.sh` form were proven in a Linux container and by CI on
 > `macos-latest`. Steps marked *expected* describe what the design says should happen. If
 > you run it, open a pull request with your `install_check.py` result and any correction —
-> that is how this page becomes operated. **If you just want it installed, use
+> that is how the remaining step becomes operated. **If you just want it installed, use
 > [the short version](claude-cowork-mac-quickstart.md); this page is the long form.**
 
 > **Where the executor runs, and what reaches it.** Anthropic's *Claude Cowork architecture

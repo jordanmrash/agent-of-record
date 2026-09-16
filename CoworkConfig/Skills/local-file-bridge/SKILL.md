@@ -1,7 +1,7 @@
 ---
 name: local-file-bridge
 description: >-
-  Routes file operations to Jordan's Windows PC through the Local MCP Bridge instead of the
+  Routes file operations to the operator's Windows PC through the Local MCP Bridge instead of the
   session workspace or OneDrive. ALWAYS use the bridge tools — never artifact tools and never
   session output/ — when the user references a C:\ path or says "my PC", "my machine",
   "locally", "on disk", "COPILOT_COWORK", or "my Downloads folder". It reaches only the
@@ -35,7 +35,7 @@ Redundant when the host reads and writes files itself: Claude Cowork with a conn
 > continue**. Never silently edit a file to reinstate it.
 
 
-Jordan has a local MCP filesystem bridge ("Local MCP Bridge") that reads and writes
+The operator has a local MCP filesystem bridge ("Local MCP Bridge") that reads and writes
 files on his actual Windows PC. This skill exists because these routing rules must
 apply by default, without him having to name the tools each time.
 
@@ -61,13 +61,13 @@ session that loads this skill; it does not reach one that never does.
 | `bridge-8932-searchfiles-false-negative` | `search_files` glob-matches against the path RELATIVE to the search root - it is not a substring search. A pattern with no wildcards matches nothing, and `*` does not cross a directory separator, so nested files need a leading `**/`. Search `**/*term*`, and still never read "No matches found" as proof of absence. |
 | `bridge-8932-writes-lf` | Files written through 8932 arrive LF-only and cmd mis-parses them. Run the CRLF fix job after writing any new .bat. |
 | `bridge-absent-probe-is-not-permanent` | An anchored `^tool_name$` probe cannot match a fully qualified `<server>-<tool>` and reads as absent even when the bridge is up. |
-| `bridge-call-failure-reported-as-bridge-down` **(repeat)** | The error "couldn't be reached, so its tools may be unavailable" is ONE CALL failing on the devtunnel hop, not a bridge state. RETRY the call before saying anything about the bridge. Never tell Jordan a bridge is down on the strength of a single failed call. |
+| `bridge-call-failure-reported-as-bridge-down` **(repeat)** | The error "couldn't be reached, so its tools may be unavailable" is ONE CALL failing on the devtunnel hop, not a bridge state. RETRY the call before saying anything about the bridge. Never tell the operator a bridge is down on the strength of a single failed call. |
 | `bridge-connector-removed-midsession` **(repeat)** | A connector can vanish OR arrive mid-session. Do not restart anything on the PC; start a new chat instead. |
 | `bridge-devtunnel-declared-dead-without-reprobe` **(repeat)** | Run `bridge-health.bat` before characterising tunnel state. It is read-only and measures all three legs. |
 | `bridge-drops-are-tunnel-not-bridge` **(repeat)** | Drops are the devtunnel hop, not the bridge process. 0% local, 1-2% tunnel. Retry once, but verify before retrying a write. |
 | `bridge-idle-session-expiry` **(repeat)** | Check PID creation times and listening state before restarting anything. |
-| `bridge-reprobe-must-be-separated-in-time` | Re-probe means LATER, not again in the same breath. When Jordan says the bridge is up, wait 60-120s and probe again. Say the connector has not registered in this chat, never that the bridge is down. |
-| `bridge-server-edit-live-without-restart` | A code edit to a bridge server takes effect on the NEXT call - do not restart to deploy it. A tool's BEHAVIOUR changes instantly; the tool SURFACE does not. A newly ADDED tool is rejected as non-existent at first, then arrives on its own a few minutes later without any restart or new chat. So after adding a tool: WAIT and retry. Do not tell Jordan a new chat is needed, and do not restart anything. |
+| `bridge-reprobe-must-be-separated-in-time` | Re-probe means LATER, not again in the same breath. When the operator says the bridge is up, wait 60-120s and probe again. Say the connector has not registered in this chat, never that the bridge is down. |
+| `bridge-server-edit-live-without-restart` | A code edit to a bridge server takes effect on the NEXT call - do not restart to deploy it. A tool's BEHAVIOUR changes instantly; the tool SURFACE does not. A newly ADDED tool is rejected as non-existent at first, then arrives on its own a few minutes later without any restart or new chat. So after adding a tool: WAIT and retry. Do not tell the operator a new chat is needed, and do not restart anything. |
 | `bridge-session-bound-to-pid` | A dead bridge costs the current chat, not the machine. |
 | `fs-server-pin-measured-output-schema-only` | When pinning a dependency against a schema fault, measure every schema the server emits, not the one that prompted the investigation. |
 | `onedrive-cloud-to-laptop-lag` **(repeat)** | Both sync legs cost minutes, so pick the one that does not block you. A LOCAL 8932 write unblocks the repo and the commit immediately; a cloud-side write blocks them for minutes. |
@@ -121,7 +121,7 @@ Platform counterpart: On macOS under Claude Cowork, use `aor-filesystem` over st
 
 ## Rules
 
-1. **Route to the bridge on any local signal.** When Jordan asks to create, read, edit,
+1. **Route to the bridge on any local signal.** When the operator asks to create, read, edit,
    move, or list a file AND references a `C:\` path, or says "my PC", "my machine",
    "my computer", "locally", "on disk", "my Cowork folder", "COPILOT_COWORK", or
    "my Downloads folder" — use the bridge tools. Do **not** use artifact tools or the
@@ -131,7 +131,7 @@ Platform counterpart: On macOS under Claude Cowork, use `aor-filesystem` over st
    twice per the retry rule above, do not quietly substitute artifact tools or the cloud
    workspace. Say plainly: "The local filesystem bridge is not connected — I can't write
    to your PC right now." Then wait. Offer session `output/` only as an explicit choice
-   Jordan accepts, never as an automatic substitution.
+   The operator accepts, never as an automatic substitution.
 
 3. **Report the path and verify the write.** After writing, state the exact absolute
    Windows path and read the file back with `read_text_file` to confirm it landed. Do not
@@ -141,11 +141,11 @@ Platform counterpart: On macOS under Claude Cowork, use `aor-filesystem` over st
 
 4. **Check before overwriting.** `write_file` overwrites silently and there is no delete
    tool, so anything overwritten is unrecoverable through the bridge. Before writing to a
-   path that may already exist, call `get_file_info` and warn Jordan if it does.
+   path that may already exist, call `get_file_info` and warn the operator if it does.
    `edit_file` fails safe when its match text is wrong — prefer it over `write_file` for
    changes to an existing file.
 
-5. **Artifacts are opt-in.** Use artifact tools / session `output/` only when Jordan
+5. **Artifacts are opt-in.** Use artifact tools / session `output/` only when the operator
    explicitly says "deliverable", "download", or "artifact". When it is genuinely unclear
    which route he wants, ask rather than guessing.
 
@@ -159,14 +159,14 @@ Platform counterpart: On macOS under Claude Cowork, use `aor-filesystem` over st
 
 ## When NOT to Use
 
-- Jordan says "deliverable", "download", "artifact", or "send me the file" — route to
+- The operator says "deliverable", "download", "artifact", or "send me the file" — route to
   session `output/` instead.
 - The target is a Cowork skill, `cowork-memory/`, or `copilot-instructions.md` — those
   live in OneDrive `Documents/Cowork` and are unreachable by the bridge. Use the OneDrive
   tools or the `/mnt/user-config/` mount.
 - The path is outside the two allowed directories — the bridge rejects it. Say so rather
   than writing somewhere else.
-- Deleting a file — the bridge exposes no delete tool. Tell Jordan to remove it himself.
+- Deleting a file — the bridge exposes no delete tool. Tell the operator to remove it himself.
 - Browser automation — that is the Web Automation bridge (port 8931, `playwright-skill`).
 - Running a command, script, `.bat`, `.cmd` or `.ps1` — that is the Command Bridge
   (port 8933, `command-bridge`). Write the script here, then run it there.
@@ -191,11 +191,11 @@ without the read-back.
 ## Guardrails
 
 - Never claim a file was written to the PC without a successful read-back.
-- Never substitute the cloud workspace for the bridge without Jordan's explicit consent.
+- Never substitute the cloud workspace for the bridge without the operator's explicit consent.
 - Never overwrite an existing file without first checking `get_file_info` and warning him.
 - Never write skills, memory, or instructions to the PC folder — they belong in OneDrive.
 - Never fabricate a path; report the path the bridge actually returned.
-- Never delete through the bridge — no delete tool exists; ask Jordan to remove it.
+- Never delete through the bridge — no delete tool exists; ask the operator to remove it.
 
 ## Critical: two different "Cowork" folders
 
@@ -224,7 +224,7 @@ Platform counterpart: On macOS under Claude Cowork, use `aor-filesystem` over st
 | `fs-server.cmd` | Filesystem MCP server (port 8932). | **Yes** — the two trailing arguments On macOS under Claude Cowork, use `aor-filesystem` over stdio with the roots configured by `Startup/posix/fs-server.sh`; no tunnel or bridge port is used. |
 | `pw-server.cmd` | Playwright MCP server (port 8931). | **Yes** — `--output-dir` On macOS under Claude Cowork, use `aor-filesystem` over stdio with the roots configured by `Startup/posix/fs-server.sh`; no tunnel or bridge port is used. |
 | `exec-server.cmd` | Commands MCP server (port 8933, `mcp-server-commands`). | **Yes** — the `cd /d` working directory On macOS under Claude Cowork, use `aor-filesystem` over stdio with the roots configured by `Startup/posix/fs-server.sh`; no tunnel or bridge port is used. |
-| `AUTORUN.ps1` | Retired queue runner — **manual use by Jordan only, never an agent fallback.** No longer auto-started. | **Yes** — the `$Root` variable |
+| `AUTORUN.ps1` | Retired queue runner — **manual use by the operator only, never an agent fallback.** No longer auto-started. | **Yes** — the `$Root` variable |
 
 If the folder is moved or renamed, edit `fs-server.cmd`, `pw-server.cmd`, `exec-server.cmd`
 and `AUTORUN.ps1` only, then restart VS Code and set all four ports to PUBLIC again. Do not
@@ -314,7 +314,7 @@ Platform counterpart: On macOS under Claude Cowork, use `aor-filesystem` over st
 
 ### When the command bridge is down — there is NO fallback (authoritative)
 
-If 8933 is unavailable, **stop and report the connection failure to Jordan.** Do not use
+If 8933 is unavailable, **stop and report the connection failure to the operator.** Do not use
 this bridge to route around it: never write a script to `COPILOT_COWORK\autorun\queue`,
 never invoke `AUTORUN.ps1`, and never substitute another execution runtime. Retry a single
 failed call once — the transport is stateless — then report and wait.
@@ -322,5 +322,5 @@ Platform counterpart: On macOS under Claude Cowork, use `aor-filesystem` over st
 
 The autorun watcher task was removed from `Startup\.vscode\tasks.json` on 2026-08-21
 (commit 784dc9f) so the queue is no longer armed. `AUTORUN.ps1` stays on disk as a manual
-tool for Jordan only. Earlier guidance in this skill that told you to drop scripts into the
+tool for the operator only. Earlier guidance in this skill that told you to drop scripts into the
 queue is superseded by this section.

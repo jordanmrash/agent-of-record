@@ -26,7 +26,7 @@ $stop = @(
  'Why','How','And','Not','But','For','With','From','Into','Over','Under','Was','Are',
  'Every','Each','Both','All','Any','One','Two','Three','Four','Five','Six','Seven',
  'License','Licence','Copyright','Readme','Json','Html','Http','Https','Url','Uri',
- 'Jordan','Rash','Director','Tax','Transformation',
+ 'the operator','Rash','Director','Tax','Transformation',
  'Automation','Partner','Manager','Senior','Associate',
  'Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday',
  'January','February','March','April','May','June','July','August','September',

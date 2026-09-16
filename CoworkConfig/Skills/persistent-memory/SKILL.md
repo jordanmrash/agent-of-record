@@ -1,11 +1,11 @@
 ---
 name: persistent-memory
 description: |
-  Persistent cross-session memory for Cowork: deep-tier memory files in Jordan's
+  Persistent cross-session memory for Cowork: deep-tier memory files in the operator's
   Documents/Cowork/cowork-memory folder (OneDrive), indexed by MEMORY-INDEX.md. Loads the
   file matching the work's focus area, creates one when none matches, and updates it when
   the work concludes.
-  Use when Jordan says "save memory", "load my memory", "what do you remember about ...",
+  Use when the operator says "save memory", "load my memory", "what do you remember about ...",
   "remember this for next time", "update my memory", "we're wrapping up", "close this out",
   or "zip up my memory to share"; and when a request continues earlier work on a topic with
   a memory file.

@@ -298,7 +298,7 @@ function validateBatchPath(input) {
 /* --------------------------------------------- approved output directive -- */
 /*
  * Reads  REM COWORK_OUTPUT: <path>   (or ::  or  = ) from the approved script.
- * The MCP caller cannot influence this -- it lives in the file Jordan approved.
+ * The MCP caller cannot influence this -- it lives in the file the operator approved.
  * Returns { dir, declared, created } or throws RejectError.
  */
 function resolveApprovedOutput(realScriptPath) {
@@ -926,8 +926,8 @@ const TOOL = {
     + 'blind-retry a state-changing job. 8933 jobs inherit the MACHINE PATH only, not the '
     + 'USER PATH. `where <tool>` therefore finds nothing for anything installed per-user '
     + '(PAC CLI, npm globals, dotnet global tools, VS Code CLIs) even when it resolves fine '
-    + 'in Jordan\'s own shell. Read the user PATH with `reg query "HKCU\\Environment" /v '
-    + 'Path` and locate the tool from there. '
+    + 'in the operator\'s own shell. Read the user PATH with `reg query "HKCU\\Environment" '
+    + '/v Path` and locate the tool from there. '
     /* PLUGIN-LESSONS:end */
   ,
   inputSchema: {

@@ -12,7 +12,7 @@ until an identity exists for it; see the 2026-09-02 section. A watchdog restarts
 8932/8933 run STATELESS, long synchronous jobs no longer kill 8933, and the COPILOT_COWORK
 folder is under git.
 The 2026-07-27 npx/quoting failure is long resolved. The unexplained ~5-minute terminal
-flash was RETIRED 2026-08-24 at Jordan's direction — deprioritised, not diagnosed.
+flash was RETIRED 2026-08-24 at the operator's direction — deprioritised, not diagnosed.
 
 ## 2026-09-02 (later session) - the tunnel question settled, and a stale copy found
 
@@ -35,7 +35,7 @@ on 8933 being separately addressable. Independent per-port failure is a FEATURE,
 **The watchdog DOES cover 8934.** `_bridge-watchdog.ps1` `$Bridges` lists all four ports
 with correct per-port flags, and `watchdog\status.txt` showed all four UP. The header
 comment in `tasks.json` still claimed the watchdog "was written for three ports"; that
-comment was stale, was believed over the code, and produced a false report to Jordan of a
+comment was stale, was believed over the code, and produced a false report to the operator of a
 live availability gap. Comment corrected in commit 29bda90.
 
 **KnownGood was stale by an entire bridge.** `Startup\KnownGood\tasks.json` had not been
@@ -91,7 +91,7 @@ single answer proves the whole chain end to end: PC -> devtunnel -> new bridge -
   the Microsoft Graph Command Line Tools client returned "Your sign-in was successful but
   does not meet the criteria to access this resource... restricted by your admin." The
   credentials were fine; the ROUTE was refused. **The implication drawn here - "any 8934
-  design in which a local script acquires a token on Jordan's behalf is likely dead at this
+  design in which a local script acquires a token on the operator's behalf is likely dead at this
   tenant" - was DISPROVEN 2026-09-02.** Conditional Access blocks the DEVICE-CODE grant
   specifically, not delegated sign-in as a class. Authorization-code + PKCE on a loopback
   redirect passes cleanly and is what the bridge runs on today. A measured block on one
@@ -141,7 +141,7 @@ is ahead on delete (they deliberately have none) and on governance - explicit pr
 flags, per-environment read_only, full audit of every mutating attempt including refusals.
 
 ### Non-admin paths that already work - do not assume admin is required
-Delegated access can never exceed Jordan's own rights, so the question is not "is he an
+Delegated access can never exceed the operator's own rights, so the question is not "is he an
 admin" but "which surface reaches those rights most cheaply". Admin is strictly needed only
 for the bridge to act UNATTENDED, as itself.
 1. **PAC CLI plus solutions - proven, zero admin, zero consent.** No `pac flow` group, so no
@@ -152,7 +152,7 @@ for the bridge to act UNATTENDED, as itself.
    setting, often left open to all users) and CONSENTING to its permissions (usually admin,
    and near-certain to be admin at a tenant that blocks device code). Even with both open,
    the ceiling is the same as path 1.
-3. **Browser automation in Jordan's own signed-in session** via the 8931 bridge - no
+3. **Browser automation in the operator's own signed-in session** via the 8931 bridge - no
    registration, no consent, and it reaches what the token paths cannot: the maker UI,
    flow on/off, run history. Brittle, and worth a firm-policy check first.
 
@@ -242,7 +242,7 @@ editing. The connector-level plugin description is the lever there, and it is un
   specifically to pick the bridges back up probed three ways — broad regex, tool-name regex,
   and the exact names `list_allowed_directories` and `run_batch_file` — found no bridge
   namespace, and concluded the PC side was down (VS Code / GO.bat / Ports panel). **That was
-  wrong.** The Cowork PLUGINS had simply been switched off. Jordan turned them back on and all
+  wrong.** The Cowork PLUGINS had simply been switched off. The operator turned them back on and all
   fourteen 8932 tools plus `run_batch_file` registered inside the already-running chat, both
   answering on the first call. Nothing was ever wrong with the machine.
 - **The tool surface is not immutably fixed at session start.** Re-enabling a connector
@@ -259,7 +259,7 @@ editing. The connector-level plugin description is the lever there, and it is un
 ### The LF/CRLF constraint (important)
 - Files written through the 8932 bridge arrive LF-only. cmd mis-parses LF-only `.bat` files
   — not just `call :label`, but silent early exits that write nothing and look like success.
-- Fix: run `CommandJobs\2026-08-18-fix-crlf-all.bat` after ANY batch of writes. It covers
+- Fix: run `CommandJobs\archive\2026-08-18-fix-crlf-all.bat` after ANY batch of writes. It covers
   `CommandJobs\*.bat` plus `Startup\*.ps1` and skips itself.
 - PowerShell is immune to LF. Prefer `.ps1` with a thin `.bat` wrapper.
 - Confirmed again 2026-08-18: a freshly written `.bat` needed normalizing before it would run.
@@ -323,7 +323,7 @@ editing. The connector-level plugin description is the lever there, and it is un
 ### Fallback path - THERE IS NONE (authoritative)
 - **If 8933 is unreachable, STOP and report the connection failure.** Do not write to
   `COPILOT_COWORK\autorun\queue`, do not invoke `AUTORUN.ps1`, and do not substitute any other
-  execution runtime. This is Jordan's settled ruling and overrides any earlier note describing
+  execution runtime. This is the operator's settled ruling and overrides any earlier note describing
   autorun as a fallback.
 - The Autorun watcher task was REMOVED from tasks.json on 2026-08-21 (commit 784dc9f) so the
   path is no longer armed on folder open. `AUTORUN.ps1` remains on disk and can be run by hand.
@@ -390,7 +390,7 @@ editing. The connector-level plugin description is the lever there, and it is un
 
 - 2026-08-20 — Approved GitHub for a PERSONAL account, PRIVATE repo, **tooling only**
   (`Startup\`, `CommandJobs\`, `CoworkConfig\`). `Outputs\` is excluded — deliverables are
-  never pushed. Jordan did not confirm the approval covers firm work product, so the scope
+  never pushed. The operator did not confirm the approval covers firm work product, so the scope
   stays narrow deliberately. It must be a NEW repo with clean history: gitignoring `Outputs\`
   does not remove it from the existing COPILOT_COWORK commits, so pushing that repo would
   upload every deliverable ever committed. Pre-push requires a secret/client scan of
@@ -412,7 +412,7 @@ editing. The connector-level plugin description is the lever there, and it is un
 - [x] ~~Commit the 8/24 memory and lessons files stranded cloud-side by `1d60874`~~ — DONE
       2026-08-24 in `50a425f`. The OneDrive client caught up on its own; no hand-placement
       was needed, matching the 2026-08-20 precedent.
-- [x] ~~Two write-path instructions are STALE~~ — FIXED 2026-08-24 on Jordan's approval, and
+- [x] ~~Two write-path instructions are STALE~~ — FIXED 2026-08-24 on the operator's approval, and
       it was FOUR surfaces rather than two: `copilot-instructions.md` (the "exactly two
       directories" claim and the "NOT reachable by the bridges" paragraph),
       `self-improvement` SKILL.md (environment block + Write row), `persistent-memory`
@@ -423,7 +423,7 @@ editing. The connector-level plugin description is the lever there, and it is un
       which loads unconditionally regardless of routing. `git-commit-job-must-stage-itself`
       was promoted in the same pass to `git-bridge` SKILL.md § Guardrails.
 - [x] ~~Identify the terminal window that flashes roughly every 5 minutes~~ — DROPPED
-      2026-08-24 at Jordan's direction. Deprioritised, NOT diagnosed: the cause is still
+      2026-08-24 at the operator's direction. Deprioritised, NOT diagnosed: the cause is still
       unknown and no scheduler dump was run. Do not reopen it unprompted.
 - [x] ~~Get the git bridge (port 8934) connected~~ — CLOSED 2026-08-18: no such server exists;
       the skill was rewritten to run git through the 8933 command bridge instead.
@@ -437,8 +437,8 @@ editing. The connector-level plugin description is the lever there, and it is un
       that git holds history. Leave them until the repo has proven itself.
 
 ## Preferences & Constraints
-- Approved 8933 workflow: Jordan describes a task; Cowork proposes the EXACT commands and the
-  exact output folder; Jordan approves once; Cowork writes the `.bat` via the 8932 bridge and
+- Approved 8933 workflow: The operator describes a task; Cowork proposes the EXACT commands and the
+  exact output folder; the operator approves once; Cowork writes the `.bat` via the 8932 bridge and
   immediately runs it with NO second approval; Cowork reports stdout, stderr, exit code,
   affected files, and output locations. No allowlist — a new `.bat` is authored per task.
 - Do not blindly retry a failed 8933 call. Diagnose first.
@@ -447,10 +447,10 @@ editing. The connector-level plugin description is the lever there, and it is un
 - Report exact absolute Windows paths after writing.
 
 ## Key Exchanges
-- 2026-08-18 — Jordan asked whether the monitoring fixes were themselves breaking the
+- 2026-08-18 — the operator asked whether the monitoring fixes were themselves breaking the
   bridges. They were not: the log showed only 3 restarts all day (00:23 kill test, 07:36
   x2) and nothing during the reported outage. Check evidence before blaming new machinery.
-- 2026-08-18 — Jordan corrected a claim that persistent memory is capped at 512 characters.
+- 2026-08-18 — the operator corrected a claim that persistent memory is capped at 512 characters.
   That cap belongs to the built-in memory tool; the persistent-memory skill writes uncapped
   `.md` files. Keep the two systems distinct.
 
@@ -500,7 +500,7 @@ Absorbed from six memory-tool entries so the detail survives in the file store.
 - Watchdog script — `...\COPILOT_COWORK\Startup\_bridge-watchdog.ps1`
 - Watchdog installer — `...\Startup\_watchdog-install.ps1`
 - Status + history — `...\Outputs\2026-08-18 - Bridge Hardening\watchdog\status.txt`, `watchdog.log`
-- CRLF fixer — `...\CommandJobs\2026-08-18-fix-crlf-all.bat`
+- CRLF fixer — `...\CommandJobs\archive\2026-08-18-fix-crlf-all.bat`
 - Async launcher — `...\CommandJobs\_async-launch.ps1`
 - Git init job — `...\CommandJobs\git-init.ps1` and `git-init.bat`
 - Job logs — `...\CommandJobs\Logs\<job>_<stamp>.log`

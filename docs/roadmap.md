@@ -76,6 +76,10 @@ Add independently tested, synthetic-data versions of selected workflows:
 - Workpaper intake and validation.
 - Reconciliation and close support.
 - Research and professional communication.
+- Workflow conversion from desktop automation into tested Python packages.
+
+Each applied skill is expected to define its inputs, evidence, deterministic calculations,
+failure behavior, review points, audit record, and tests before it is treated as reusable.
 
 ## v0.6: Portfolio governance
 
