@@ -34,6 +34,14 @@ The skills plugin is installable from this repository as a marketplace; closes #
   lines). The source is scanned and `--check-tree` proves the copy identical, so the copy is skipped
   whole; the self-test plants a copy with a hit and proves it is neither counted nor rewritten by
   `--fix` (12 -> 15 cases).
+- **`analyser.approved` is declared LF.** The first CI run of this release failed the Windows gate
+  only: `.gitattributes` had no rule for the `.approved` extension, so the Windows runner checked the
+  marker out with CRLF in the source and the generated copy alike; `dream_analyze_selftest.py` then
+  rewrote the source LF, as it is built to, and the byte-for-byte tree comparison inside
+  `build_plugin_selftest.py` saw the copy differ (1 of 72 cases). The macOS gate and the local
+  Windows gate passed because their checkouts were already LF. `*.approved text eol=lf` makes the
+  checkout canonical on every platform; the failure was reproduced and the fix proven on fresh
+  `core.autocrlf=true` clones before the fix was pushed.
 - `CITATION.cff` 0.3.4. The skills plugin stays at 0.6.1: no skill changed.
 
 ## 0.3.3 - 2026-09-15
