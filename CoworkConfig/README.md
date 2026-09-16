@@ -16,6 +16,7 @@ the repository holds a copy so the corpus is versioned, gated and published.
 | `Skills/<name>/SKILL.md` | `skills\<name>\SKILL.md` | Ten skills. Each has a frontmatter block Cowork reads at session start and a body it loads when the skill fires. |
 | `Skills/self-improvement/scripts/` | with its skill | The lesson tooling - `lesson_check`, `lesson_dupe`, `lesson_gate`, `digest_apply`, `skill_lessons`, `plugin_lessons`, `scope_check`, `job_lint`, `verify_delivery`, `dream_analyze`, `nightly_measure` - and the ten negative-control self-test suites the release gate runs against them. |
 | `Skills/_ATTRIBUTION-TEMPLATE.md` | - | The attribution block every skill carries. |
+| `plugin/` | - | The plugin root a Claude marketplace installs: `.claude-plugin/plugin.json` (the shipping list under `metadata.skills`) and a `skills/` tree **generated** from `Skills/` by `scripts/build_plugin.py --tree`. Not loaded by Copilot Cowork. |
 | `copilot-instructions.md` | `copilot-instructions.md` | Standing instructions, including the generated lesson digest. |
 | `cowork-memory/cowork-lessons.md` | `cowork-memory\cowork-lessons.md` | The lessons corpus: dated entries keyed by `Pattern-Key`, each with a Failure, a Why, a Worked-instead and an evidence tag. |
 | `cowork-memory/MEMORY-INDEX.md` | `cowork-memory\MEMORY-INDEX.md` | One row per memory file; the `persistent-memory` skill reads it first on Copilot, and it is read directly on Claude. |
@@ -33,6 +34,7 @@ that guards each one.
 | `<!-- LESSON-DIGEST:BEGIN … END -->` | `copilot-instructions.md` | `digest_apply.py` | rules in `cowork-lessons.md` |
 | `<!-- SKILL-LESSONS:start … end -->` | each `SKILL.md` | `skill_lessons.py` | rules routed to that skill by `skill_lesson_routes.json` |
 | `/* PLUGIN-LESSONS:start … end */` | `Startup/CommandBridge/batch-exec-server.js`, `Startup/FlowBridge/flow-mcp-server.js` | `plugin_lessons.py` | rules routed to that server by `plugin_lesson_routes.json` |
+| `plugin/skills/` (whole tree) | `CoworkConfig/plugin/` | `build_plugin.py --tree` | every file under `Skills/` for the skills the manifest ships; `--check-tree` fails the gate on one differing byte |
 
 The corpus is the source; the blocks are delivery. A rule that is in the corpus
 but reaches no skill and no server is delivered nowhere, and the gate's surface

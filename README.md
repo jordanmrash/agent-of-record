@@ -39,10 +39,10 @@ The scenario, the recorded transcripts and what each exit code means are in the 
 
 | | |
 |---|---|
-| **Status** | v0.3.3 - portable. Windows and macOS, with a contributor on the macOS side. `main` keeps its history; changes arrive by pull request and the gate runs on both platforms in CI. Interfaces may still change between minor versions. |
+| **Status** | v0.3.4 - portable. Windows and macOS, with a contributor on the macOS side. `main` keeps its history; changes arrive by pull request and the gate runs on both platforms in CI. Interfaces may still change between minor versions. |
 | **Platform** | Windows and macOS/Linux. The local layer is VS Code tasks over per-platform launchers - PowerShell and batch files on Windows, shell scripts under `Startup/posix/` elsewhere. The command bridge is one implementation with one refusal set, proven on whichever platform runs the gate. |
 | **Host** | The four bridges are standard MCP servers. Microsoft 365 Copilot Cowork is the client this repository was built and operated against; it is reached through a dev tunnel only because that client is cloud-hosted. Claude Cowork, in a local desktop session, starts the one server it needs - the approved command executor - as a stdio process with no tunnel. That route ran on a Mac on 2026-09-15 ([evidence](docs/evidence/mac-operated-2026-09-15.md)): the executor and the install check are operated, and the skills-plugin upload is not yet confirmed. |
-| **Install** | [Choose your route](docs/install/README.md), then your platform: [Copilot Cowork on Windows](docs/setup.md) or the [Claude Cowork pages](docs/install/claude-cowork.md) - a bare machine to reachable bridges and an installed configuration, with `scripts/install_check.py` proving it by completing a real MCP handshake against each bridge. On the hosted route `scripts/copilot/personalize.py` replaces every placeholder in one pass and each bridge ships its connector package under `Startup/Plugins/`. The ten skills ship as one plugin: take `agent-of-record-skills-<platform>.plugin` from the [latest release](https://github.com/jordanmrash/agent-of-record/releases/latest), or build it with `python scripts/build_plugin.py`, and install it through **Customize → Plugins → Add → Upload plugin**. |
+| **Install** | [Choose your route](docs/install/README.md), then your platform: [Copilot Cowork on Windows](docs/setup.md) or the [Claude Cowork pages](docs/install/claude-cowork.md) - a bare machine to reachable bridges and an installed configuration, with `scripts/install_check.py` proving it by completing a real MCP handshake against each bridge. On the hosted route `scripts/copilot/personalize.py` replaces every placeholder in one pass and each bridge ships its connector package under `Startup/Plugins/`. The ten skills ship as one plugin, two ways: this repository is a plugin marketplace (`/plugin marketplace add jordanmrash/agent-of-record`, then `/plugin install agent-of-record-skills@agent-of-record`), and each release carries the built `agent-of-record-skills-<platform>.plugin` for **Customize → Plugins → Add → Upload plugin**. Neither install has been operated on a real machine yet. |
 
 Professional work is adopting AI faster than it is developing the controls, operating models, and institutional knowledge needed to use it reliably.
 
@@ -141,7 +141,7 @@ These are measurements from the published tree, not aspirational claims. The tab
 | Lesson keys routed into plugin tools | 5 |
 | Routed skills | 8 |
 | Self-test suites run by the gate | 17 |
-| Checks in the release gate | 29 |
+| Checks in the release gate | 30 |
 | Behaviorally verified effective rules | 1 |
 | Behaviorally verified inert rules | 0 |
 | Rules a checker enforces on some surfaces and is blind on others | 6 |
@@ -206,7 +206,7 @@ Delivery is not treated as enforcement. A rule in a skill reaches only sessions 
 ```text
 .github/         contribution, CI and Dependabot configuration
 CommandJobs/     approval-gated standing jobs; archive/ holds spent one-offs and the macOS evidence scripts
-CoworkConfig/    skills, memory, instructions, lesson routing, verification
+CoworkConfig/    skills, memory, instructions, lesson routing, verification; plugin/ is the generated plugin root a marketplace installs
 docs/            public-accounting vision, controls, architecture, evidence, roadmap, published writing
 examples/        synthetic demonstrations with no client or firm data
 GitHubSetup/     clean-room publication and disclosure gates
@@ -221,7 +221,7 @@ python scripts/public_scan.py
 python scripts/release_check.py --json release-results.json
 ```
 
-The release check runs the lessons validator, digest currency check, skill and plugin delivery checks, enforcement-scope audit, per-surface gate audit, the cross-surface bridge facts check, the measured-table currency check, the operator-name scan, the synthetic control-loop demonstration, and the negative-control self-test suites. `--json` writes the results in machine-readable form. GitHub Actions runs the same checks on `windows-latest` and `macos-latest` for every push and pull request, and publishes a results file per platform as a build artifact.
+The release check runs the lessons validator, digest currency check, skill and plugin delivery checks, enforcement-scope audit, per-surface gate audit, the cross-surface bridge facts check, the measured-table currency check, the operator-name scan, the plugin-tree currency check, the synthetic control-loop demonstration, and the negative-control self-test suites. `--json` writes the results in machine-readable form. GitHub Actions runs the same checks on `windows-latest` and `macos-latest` for every push and pull request, and publishes a results file per platform as a build artifact.
 
 ## Author perspective
 
@@ -235,7 +235,7 @@ The operating rule is:
 
 ## Status and roadmap
 
-This is the **v0.3: Portable** series, at release 0.3.3. The foundation runs on Windows and macOS from one tree, the command bridge's refusals are proven live on both in CI, `scripts/install_check.py` defines "installed" as a completed MCP handshake rather than a file that exists, and `AGENTS.md` carries the install contract for any agent pointed at the folder. `main` keeps its history and takes pull requests; the macOS layer has a contributor. The skills plugin carries its own version line in `CoworkConfig/plugin/.claude-plugin/plugin.json` and moves when a shipped skill changes, independently of the repository release. The portable layer was pulled forward ahead of the applied-work contract because a contributor on a second platform needed it first; the two verification items carried from v0.2 - behavioral verdicts for ten routed rules, and reduction of duplicated configuration statements - move with the contract.
+This is the **v0.3: Portable** series, at release 0.3.4. The foundation runs on Windows and macOS from one tree, the command bridge's refusals are proven live on both in CI, `scripts/install_check.py` defines "installed" as a completed MCP handshake rather than a file that exists, and `AGENTS.md` carries the install contract for any agent pointed at the folder. `main` keeps its history and takes pull requests; the macOS layer has a contributor. The skills plugin carries its own version line in `CoworkConfig/plugin/.claude-plugin/plugin.json` and moves when a shipped skill changes, independently of the repository release. The portable layer was pulled forward ahead of the applied-work contract because a contributor on a second platform needed it first; the two verification items carried from v0.2 - behavioral verdicts for ten routed rules, and reduction of duplicated configuration statements - move with the contract.
 
 - **v0.4: Applied-work contract** — a common input, evidence, review, error, and audit contract for applied skills, plus the two carried verification items.
 - **v0.5: Applied public-accounting skills** — independently tested workflows using synthetic data; the planned list is in the roadmap.

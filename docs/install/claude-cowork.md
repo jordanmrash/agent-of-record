@@ -100,7 +100,19 @@ reaches this host through the generated blocks in the skills instead.
 
 ## Skills on this host
 
-Build the same ten-skill plugin for either platform:
+Two install paths, neither yet operated on a real machine.
+
+**From the repository as a marketplace** (Claude Code; Claude Cowork where the app offers to add a
+marketplace): the root `.claude-plugin/marketplace.json` lists one plugin whose root is
+`CoworkConfig/plugin/` - the manifest plus a `skills/` tree generated from `CoworkConfig/Skills/`
+and checked by the release gate.
+
+```text
+/plugin marketplace add jordanmrash/agent-of-record
+/plugin install agent-of-record-skills@agent-of-record
+```
+
+**From a built file.** Build the same ten-skill plugin for either platform:
 
 ```bash
 python3 scripts/build_plugin.py --strict --platform macos     # Mac
@@ -108,7 +120,7 @@ python  scripts\build_plugin.py --strict --platform windows  # Windows
 ```
 
 Install it through **Customize -> Plugins -> Add -> Upload plugin**, restart Claude, and
-confirm `ListSkills` returns all five. Each `SKILL.md` is one portable instruction set: where
+confirm `ListSkills` returns all ten. Each `SKILL.md` is one portable instruction set: where
 a mechanism differs, the Windows and macOS forms are stated together.
 
 Opening the `.plugin` file from Finder or Explorer does not work -- Claude registers no

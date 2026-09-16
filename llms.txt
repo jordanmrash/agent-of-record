@@ -32,6 +32,8 @@
 - Startup/posix/
 - CoworkConfig/cowork-memory/cowork-lessons.md
 - CoworkConfig/Skills/self-improvement/
+- .claude-plugin/marketplace.json
+- CoworkConfig/plugin/.claude-plugin/plugin.json
 - GitHubSetup/
 
 ## Synthetic example

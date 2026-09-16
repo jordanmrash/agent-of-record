@@ -12,7 +12,7 @@
 | Lesson keys routed into plugin tools | 5 |
 | Routed skills | 8 |
 | Self-test suites run by the gate | 17 |
-| Checks in the release gate | 29 |
+| Checks in the release gate | 30 |
 | Behaviorally verified effective rules | 1 |
 | Behaviorally verified inert rules | 0 |
 | Rules a checker enforces on some surfaces and is blind on others | 6 |
