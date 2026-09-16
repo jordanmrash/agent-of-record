@@ -4,7 +4,46 @@ All notable changes to the published repository. Through 0.3.0 each entry
 summarized one rebuilt snapshot; from 0.3.0 `main` keeps its history and each
 entry summarizes a release.
 
-## Unreleased
+## 0.3.3 - 2026-09-15
+
+Housekeeping after the 2026-09-15 public validation - a fresh clone of `73eedf4`, the GitHub API,
+the gate and the demonstration run against it: the published tree now states what its own evidence
+records, its measured table is generated, and its operating text no longer names the operator.
+
+- **The Mac cells match the evidence.** `README.md`, `docs/install/README.md`,
+  `docs/install/claude-cowork.md` and the two Mac pages said "not yet operated" while
+  `docs/evidence/mac-operated-2026-09-15.md` recorded `install_check.py --route local` CLEAN,
+  `run_batch_file` on the machine itself and `install-mac.sh --register` retiring the two entries
+  the route no longer needs. They now say what happened: executor and install check operated,
+  skills-plugin upload not yet confirmed. The Copilot Cowork Mac cell says not supported, which the
+  retired `docs/setup-macos.md` already said; the README's bridge section describes the two routes
+  as `docs/bridge-facts.json` declares them; the quickstart's "five repository skills" is ten.
+- **The measured table is generated, and the gate fails when it is stale.**
+  `scripts/measured_table.py` computes every figure from the digest marker, the corpus, the routes,
+  the ledger, the tier file and `release_check.py` itself, and writes one block into `README.md` and
+  `docs/measured-results.md`; `--check` joins the gate, with a self-test that breaks it. The typed
+  tables had drifted: 123 entries and 93 rules against 120 and 94 in the corpus, 13 self-test suites
+  against the 15 the gate ran.
+- **Operating text no longer names the operator.** `scripts/operator_name_check.py` reads the
+  author's given name from `CITATION.cff` and fails the gate on any skill instruction, lesson, digest
+  line, job or server text that addresses that person by name outside an attribution block; `--fix`
+  rewrote 198 line(s) to "the operator" ("the author" under `docs/`) and the digest, skill and plugin
+  blocks were regenerated from the corrected corpus. Rule lines of ledger-verified lessons are kept
+  as written and reported, because their text carries a behavioral verdict.
+- **Spent jobs archived.** The four dated one-off jobs and the eleven `mac-evidence-*.sh` scripts
+  moved to `CommandJobs/archive/`, still runnable by relative path; `CommandJobs/README.txt` points
+  at the new location.
+- **README restructured, not rewritten.** Badges, a contents line and the runnable demonstration with
+  its captured output come first; the article list lives only in `docs/published-writing.md`, which
+  gains the 2026-09-11 article, and the applied-skill list only in `docs/roadmap.md`. The skills
+  plugin is offered from the release assets with the upload path spelled out.
+- **Repository hygiene.** `.github/dependabot.yml` for the pinned npm runtime under `Startup/` and
+  the actions CI uses; `CITATION.cff` 0.3.3; skills plugin 0.6.1 for the text changes above; the
+  release gate is `RELEASE_CHECK: CLEAN (29 checks)`.
+- **Known gap, tracked as #21.** A marketplace-installable layout - `.claude-plugin/marketplace.json`
+  at the root pointing at a plugin root that contains `skills/` - needs the skills tree moved or
+  generated; `/plugin marketplace add jordanmrash/agent-of-record` does not work yet, and the upload
+  path above is the install path.
 
 The Claude Cowork route narrows to the approved command executor, reversing the
 three-bridge scope recorded further down this section; every skill ships to every

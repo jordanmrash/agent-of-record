@@ -1,0 +1,13 @@
+# Dependabot keeps the two things this repository pins from outside it current:
+# the npm runtime the hosted route needs (Startup/package.json) and the actions CI uses.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /Startup
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly

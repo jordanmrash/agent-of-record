@@ -17,7 +17,7 @@
     "broader belongs in the companion skill.",
     "",
     "WHICH SERVERS ARE ELIGIBLE",
-    "Only servers Jordan owns. Measured 2026-09-03 from the launch commands:",
+    "Only servers the operator owns. Measured 2026-09-03 from the launch commands:",
     "  8933  node CommandBridge\\batch-exec-server.js        eligible - own code",
     "  8934  node FlowBridge\\flow-mcp-server.js             eligible - own code",
     "  8932  npx -y @modelcontextprotocol/server-filesystem  NOT eligible - upstream",

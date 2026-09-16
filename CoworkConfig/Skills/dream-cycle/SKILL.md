@@ -6,7 +6,7 @@ description: >-
   files and the built-in memory store, then PROPOSES merges, retirements,
   contradictions and reachability gaps in a dated report. It never edits or
   deletes a lesson, a memory or an instruction file: every change waits for
-  Jordan's approval the next morning. Use when Jordan says "run the dream
+  The operator's approval the next morning. Use when the operator says "run the dream
   cycle", "nightly review", "consolidate my lessons", "clean up my memory",
   "what should be retired", "is my memory still accurate", or when the 2am
   scheduled task fires. Do NOT use to log one lesson (self-improvement), to
@@ -158,7 +158,7 @@ plugin segment is worth reporting even when no skill drifted, and an oversized
 one is a finding in its own right - `plugin_lessons.py` prints each segment's
 byte cost against its declared `max_bytes` on every run.
 
-Only servers Jordan owns can carry a segment: 8933 (`batch-exec-server.js`) and
+Only servers the operator owns can carry a segment: 8933 (`batch-exec-server.js`) and
 8934 (`flow-mcp-server.js`). 8931 and 8932 launch from `npx`, so an edit lands
 in `node_modules` and is overwritten on the next start - their rules stay in
 the companion skills, which `skill_lesson_routes.json` already covers. A route
@@ -195,7 +195,7 @@ The reason is not caution for its own sake. At 2am there is no one to ask, and
 "superseded" is a judgement, not a measurement. A wrong retirement removes the
 only record of a mistake and the mistake comes back. The entry
 `artifact-deletion-reverts-after-verified-absent` also shows a deletion is not
-always as final as it reads. So: the sweep finds, Jordan disposes.
+always as final as it reads. So: the sweep finds, the operator disposes.
 
 If a run ever reports that it changed a lesson or memory file, treat that as a
 defect in this skill and stop scheduling it.
@@ -246,7 +246,7 @@ only runs the mechanical pass.
 ## Run it when there is something to consolidate
 
 A consolidation pass over an unchanged knowledge base produces yesterday's
-report again, which trains the reader to ignore it - and Jordan is
+report again, which trains the reader to ignore it - and the operator is
 cost-conscious about credit use, so a no-op sweep is a real waste.
 
 **Compare a CORPUS CHECKPOINT, not the lessons file's date.** A built-in memory
@@ -268,7 +268,7 @@ work needed to answer "did anything change" honestly, not overhead.
 
 ## Two modes - say which one ran
 
-**CLOUD mode** - the normal 2am case. Jordan's PC is asleep, so the local
+**CLOUD mode** - the normal 2am case. The operator's PC is asleep, so the local
 bridges are not registered. There is NO local git, NO `run_batch_file`, and the
 scripts cannot be executed on his machine. Work entirely from M365:
 
@@ -377,14 +377,14 @@ scripts cannot be executed on his machine. Work entirely from M365:
 
 **FULL mode is INTERACTIVE ONLY. A scheduled run is always CLOUD mode, even if
 the PC happens to be awake.** FULL mode writes and runs a `.bat` through 8933,
-and Jordan's bridge workflow requires an explicit approval before a job is
+and the operator's bridge workflow requires an explicit approval before a job is
 written and run. An unattended 2am run cannot obtain that approval, so taking
 the FULL path on a schedule would quietly bypass the governance rule - the fact
 that the commands are read-only does not make the bypass acceptable. A
 scheduled run states that local git review was unavailable and moves on.
 Platform counterpart: On macOS under Claude Cowork, FULL mode uses approved `.sh` jobs through the `aor-batch-exec` stdio server; CLOUD mode is unchanged and uses no local bridge.
 
-**FULL mode** - Jordan is present and asks. It follows the SAME corpus scope,
+**FULL mode** - The operator is present and asks. It follows the SAME corpus scope,
 integrity rules, analysis rules, proposal schema, report format and mutation
 prohibitions as CLOUD. It differs only in execution:
 
@@ -393,7 +393,7 @@ prohibitions as CLOUD. It differs only in execution:
   `git diff --stat`, run as a read-only `.bat` through 8933, proposed and
   approved the normal way.
 - Runs the scripts in place rather than retrieving them.
-- Does NOT send the notification email unless Jordan asks - he is already in
+- Does NOT send the notification email unless the operator asks - he is already in
   the conversation, and emailing him a summary he just watched being produced
   is noise.
 - Still writes AND verifies the dated report. That is not CLOUD-specific.
@@ -497,7 +497,7 @@ procedure lets punctuation or ordering split one proposal into two.
 **Do not re-propose a declined FINGERPRINT.** Reopening one requires linking
 the prior ID and stating the new evidence and the substantive difference (§2).
 Silently re-raising a declined proposal under a fresh ID is how a nightly
-report becomes something Jordan stops reading.
+report becomes something the operator stops reading.
 
 ## Routine
 
@@ -542,7 +542,7 @@ report becomes something Jordan stops reading.
    `MARKERS-ABSENT` means the marker pair was never placed in that server -
    deliberate, because placing markers in JavaScript is a reviewed hand edit,
    not something a 2am run may do. Over-budget means the routed rules no longer
-   fit the declared `max_bytes`; that is a curation decision for Jordan, and
+   fit the declared `max_bytes`; that is a curation decision for the operator, and
    the fix is usually to move a rule to the companion skill rather than to
    raise the ceiling. Both are exit 2. Say which one, and say that nothing was
    written.
@@ -577,13 +577,13 @@ Platform counterpart: On macOS under Claude Cowork, FULL mode uses approved `.sh
 6. **Write the report** to `Documents/Cowork/dream-reports/YYYY-MM-DD.md`.
 7. **Report in chat** in the short format below.
 
-## Getting the report to Jordan, and the morning handoff
+## Getting the report to the operator, and the morning handoff
 
 The 2am run happens in its OWN conversation. Nothing carries it into the chat
-Jordan opens the next morning - a fresh session has no idea the sweep ran, and
+The operator opens the next morning - a fresh session has no idea the sweep ran, and
 the report will sit in OneDrive unread unless something pushes it.
 
-**So the CLOUD run emails it.** After writing the report, send Jordan the short
+**So the CLOUD run emails it.** After writing the report, send the operator the short
 summary block plus the proposal headings, subject `Dream cycle - <date> - N
 proposals`. It lands in his inbox overnight and is there when he starts. If the
 run found nothing worth acting on, say that in one line and still send it - an
@@ -601,11 +601,11 @@ Do NOT promise a link back to the 2am conversation, and do not link to one even
 if a URL is available. That session ran while the PC was asleep, so it had NO
 bridges - and the tool surface is fixed at session start, which means that
 conversation can never apply a proposal no matter when it is reopened. Sending
-Jordan there would be sending him to a dead end that looks like the right
+The operator there would be sending him to a dead end that looks like the right
 place. The email should say plainly: read this, then start a NEW chat at your
 PC and say "dream".
 
-**Write the email so the decisions can be made from the email itself.** Jordan
+**Write the email so the decisions can be made from the email itself.** The operator
 should be able to read it on a phone over coffee and arrive at his desk knowing
 what he wants to approve. List the proposals one line each with the key or file
 they touch, and show BOTH a short ordinal for readability and the stable ID.
@@ -626,7 +626,7 @@ approval that names only ordinals - reports get regenerated and reordered, and
 Keep the body short. The report holds the evidence; the email holds the choices.
 
 **The morning half is NOT scheduled and must not pretend to be.** Applying the
-proposals needs the bridges, so it happens when Jordan is at his PC and asks.
+proposals needs the bridges, so it happens when the operator is at his PC and asks.
 When he opens a session and says "apply the dream proposals", "what did the
 dream find", or just "dream":
 
@@ -643,7 +643,7 @@ dream find", or just "dream":
    DC-2026-08-31-MERGE-001 and -DATE-003" is valid; "apply all the merges" or
    "apply everything" is NOT - a category is not an identification. Before
    executing, restate the exact proposal IDs, the files or keys each touches,
-   and the change each makes, as ONE bounded change set, and let Jordan correct
+   and the change each makes, as ONE bounded change set, and let the operator correct
    it before anything runs.
 
    This matches his established command-bridge workflow - one explicit approval
@@ -655,7 +655,7 @@ dream find", or just "dream":
    declined, so the next sweep does not re-propose a declined one.
 Platform counterpart: On macOS under Claude Cowork, FULL mode uses approved `.sh` jobs through the `aor-batch-exec` stdio server; CLOUD mode is unchanged and uses no local bridge.
 
-If Jordan never asks, nothing happens - and that is the correct behaviour, not
+If the operator never asks, nothing happens - and that is the correct behaviour, not
 a gap to engineer around. An unattended agent applying yesterday's proposals to
 a knowledge base is the exact failure this skill exists to avoid.
 
@@ -719,7 +719,7 @@ verified analysis to `INCOMPLETE` because a mail call failed would discard good
 work and misdescribe what actually happened. The reverse still holds absolutely:
 a notification may never claim a report that was not verified.
 
-Keep the chat summary to that. The detail belongs in the report, which Jordan
+Keep the chat summary to that. The detail belongs in the report, which the operator
 reads when he wants it.
 
 ## When NOT to Use
@@ -751,7 +751,7 @@ reads when he wants it.
   pruning, that is an approved maintenance task that first preserves the IDs and
   dispositions into a compact ledger - and it is never done by the dream cycle
   itself.
-- **No autonomous cleanup, ever, in any mode** - including when Jordan has
+- **No autonomous cleanup, ever, in any mode** - including when the operator has
   previously approved a similar-looking proposal. Approval attaches to specific
   proposal IDs, never to a category or a resemblance. "He approved a merge like
   this last week" authorises nothing.

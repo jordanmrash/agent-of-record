@@ -195,6 +195,6 @@ if ($recovered) {
 Write-Output "The client restarted cleanly but hydration STILL fails."
 Write-Output "A stuck process was therefore not the cause. The next step up the ladder"
 Write-Output "is onedrive.exe /reset, which rebuilds the local sync database - that is a"
-Write-Output "bigger action and needs Jordan's explicit go-ahead."
+Write-Output "bigger action and needs the operator's explicit go-ahead."
 Write-Output "COWORK_RESULT: FAIL restart did not restore hydration"
 exit 1

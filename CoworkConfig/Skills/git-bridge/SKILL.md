@@ -1,10 +1,10 @@
 ---
 name: git-bridge
 description: >-
-  Version control for Jordan's COPILOT_COWORK folder, run as git commands inside a batch job
+  Version control for the operator's COPILOT_COWORK folder, run as git commands inside a batch job
   through the EXISTING command bridge (tool run_batch_file). There is NO dedicated git MCP
   server, and no other bridge has anything to do with git.
-  Use when Jordan says "what changed", "commit this", "show me the diff", "what did you change",
+  Use when the operator says "what changed", "commit this", "show me the diff", "what did you change",
   "roll that back", "undo that change", "show the history", "create a branch", or before and
   after any batch of edits to his bridges, skills or job scripts. Read operations (status, diff,
   log, show) run freely; commits are proposed with the exact message and file list first.
@@ -147,7 +147,7 @@ as a full rollback point. Memory carries the judgment; git carries the facts.
 - **Before editing** anything under `Startup\` — bridge configuration is the highest-risk
   surface on the machine. A broken `tasks.json` costs every bridge at once.
 - **After completing** any batch of edits, so the change is captured while its rationale is fresh.
-- **When Jordan asks what changed** — `git diff` is authoritative where memory and chat history
+- **When the operator asks what changed** — `git diff` is authoritative where memory and chat history
   are not.
 - **When something breaks** — `git log` and `git diff` identify what moved, instead of guessing.
 
@@ -156,7 +156,7 @@ as a full rollback point. Memory carries the judgment; git carries the facts.
 1. **Read first.** Run a status/diff job before proposing anything. Never describe a change
    without reading the actual diff.
 2. **Summarize in business language.** Report what changed and why it matters, not raw hunks,
-   unless Jordan asks for the diff itself.
+   unless the operator asks for the diff itself.
 3. **Propose the commit.** Show the exact files to be staged and the exact commit message,
    then let the approval card be the gate. Never stage `.` blindly — name the files.
 4. **Commit message format:** a short imperative subject line, then a body explaining WHY.
@@ -207,7 +207,7 @@ git --no-pager log -5 --oneline
 
 ## 6. Reverting
 
-When Jordan asks to undo something: identify the commit with `git --no-pager log`, show him
+When the operator asks to undo something: identify the commit with `git --no-pager log`, show him
 what that commit contains with `git --no-pager show <sha>`, and propose `git revert --no-edit <sha>`
 — which creates a NEW commit undoing the change. Never `reset --hard`. Revert preserves
 history; reset destroys it, and a destroyed local history has no remote to restore it from.
@@ -235,7 +235,7 @@ the file is too large for version control and belongs in the output folder only.
   bridge; it does not replace it.
 - **Browser automation** → `playwright-skill`.
 - **Anything involving GitHub, a remote, a pull request, or a clone** — this repository is local
-  only. If Jordan wants code on GitHub, that is a separate decision requiring firm approval, not
+  only. If the operator wants code on GitHub, that is a separate decision requiring firm approval, not
   a git command.
 - **Client or engagement files.** This repository is for Cowork tooling. Client deliverables
   belong in the firm's controlled systems, never in a local git repo on a laptop.
@@ -259,7 +259,7 @@ the file is too large for version control and belongs in the output folder only.
   on Windows, `cowork-close.sh` on macOS) runs
   `git add -A` only after printing the complete working tree and diff stat earlier in the
   same job. That review IS the protection — nothing rides along unseen, because the full
-  tree was displayed and shown to Jordan before he approved. Outside that
+  tree was displayed and shown to the operator before he approved. Outside that
   reviewed-then-staged pattern, `git add .` and `git add -A` stay prohibited.
 - **Never let a job commit its own ephemeral inputs.** A commit job's message file or scratch
   input must be gitignored AND untracked (`git rm --cached`), or `git add -A` sweeps it into
@@ -267,9 +267,9 @@ the file is too large for version control and belongs in the output folder only.
   that `.gitignore` alone cannot fix this once the file is tracked — gitignore applies only
   to untracked files.
 - **Never commit secrets.** Before staging, scan the diff for tokens, passwords, connection
-  strings and API keys. If one is present, refuse to stage that file and tell Jordan which line.
+  strings and API keys. If one is present, refuse to stage that file and tell the operator which line.
   A committed secret persists in history even after deletion.
-- **Never commit a file over ~10 MB** — confirm with Jordan first, and prefer excluding it.
+- **Never commit a file over ~10 MB** — confirm with the operator first, and prefer excluding it.
 - **Always show the exact commit message and file list before committing.**
 - **Do not resolve a merge conflict silently.** Report the conflicting files and ask.
 - **Report the real command output.** Never claim a commit succeeded without confirming the

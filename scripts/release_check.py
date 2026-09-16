@@ -85,6 +85,11 @@ CHECKS = [
         ),
     ),
     Check("bridge facts", [sys.executable, str(ROOT / "scripts" / "facts_check.py")]),
+    # The measured table in README.md and docs/measured-results.md is generated from the tree;
+    # a stale block fails here instead of drifting for a release (123 vs 120 entries, 2026-09-15).
+    Check("measured table currency", [sys.executable, str(ROOT / "scripts" / "measured_table.py"), "--check"]),
+    # Operating text addresses "the operator", never the author by name; attribution is exempt.
+    Check("operator name scan", [sys.executable, str(ROOT / "scripts" / "operator_name_check.py")]),
     # The plugin manifest's own validation, without writing a bundle: --list exits 3 when a
     # manifest entry has no skill directory or, under --strict, when a skill declared for
     # macOS carries Windows-only text. Item 6 asked for this to be wired into CI; CI runs
@@ -111,6 +116,8 @@ ROOT_SELFTESTS = [
     # pattern fires on a sentence that means it, and none fires on a lesson key,
     # a route id or a near-miss. The gate that guards the plugin is itself gated.
     ROOT / "scripts" / "build_plugin_selftest.py",
+    ROOT / "scripts" / "measured_table_selftest.py",
+    ROOT / "scripts" / "operator_name_check_selftest.py",
 ]
 
 SELFTESTS = [

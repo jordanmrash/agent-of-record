@@ -112,3 +112,14 @@ A release is ready only when:
 - `examples/synthetic-control-loop/run.py` exits zero, so the demonstration runs on a clean checkout.
 - The synthetic example contains no real person, firm, client, tenant, or system data.
 - CHANGELOG and version metadata are current.
+
+## The operator's name in operating text
+
+The substitution pass replaces the account name, the firm, the tenant, client and colleague names.
+It leaves the author's name alone, because attribution is a fact about a file. Operating text is
+different: a rule that says "when <author> says the bridge is up" is a note from one person to
+themself, and a second operator reads it as somebody else's. `scripts/operator_name_check.py` reads
+the author's given name from `CITATION.cff`, exempts attribution lines and the Rule text of
+ledger-verified lessons, and fails the release gate on anything else; `--fix` rewrites hits to
+"the operator" ("the author" under `docs/` and the root pages). Run it after regenerating the lesson
+blocks from a corpus that was written in the first person.

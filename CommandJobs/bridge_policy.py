@@ -2,7 +2,7 @@
 """
 bridge_policy.py - decide whether an automatic bridge restart is ALLOWED.
 
-Jordan authorised Cowork to start/restart bridges automatically on 2026-08-30.
+The operator authorised Cowork to start/restart bridges automatically on 2026-08-30.
 This module is where that authorisation is bounded, so the decision is a table
 that can be tested rather than a judgement made in the moment.
 
@@ -18,7 +18,7 @@ WHY THE BOUNDS EXIST (all measured, none hypothetical)
     ports PRIVATE. devtunnel.exe is not installed (confirmed 2026-08-21), so
     setting them Public again is a manual step in the VS Code Ports panel that
     Cowork cannot perform. An unnecessary full restart takes working bridges off
-    the air until Jordan is physically present - worse than doing nothing.
+    the air until the operator is physically present - worse than doing nothing.
 
   * 8933 cannot restart itself. The restart job runs ON 8933; killing 8933 kills
     the job mid-execution and nothing survives to verify the result.
@@ -32,7 +32,7 @@ DECISION TABLE (the whole authorisation)
   8933 down ........................... REFUSE  (cannot restart the executor
                                                  from the executor)
   all three down ...................... REFUSE  (needs the manual Public-port
-                                                 step; only Jordan can do it)
+                                                 step; only the operator can do it)
   8931 down, 8933 up .................. RESTART bridge-restart-8931.bat
   8932 down, 8933 up .................. RESTART bridge-restart-8932.bat
   8931 and 8932 down, 8933 up ......... RESTART both, one at a time
@@ -80,7 +80,7 @@ def decide(state):
         return {"action": "REFUSE",
                 "reason": ("all three bridges are down. A full restart leaves the "
                            "tunnel ports PRIVATE and devtunnel.exe is not installed, "
-                           "so only Jordan can set them Public again. Report and "
+                           "so only the operator can set them Public again. Report and "
                            "stop; do not run bridge-restart-all.bat automatically."),
                 "scripts": []}
 
@@ -88,7 +88,7 @@ def decide(state):
         return {"action": "REFUSE",
                 "reason": ("8933 is down. The restart job would run ON 8933, so it "
                            "cannot restart itself and nothing would survive to "
-                           "verify the result. Needs a new chat or Jordan."),
+                           "verify the result. Needs a new chat or the operator."),
                 "scripts": []}
 
     return {"action": "RESTART",

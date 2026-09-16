@@ -2,7 +2,7 @@
 #  Cowork bridge watchdog
 #
 #  WHY: on 2026-08-18 the 8933 bridge died twice and every job was
-#  blocked until Jordan was physically at the machine to re-run GO.bat.
+#  blocked until the operator was physically at the machine to re-run GO.bat.
 #  This probes all four ports and restarts ONLY the ones that are dead.
 #
 #  Runs from Task Scheduler every 2 minutes (see _watchdog-install.ps1).

@@ -1,14 +1,48 @@
 # Agent of Record
 
+[![Repository checks](https://github.com/jordanmrash/agent-of-record/actions/workflows/ci.yml/badge.svg)](https://github.com/jordanmrash/agent-of-record/actions/workflows/ci.yml) [![Latest release](https://img.shields.io/github/v/release/jordanmrash/agent-of-record?display_name=tag)](https://github.com/jordanmrash/agent-of-record/releases/latest) [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 **A governed foundation for AI agents doing work a person signs their name to, built and operated in public accounting: durable memory, human-approved execution, behavioral learning, and auditable automation.**
+
+## See it run first
+
+```bash
+python examples/synthetic-control-loop/run.py
+```
+
+About a second on a clean checkout; no tenant, tunnel, browser or network, and nothing in the repository is modified. A fictional month-end workflow receives a source bundle with a required segment missing. A deterministic gate refuses it, and the repository's own verification harness then judges the delivered rule against a control:
+
+<!-- DEMO:start -->
+```text
+$ python examples/synthetic-control-loop/validate_manifest.py examples/synthetic-control-loop/inputs/incomplete
+workpaper : Fictional month-end reconciliation
+  present  A  segment-a.csv    3 rows  Opening balances
+  present  B  segment-b.csv    3 rows  Period activity
+  present  C  segment-c.csv    2 rows  Adjustments
+  MISSING  D  segment-d.csv            Closing balances from the subledger
+HARD STOP: required segment(s) D absent. No workpaper was produced.
+[exit 3]
+
+$ python examples/synthetic-control-loop/run.py --check
+Synthetic control loop - workpaper-required-segment-missing
+  ok    gate accepts the complete input set (exit 0)
+  ok    gate refuses the set missing Segment D, names it, produces nothing (exit 3)
+  ok    harness judges the recorded arms EFFECTIVE (3 carried pass, control fails)
+CONTROL_LOOP: OK - a missing input became a hard stop, and the delivered rule is measured, not assumed.
+[exit 0]
+```
+<!-- DEMO:end -->
+
+The scenario, the recorded transcripts and what each exit code means are in the [synthetic control-loop example](examples/synthetic-control-loop/README.md).
+
+**Contents:** [Set up on your machine](#set-up-on-your-machine) · [Why this exists](#why-this-exists) · [What this demonstrates](#what-this-demonstrates) · [Architecture](#architecture) · [Measured at this release](#measured-at-this-release) · [The bridges](#the-bridges) · [How experience becomes a tested control](#how-experience-becomes-a-tested-control) · [Start here](#start-here) · [Repository map](#repository-map) · [Validation](#validation) · [Author perspective](#author-perspective) · [Status and roadmap](#status-and-roadmap) · [Boundaries](#boundaries) · [License](#license)
 
 | | |
 |---|---|
-| **Status** | v0.3 - portable. Windows and macOS, with a contributor on the macOS side. `main` keeps its history from this release; changes arrive by pull request and the gate runs on both platforms in CI. Interfaces may still change between minor versions. |
+| **Status** | v0.3.3 - portable. Windows and macOS, with a contributor on the macOS side. `main` keeps its history; changes arrive by pull request and the gate runs on both platforms in CI. Interfaces may still change between minor versions. |
 | **Platform** | Windows and macOS/Linux. The local layer is VS Code tasks over per-platform launchers - PowerShell and batch files on Windows, shell scripts under `Startup/posix/` elsewhere. The command bridge is one implementation with one refusal set, proven on whichever platform runs the gate. |
-| **Host** | The four bridges are standard MCP servers. Microsoft 365 Copilot Cowork is the client this repository was built and operated against; it is reached through a dev tunnel only because that client is cloud-hosted. Any MCP client that can start a local process can use the two own-code servers directly; Claude Cowork, in a local desktop session, does exactly that with no tunnel - a route that is documented and not yet operated. |
-| **Runs without the host** | `python examples/synthetic-control-loop/run.py` - the control loop end to end, no tenant, no tunnel, no network. |
-| **Install** | [Choose your route](docs/install/README.md), then your platform: [Setup from zero](docs/setup.md) (Copilot Cowork, Windows), [Setup on macOS and Linux](docs/setup-macos.md), or the [Claude Cowork pages](docs/install/claude-cowork.md) - a bare machine to reachable bridges and an installed configuration, with `scripts/install_check.py` proving it by completing a real MCP handshake against each bridge. On the hosted route `scripts/copilot/personalize.py` replaces every placeholder in one pass and each bridge ships its connector package under `Startup/Plugins/`. |
+| **Host** | The four bridges are standard MCP servers. Microsoft 365 Copilot Cowork is the client this repository was built and operated against; it is reached through a dev tunnel only because that client is cloud-hosted. Claude Cowork, in a local desktop session, starts the one server it needs - the approved command executor - as a stdio process with no tunnel. That route ran on a Mac on 2026-09-15 ([evidence](docs/evidence/mac-operated-2026-09-15.md)): the executor and the install check are operated, and the skills-plugin upload is not yet confirmed. |
+| **Install** | [Choose your route](docs/install/README.md), then your platform: [Copilot Cowork on Windows](docs/setup.md) or the [Claude Cowork pages](docs/install/claude-cowork.md) - a bare machine to reachable bridges and an installed configuration, with `scripts/install_check.py` proving it by completing a real MCP handshake against each bridge. On the hosted route `scripts/copilot/personalize.py` replaces every placeholder in one pass and each bridge ships its connector package under `Startup/Plugins/`. The ten skills ship as one plugin: take `agent-of-record-skills-<platform>.plugin` from the [latest release](https://github.com/jordanmrash/agent-of-record/releases/latest), or build it with `python scripts/build_plugin.py`, and install it through **Customize → Plugins → Add → Upload plugin**. |
 
 Professional work is adopting AI faster than it is developing the controls, operating models, and institutional knowledge needed to use it reliably.
 
@@ -29,16 +63,16 @@ places, so each route installs a different subset of this repository;
 
 - [What this repository adds to Copilot Cowork](docs/install/copilot-cowork.md)
 - [Windows PC](docs/setup.md) · operated daily
-- [Mac or Linux](docs/setup-macos.md) · not yet operated
+- Mac or Linux · not supported - Copilot Cowork is Windows only ([why the hosted macOS page was retired](docs/setup-macos.md))
 
-### Claude Cowork — runs on your machine in a local session and starts the bridges itself; no tunnel
+### Claude Cowork — runs on your machine in a local session and starts the executor itself; no tunnel
 
 - [What this repository adds to Claude Cowork](docs/install/claude-cowork.md)
 - [Windows PC](docs/install/claude-cowork-windows.md) · not yet operated
-- [Mac](docs/install/claude-cowork-mac.md) · not yet operated
+- [Mac](docs/install/claude-cowork-mac.md) · executor operated 2026-09-15 ([evidence](docs/evidence/mac-operated-2026-09-15.md)); skills-plugin upload not yet confirmed
 
-**Not yet operated** means nobody has run that page end to end. If you do, please open a
-pull request with your `install_check.py` result — that is what flips the status.
+**Not yet operated** means nobody has run that page end to end. A cell changes on evidence,
+not on prose: open a pull request with your `install_check.py` result and it moves.
 
 Agents: the install contract is in [`AGENTS.md`](AGENTS.md); it applies to every cell.
 
@@ -95,35 +129,41 @@ See [the detailed architecture](docs/architecture.md), [the public-accounting vi
 
 ## Measured at this release
 
-These are measurements from the published tree, not aspirational claims:
+These are measurements from the published tree, not aspirational claims. The table is generated by `scripts/measured_table.py` from the digest marker, the corpus, the routes, the ledger, the tier file and the gate itself; `--check` runs inside the release gate and fails when the table is stale.
 
+<!-- MEASURED:start -->
 | Measure | Result |
 |---|---:|
-| Recorded lesson entries | 123 |
-| Entries with an authored rule | 93 |
-| Rules in the always-on tier | 32 |
-| Lesson keys routed into skills | 80 |
+| Recorded lesson entries | 120 |
+| Entries with an authored rule | 94 |
+| Rules in the always-on tier | 31 |
+| Lesson keys routed into skills | 86 |
 | Lesson keys routed into plugin tools | 5 |
-| Routed skills | 9 |
-| Self-test suites | 13 |
+| Routed skills | 8 |
+| Self-test suites run by the gate | 17 |
+| Checks in the release gate | 29 |
 | Behaviorally verified effective rules | 1 |
-| Behaviorally verified inert rules | 1 |
+| Behaviorally verified inert rules | 0 |
+| Rules a checker enforces on some surfaces and is blind on others | 6 |
 | Rules proven fully enforced across every behavior surface | 0 |
+
+<sub>Generated by `scripts/measured_table.py`; the release gate fails when this table is stale.</sub>
+<!-- MEASURED:end -->
 
 The last result matters. Every automated check is currently blind to at least direct session behavior. The repository reports that boundary rather than calling partial enforcement complete.
 
 See [Measured Results and Honest Boundaries](docs/measured-results.md).
 
-## The four bridges
+## The bridges
 
-Copilot Cowork runs in a cloud container and reaches the bridges through a dev tunnel; Claude Cowork starts them on the machine as stdio servers. Either way the bridges provide narrow, governed access to the machine and Power Platform:
+Copilot Cowork, on Windows, reaches four bridges through a dev tunnel. Claude Cowork registers one of them - the approved command executor - as a local stdio server, because it reads connected folders and drives a browser first-party and has no path to Power Automate administration. Which bridge exists for which product and platform is declared once, in [`docs/bridge-facts.json`](docs/bridge-facts.json), and every surface that restates it is checked against that file. Either way the bridges provide narrow, governed access to the machine and Power Platform:
 
-| Port | Bridge | Purpose | Implementation |
+| Port | Bridge | Purpose | Implementation (products · platforms) |
 |---|---|---|---|
-| 8931 | Playwright | Browser automation in a signed-in profile | Upstream `@playwright/mcp`, stateful |
-| 8932 | Filesystem | Read and write explicitly named local roots | Upstream filesystem MCP server, stateless |
-| 8933 | Approved batch executor | Execute an existing `.bat` or `.cmd` under `CommandJobs` | Own code, stateless |
-| 8934 | Power Automate | Flow definitions, runs, connections, solutions, DLP, and ownership | Own code, 29 tools, stateless |
+| 8931 | Playwright | Browser automation in a signed-in profile | Upstream `@playwright/mcp`, stateful - Copilot Cowork · Windows |
+| 8932 | Filesystem | Read and write explicitly named local roots | Upstream filesystem MCP server, stateless - Copilot Cowork · Windows |
+| 8933 | Approved batch executor | Execute an existing `.bat` or `.cmd` (`.sh` on macOS) under `CommandJobs` | Own code, stateless - Copilot Cowork · Windows; Claude Cowork · Windows and macOS |
+| 8934 | Power Automate | Flow definitions, runs, connections, solutions, DLP, and ownership | Own code, 29 tools, stateless - Copilot Cowork · Windows |
 
 The 8933 executor accepts no command string, arguments, interpreter, working directory, environment, timeout override, or elevation option. The agent proposes an exact batch file, a person approves it, the filesystem bridge writes it, and the executor runs that named file.
 
@@ -164,47 +204,15 @@ Delivery is not treated as enforcement. A rule in a skill reaches only sessions 
 ## Repository map
 
 ```text
-.github/         contribution and CI configuration
-CommandJobs/     approval-gated standing jobs
+.github/         contribution, CI and Dependabot configuration
+CommandJobs/     approval-gated standing jobs; archive/ holds spent one-offs and the macOS evidence scripts
 CoworkConfig/    skills, memory, instructions, lesson routing, verification
-docs/            public-accounting vision, controls, architecture, evidence, roadmap
+docs/            public-accounting vision, controls, architecture, evidence, roadmap, published writing
 examples/        synthetic demonstrations with no client or firm data
 GitHubSetup/     clean-room publication and disclosure gates
-scripts/         public repository validation and the personalizer
+scripts/         public repository validation, the measured-table and operator-name checks, the personalizer
 Startup/         four local MCP bridges, their connector packages, and the watchdog
 ```
-
-## Future applied skills
-
-The foundation is designed to support work a person signs their name to without embedding a client or firm process into the framework itself. Planned layers include:
-
-- Tax provision preparation and review.
-- State apportionment and allocation.
-- Journal-entry and footnote preparation.
-- Workpaper intake, validation, tie-out, and review.
-- Reconciliation and close support.
-- Research with citation and provenance controls.
-- Client and stakeholder communication.
-- Workflow conversion from desktop automation into tested Python packages.
-
-Each applied skill is expected to define its inputs, evidence, deterministic calculations, failure behavior, review points, audit record, and tests before it is treated as reusable.
-
-## Published writing
-
-The repository is the implementation behind a longer body of practitioner writing that began with tax-software process design and progressed into governed agents, memory, local infrastructure, and behavioral learning.
-
-- *Nobody Argues With a Speed Bump*
-- *Sometimes it's about the journey, not the destination*
-- [I Taught My AI Assistant to Remember Its Own Mistakes. It Forgot to Load.](https://www.linkedin.com/pulse/i-taught-my-ai-assistant-remember-its-own-mistakes-forgot-rash-cpa-opwbc)
-- [There Is No Such Thing as a Self-Building AI Tool](https://www.linkedin.com/pulse/thing-self-building-ai-tool-jordan-rash-cpa-vgqrc)
-- [Configuring a Private AI Workstation at Home](https://www.linkedin.com/pulse/configuring-private-ai-workstation-home-jordan-rash-cpa-aot2c/)
-- [Stateless MCP Just Fixed My Biggest Headache with Cowork](https://www.linkedin.com/pulse/stateless-mcp-just-fixed-my-biggest-headache-cowork-jordan-rash-cpa-9tvic)
-- [Copilot Agents in Tax: From Prototype to Control-Governed Tool](https://www.linkedin.com/pulse/copilot-agents-tax-from-prototype-control-governed-tool-rash-cpa-ajfic)
-- *Escaping the Context Window Trap: Three-Tier Memory Architecture for Local AI*
-- [Tax Provision Software Implementation](https://www.linkedin.com/pulse/tax-provision-software-implementation-jordan-m-rash-cpa?articleId=6496057090656788480)
-- [ONESOURCE Tax Provision: Automated Federal Return-to-Provision Functionality](https://www.linkedin.com/pulse/onesource-tax-provision-automated-federal-utilizing-income-rash-cpa)
-
-See [Published Writing and Editorial Assessment](docs/published-writing.md).
 
 ## Validation
 
@@ -213,7 +221,7 @@ python scripts/public_scan.py
 python scripts/release_check.py --json release-results.json
 ```
 
-The release check runs the lessons validator, digest currency check, skill and plugin delivery checks, enforcement-scope audit, per-surface gate audit, the cross-surface bridge facts check, the synthetic control-loop demonstration, and the negative-control self-test suites. `--json` writes the results in machine-readable form. GitHub Actions runs the same checks on `windows-latest` and `macos-latest` for every push and pull request, and publishes a results file per platform as a build artifact.
+The release check runs the lessons validator, digest currency check, skill and plugin delivery checks, enforcement-scope audit, per-surface gate audit, the cross-surface bridge facts check, the measured-table currency check, the operator-name scan, the synthetic control-loop demonstration, and the negative-control self-test suites. `--json` writes the results in machine-readable form. GitHub Actions runs the same checks on `windows-latest` and `macos-latest` for every push and pull request, and publishes a results file per platform as a build artifact.
 
 ## Author perspective
 
@@ -227,13 +235,13 @@ The operating rule is:
 
 ## Status and roadmap
 
-This is **v0.3: Portable**. The foundation now runs on Windows and macOS from one tree, the command bridge's refusals are proven live on both in CI, `scripts/install_check.py` defines "installed" as a completed MCP handshake rather than a file that exists, and `AGENTS.md` carries the install contract for any agent pointed at the folder. From this release `main` keeps its history and takes pull requests; the macOS layer has a contributor. The portable layer was pulled forward ahead of the applied-work contract because a contributor on a second platform needed it first; the two verification items carried from v0.2 - behavioral verdicts for ten routed rules, and reduction of duplicated configuration statements - move with the contract.
+This is the **v0.3: Portable** series, at release 0.3.3. The foundation runs on Windows and macOS from one tree, the command bridge's refusals are proven live on both in CI, `scripts/install_check.py` defines "installed" as a completed MCP handshake rather than a file that exists, and `AGENTS.md` carries the install contract for any agent pointed at the folder. `main` keeps its history and takes pull requests; the macOS layer has a contributor. The skills plugin carries its own version line in `CoworkConfig/plugin/.claude-plugin/plugin.json` and moves when a shipped skill changes, independently of the repository release. The portable layer was pulled forward ahead of the applied-work contract because a contributor on a second platform needed it first; the two verification items carried from v0.2 - behavioral verdicts for ten routed rules, and reduction of duplicated configuration statements - move with the contract.
 
 - **v0.4: Applied-work contract** — a common input, evidence, review, error, and audit contract for applied skills, plus the two carried verification items.
-- **v0.5: Applied public-accounting skills** — independently tested workflows using synthetic data.
+- **v0.5: Applied public-accounting skills** — independently tested workflows using synthetic data; the planned list is in the roadmap.
 - **v1.0: Reference operating model** — reproducible deployment, governance, maintenance, and professional-review guidance.
 
-See [Roadmap](docs/roadmap.md) and the [open issues and milestones](https://github.com/jordanmrash/agent-of-record/issues).
+See [Roadmap](docs/roadmap.md), [Published Writing and Editorial Assessment](docs/published-writing.md) for the articles this implementation stands behind, and the [open issues and milestones](https://github.com/jordanmrash/agent-of-record/issues).
 
 ## Boundaries
 

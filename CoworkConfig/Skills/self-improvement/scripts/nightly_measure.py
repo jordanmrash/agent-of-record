@@ -15,7 +15,7 @@ plain Python over local files - no model, no network, no approval. They run at
 02:00 whether or not anybody is logged on, write one JSON file, and stop.
 
 The JUDGING half - deciding what to merge, retire or rewrite - stays with
-Jordan in the morning. This script never proposes and never edits.
+The operator in the morning. This script never proposes and never edits.
 
 WHAT IT REFUSES TO CONFUSE
 --------------------------

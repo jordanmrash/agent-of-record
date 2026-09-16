@@ -124,7 +124,7 @@ Authoring rules for async jobs:
   * Give every job a UNIQUE TaskName, and unregister it when the worker ends.
   * Do not use  call :label  - files written through the 8932 bridge arrive
     LF-only and cmd cannot resolve a called label in an LF-only file.
-    Top-level  goto  works. Otherwise run 2026-08-18-fix-crlf.bat first.
+    Top-level  goto  works. Otherwise run archive\2026-08-18-fix-crlf.bat first.
 
 In async mode the bridge exit code only says whether the job was LAUNCHED.
 The real verdict is in the output folder:
@@ -152,7 +152,7 @@ LINE ENDINGS - RUN THE NORMALIZER AFTER EVERY BATCH OF WRITES
 how the supergateway install worker managed to exit 1 in under two seconds
 without writing a single line - a silent failure that looks like nothing ran.
 
-  CommandJobs\2026-08-18-fix-crlf-all.bat
+  CommandJobs\archive\2026-08-18-fix-crlf-all.bat   (archived 2026-09-15; still runnable by relative path)
 
 normalizes every CommandJobs\*.bat and Startup\*.ps1, skips files already
 correct, and skips ITSELF (a batch file that rewrites itself while running
@@ -218,3 +218,11 @@ any command Windows can run, including powershell.exe, with your full user
 privileges. Your control point is reviewing the proposed commands and output
 path before approving. Treat write access to this folder as equivalent to
 execute access.
+
+
+ARCHIVE
+-------
+CommandJobs\archive\ holds spent one-off jobs and the scripts that produced a piece of
+evidence (archive\mac-evidence\ for docs\evidence\mac-operated-2026-09-15.md). They are
+kept for the record, not as standing jobs. The executor still runs them by relative
+path - archive\<name> - because the boundary is the folder tree, not its top level.

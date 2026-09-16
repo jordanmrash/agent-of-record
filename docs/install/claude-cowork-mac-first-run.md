@@ -182,7 +182,7 @@ correctly enabled, never connected.
 
 **Unresolved at the point this report was written:** whether there's an app/account-level
 "local execution" or "developer mode" setting (separate from installing the plugin) that
-would change this. Jordan was in the middle of checking Settings for one when this
+would change this. The author was in the middle of checking Settings for one when this
 session's connection to the device dropped and work shifted to writing this report up.
 Worth checking before concluding the route is fully blocked — but as of now, no such
 toggle had been found, and nothing in `docs/install/claude-cowork-mac.md` mentions one.

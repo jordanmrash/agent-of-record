@@ -1,0 +1,175 @@
+#!/usr/bin/env python3
+"""Refuse operating text that addresses the operator by name.
+
+The skills, the lessons corpus, the always-on digest, the shipped jobs and the two own-code servers
+are instructions for whoever runs this repository. On 2026-09-15 the published tree carried 109 rule
+lines that named its author - "when <name> says the bridge is up", "never tell <name> a bridge is
+down" - which a second operator reads as somebody else's notes. Attribution is different: an author's
+full name in a metadata block or an attribution notice is a fact about the file, stays, and is exempt.
+
+The name is read from CITATION.cff (given-names, family-names), so a fork checks for its own author
+and nothing is hard-coded here.
+
+    python scripts/operator_name_check.py          # report; exit 1 on any hit - the gate runs this
+    python scripts/operator_name_check.py --fix    # rewrite hits and report what was kept
+
+--fix rewrites a hit to "the operator" on operating surfaces and "the author" under docs/ and the
+root pages, capitalised where it opens a sentence, cell or field. It leaves two things alone and
+lists them: attribution lines, and the Rule line of any lesson whose Pattern-Key has a record in
+verification-ledger.json - that text carries a behavioral verdict and a fingerprint, and a wording
+change would silently invalidate the verdict.
+
+Exit codes: 0 clean, 1 hits found, 2 a source could not be read.
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import re
+import sys
+from pathlib import Path
+
+SCOPE = (
+    "README.md", "AGENTS.md", "CONTRIBUTING.md", "SECURITY.md", "SUPPORT.md",
+    "docs/*.md", "docs/install/*.md",
+    "CoworkConfig/**/*.md", "CoworkConfig/**/*.json", "CoworkConfig/**/*.txt", "CoworkConfig/**/*.py",
+    "Startup/CommandBridge/*.js", "Startup/FlowBridge/*.js", "Startup/*.txt", "Startup/*.ps1",
+    "Startup/posix/*.sh", "CommandJobs/**/*",
+)
+# Records and templates, not instructions: transcripts, verdicts, the attribution template, the
+# article index, the evidence files.
+EXCLUDE = {
+    "CoworkConfig/cowork-memory/verification-ledger.json",
+    "CoworkConfig/Skills/self-improvement/scripts/verification_cases.json",
+    "CoworkConfig/Skills/_ATTRIBUTION-TEMPLATE.md",
+    "docs/published-writing.md",
+}
+EXCLUDE_DIRS = ("docs/evidence/", "CommandJobs/Logs/")
+AUTHOR_SURFACES = ("README.md", "AGENTS.md", "CONTRIBUTING.md", "SECURITY.md", "SUPPORT.md", "docs/")
+TEXT_SUFFIXES = {".md", ".json", ".txt", ".js", ".ps1", ".sh", ".bat", ".cmd", ".py", ".yml", ".yaml"}
+ATTRIBUTION_LINE = re.compile(
+    r"^\s*(?:-\s*)?(?:\*\*)?(author|author-role|author-email|created-by|owner|attribution|maintainer|developer)\b"
+    r"|\"name\"\s*:|^# Personal Instructions",
+    re.I,
+)
+LESSON_HEADING = re.compile(r"^### ")
+LESSON_KEY = re.compile(r"^- \*\*Pattern-Key:\*\*\s*(\S+)")
+LESSON_RULE = re.compile(r"^- \*\*Rule:\*\*")
+OPENERS = (".", "!", "?", ":", "|", "(", "**", "\"", "\u201c", "-", "*", ">")
+
+
+def fail(msg: str, code: int = 2) -> None:
+    print(f"FAIL  {msg}")
+    sys.exit(code)
+
+
+def author(root: Path):
+    try:
+        text = (root / "CITATION.cff").read_text(encoding="utf-8")
+    except OSError as exc:
+        fail(f"cannot read CITATION.cff: {exc}")
+    given = re.search(r"given-names:\s*\"?([^\"\n]+?)\"?\s*$", text, re.M)
+    family = re.search(r"family-names:\s*\"?([^\"\n]+?)\"?\s*$", text, re.M)
+    if not given or not family:
+        fail("CITATION.cff has no given-names / family-names")
+    return given.group(1).strip(), family.group(1).strip()
+
+
+def files(root: Path):
+    seen = set()
+    for pattern in SCOPE:
+        for path in sorted(root.glob(pattern)):
+            if not path.is_file() or path.suffix.lower() not in TEXT_SUFFIXES:
+                continue
+            rel = path.relative_to(root).as_posix()
+            if rel in EXCLUDE or rel.startswith(EXCLUDE_DIRS) or rel in seen:
+                continue
+            seen.add(rel)
+            yield rel, path
+
+
+def ledger_keys(root: Path) -> set:
+    path = root / "CoworkConfig" / "cowork-memory" / "verification-ledger.json"
+    if not path.exists():
+        return set()
+    try:
+        records = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        fail(f"{path} is not valid JSON: {exc}")
+    return {r.get("key") for r in records if isinstance(r, dict)}
+
+
+def rewrite(line: str, name: re.Pattern, role: str) -> str:
+    def repl(match: re.Match) -> str:
+        before = line[: match.start()].rstrip()
+        opens = (not before) or before.endswith(OPENERS)
+        return role.capitalize() if opens else role
+    return name.sub(repl, line)
+
+
+def main(argv: list) -> int:
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("--root", default=str(Path(__file__).resolve().parents[1]))
+    parser.add_argument("--fix", action="store_true")
+    args = parser.parse_args(argv)
+    root = Path(args.root).resolve()
+
+    given, family = author(root)
+    name = re.compile(r"\b" + re.escape(given) + r"\b(?!\s+" + re.escape(family) + r")")
+    verified = ledger_keys(root)
+
+    hits = kept = fixed = files_hit = 0
+    for rel, path in files(root):
+        try:
+            text = path.read_bytes().decode("utf-8")
+        except UnicodeDecodeError:
+            continue
+        newline = "\r\n" if "\r\n" in text else "\n"
+        lines = text.split(newline)
+        role = "the author" if rel.startswith(AUTHOR_SURFACES) else "the operator"
+        is_corpus = rel.endswith("cowork-lessons.md")
+        key = None
+        file_hits = 0
+        changed = False
+        for i, line in enumerate(lines):
+            if is_corpus:
+                if LESSON_HEADING.match(line):
+                    key = None
+                found = LESSON_KEY.match(line)
+                if found:
+                    key = found.group(1)
+            if not name.search(line):
+                continue
+            if ATTRIBUTION_LINE.search(line):
+                continue
+            if is_corpus and key in verified and LESSON_RULE.match(line):
+                kept += 1
+                print(f"KEEP  {rel}:{i + 1}  verified rule text ({key})")
+                continue
+            file_hits += 1
+            if args.fix:
+                lines[i] = rewrite(line, name, role)
+                changed = True
+                fixed += 1
+            else:
+                shown = line.strip()[:120].encode("ascii", "replace").decode("ascii")
+                print(f"HIT   {rel}:{i + 1}  {shown}")
+        if file_hits:
+            files_hit += 1
+            hits += file_hits
+        if changed:
+            path.write_bytes(newline.join(lines).encode("utf-8"))
+
+    if args.fix:
+        print(f"OPERATOR_NAME_FIX: rewrote {fixed} line(s) in {files_hit} file(s); kept {kept} verified rule line(s)")
+        return 0
+    if hits:
+        print(f"OPERATOR_NAME_CHECK: {hits} line(s) in {files_hit} file(s) address the operator as {given}; "
+              f"{kept} verified rule line(s) kept")
+        return 1
+    print(f"OPERATOR_NAME_CHECK: CLEAN ({given} appears only in attribution; {kept} verified rule line(s) kept)")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main(sys.argv[1:]))

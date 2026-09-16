@@ -10,7 +10,7 @@
  *  v0.1.0 aimed at api.flow.microsoft.com using client_credentials. Both were
  *  wrong, for reasons that are now measured rather than assumed:
  *
- *    1. Jordan CANNOT self-register an Entra app. The portal's create blade
+ *    1. The operator CANNOT self-register an Entra app. The portal's create blade
  *       returns "You do not have access", error 401. App-only would then need
  *       a Power Platform ADMIN to register the service principal - Microsoft
  *       is explicit that an SPN cannot register itself. So client_credentials
@@ -26,7 +26,7 @@
  *       authorization-code + PKCE on a loopback redirect is NOT that flow and
  *       goes through cleanly - proven end to end at 11:35 on 2026-09-02:
  *       read, PATCH statecode on, PATCH statecode off, DELETE, all OK.
- *    4. Privileges were verified BEFORE this was written. Jordan holds
+ *    4. Privileges were verified BEFORE this was written. The operator holds
  *       prvReadWorkflow, prvCreateWorkflow, prvWriteWorkflow and
  *       prvDeleteWorkflow. He does NOT hold prvBulkDelete, which is why
  *       pac data bulk-delete was refused - a global privilege, unrelated.
@@ -220,7 +220,7 @@ function requireDeleteAllowed(cfg) {
 /* Interactive authorization code + PKCE on a loopback redirect.
  * Deliberately NOT device code: that is the grant type Conditional Access
  * blocks in this tenant. Deliberately NOT client_credentials: that needs an
- * app registration Jordan cannot create and an admin step he cannot perform. */
+ * app registration the operator cannot create and an admin step he cannot perform. */
 
 function b64url(buf) {
   return buf.toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');

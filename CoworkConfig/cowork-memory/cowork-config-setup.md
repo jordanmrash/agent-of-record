@@ -6,7 +6,7 @@
 - **Sessions captured:** 6
 
 ## Summary
-Configuring Cowork so it applies Jordan's standing preferences automatically instead of
+Configuring Cowork so it applies the operator's standing preferences automatically instead of
 requiring explicit instruction each session. Personal instructions are broken at the platform
 level on this tenant; the working substitute is encoding standing rules as skills, which do
 load. The 2026-07-27 bridge outage is RESOLVED — see the `cowork-bridge-infrastructure`
@@ -18,7 +18,7 @@ memory for all bridge operations, hardening, and version control.
 - `copilot-instructions.md` does NOT take effect on this tenant. Cowork loads instructions
   from `/mnt/workspace/copilot-instructions.md`, which holds ~70 bytes of unrelated
   boilerplate ("Use these tools to access SharePoint and other Power Platform services").
-  Jordan's real file reaches OneDrive correctly but never reaches the loader.
+  The operator's real file reaches OneDrive correctly but never reaches the loader.
   **Re-confirmed 2026-08-18** — that same boilerplate string was live in the session.
 - Skills DO load reliably and register in the live session immediately.
 - Skill **descriptions** are injected into context at session start whether or not the skill
@@ -218,12 +218,12 @@ recur every time a lessons entry is touched.
   exit 1 as a fresh failure.
 - **Editing a lessons entry that carries a `Rule:` line changes the digest again**, so the
   regenerate-and-push step runs TWICE in any close that logs a new rule. Budget for it.
-- The guardrail override was put to Jordan as an explicit choice rather than taken
+- The guardrail override was put to the operator as an explicit choice rather than taken
   unilaterally; he chose "fix it, then close".
 
 ## 2026-09-03 - lessons now ship INSIDE the skill that owns them, generated not copied
 
-Jordan's framing: bake the lesson into the application rather than expecting a session to
+The operator's framing: bake the lesson into the application rather than expecting a session to
 adhere to it. Measured position before the change: 87 of 117 entries carried a Rule and
 reached the always-on digest; the `skills` surface reached only 46%. `command-bridge` was
 the ONLY skill carrying any lessons at all - four, hand-written.
@@ -347,7 +347,7 @@ contradictions, all applied the same evening.
 ## Preferences & Constraints
 - Every SKILL.md must include `Created by: Jordan Rash` in its frontmatter `metadata:` block.
   No exceptions.
-- Separate facts from inferences, and flag anything that needs Jordan's review.
+- Separate facts from inferences, and flag anything that needs the operator's review.
 - Be direct and concise; lead with the answer, then the detail.
 - Confirm before any irreversible action (sending email, posting to Teams, deleting).
 - Prefer the local bridge whenever a request references a `C:\` path, "my PC", "locally", or
@@ -395,7 +395,7 @@ plus a CONTROL, because a pass rate with no control is not a measurement. Verdic
 `EFFECTIVE`, `INERT` (model already knew — reclaim the bytes), `UNRELIABLE`,
 `INEFFECTIVE`, `INVALID`. Fingerprint covers case AND rule text, so amending a rule
 invalidates its stored verdict. **It never proposes removing anything from the
-corpus** — Jordan settled that: delivery is not promotion.
+corpus** — the operator settled that: delivery is not promotion.
 
 First verified lesson: `bridge-8934-evaluate-rejects-safe-navigation` = EFFECTIVE,
 3/3, control failed. But the harness's FIRST act was to prove the rule WRONG — it
