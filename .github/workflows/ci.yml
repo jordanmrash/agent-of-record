@@ -35,7 +35,7 @@ jobs:
         run: python scripts/release_check.py --json release-results-${{ matrix.os }}.json
       - name: Publish machine-readable results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: release-results-${{ matrix.os }}
           path: release-results-${{ matrix.os }}.json
