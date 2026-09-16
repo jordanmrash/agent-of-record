@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
+  "name": "agent-of-record",
+  "description": "The agent-of-record skills for Claude Cowork and Claude Code: approval-gated host command execution, memory and self-improvement, and authoring skills. The plugin root is generated from CoworkConfig/Skills and checked by the release gate.",
+  "owner": {
+    "name": "Jordan Rash",
+    "url": "https://github.com/jordanmrash"
+  },
+  "plugins": [
+    {
+      "name": "agent-of-record-skills",
+      "source": "./CoworkConfig/plugin",
+      "description": "Ten portable skills: approval-gated host command execution, memory and self-improvement, and authoring skills, for Claude Cowork on macOS and Windows and for Claude Code.",
+      "category": "productivity",
+      "homepage": "https://github.com/jordanmrash/agent-of-record"
+    }
+  ]
+}

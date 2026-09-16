@@ -15,37 +15,40 @@
     "bridges",
     "agent-of-record"
   ],
-  "_comment_skills": "Source of truth for what ships. Each entry names a directory under CoworkConfig/Skills/. Every skill ships to every product. A skill that duplicates a host capability in some configuration stays in the set and says so in a 'When this skill is redundant' section; the person disables it in the host and re-enables it when the configuration changes (docs/skills-by-configuration.md). The optional products axis remains for a narrower build. All skills are portable: each Windows-specific instruction states its macOS counterpart in the same unit, enforced by scripts/build_plugin.py --strict.",
-  "skills": [
-    {
-      "name": "not-a-robot"
-    },
-    {
-      "name": "self-improvement"
-    },
-    {
-      "name": "dream-cycle"
-    },
-    {
-      "name": "gamma-tango"
-    },
-    {
-      "name": "command-bridge"
-    },
-    {
-      "name": "persistent-memory"
-    },
-    {
-      "name": "local-file-bridge"
-    },
-    {
-      "name": "playwright-skill"
-    },
-    {
-      "name": "git-bridge"
-    },
-    {
-      "name": "skill-menu"
-    }
-  ]
+  "repository": "https://github.com/jordanmrash/agent-of-record",
+  "metadata": {
+    "comment": "Source of truth for what ships. Each entry names a directory under CoworkConfig/Skills/. Every skill ships to every product. A skill that duplicates a host capability in some configuration stays in the set and says so in a 'When this skill is redundant' section; the person disables it in the host and re-enables it when the configuration changes (docs/skills-by-configuration.md). The optional products axis remains for a narrower build. All skills are portable: each Windows-specific instruction states its macOS counterpart in the same unit, enforced by scripts/build_plugin.py --strict. The list lives under metadata because Claude Code reads the top-level `skills` field as component paths and fails to load a manifest whose `skills` is not a path; `metadata` is the free-form object the schema reserves for a plugin's own data. The skills/ tree beside this file is generated from CoworkConfig/Skills by scripts/build_plugin.py --tree; the release gate fails when it is stale.",
+    "skills": [
+      {
+        "name": "not-a-robot"
+      },
+      {
+        "name": "self-improvement"
+      },
+      {
+        "name": "dream-cycle"
+      },
+      {
+        "name": "gamma-tango"
+      },
+      {
+        "name": "command-bridge"
+      },
+      {
+        "name": "persistent-memory"
+      },
+      {
+        "name": "local-file-bridge"
+      },
+      {
+        "name": "playwright-skill"
+      },
+      {
+        "name": "git-bridge"
+      },
+      {
+        "name": "skill-menu"
+      }
+    ]
+  }
 }

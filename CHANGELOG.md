@@ -4,6 +4,38 @@ All notable changes to the published repository. Through 0.3.0 each entry
 summarized one rebuilt snapshot; from 0.3.0 `main` keeps its history and each
 entry summarizes a release.
 
+## 0.3.4 - 2026-09-16
+
+The skills plugin is installable from this repository as a marketplace; closes #21.
+
+- **`CoworkConfig/plugin/` is a real plugin root.** It carries `.claude-plugin/plugin.json` and a
+  `skills/` tree, generated from `CoworkConfig/Skills/` by `scripts/build_plugin.py --tree` and
+  checked byte for byte by `--check-tree`, which joins the release gate. `CoworkConfig/Skills`
+  stays the source of truth; the copy is delivery, regenerated and never edited, the same rule the
+  digest and the lesson blocks already follow.
+- **The manifest's shipping list moved to `metadata.skills`.** Claude Code ignores fields it does
+  not recognise but fails to load a recognised field with the wrong shape, and `skills` is a
+  recognised path field; the list of `{name}` objects that lived there would have refused to load
+  in place, which is why the upload path worked only because the builder stripped it. `metadata`
+  is the schema's free-form object for a plugin's own data. `build_plugin.py` refuses the old
+  shape with a message that says where the list now lives, and the packaged manifest is the same
+  file with `metadata` removed.
+- **`.claude-plugin/marketplace.json` at the root**, one entry, `source: ./CoworkConfig/plugin`.
+  In Claude Code: `/plugin marketplace add jordanmrash/agent-of-record` then
+  `/plugin install agent-of-record-skills@agent-of-record`. In Claude Cowork the upload of the
+  built `.plugin` through Customize → Plugins → Add → Upload plugin remains the documented path;
+  neither install has been operated on a real machine yet and the install pages say so.
+- **Not verified here:** `claude plugin validate` was not available on the publishing machine.
+  The gate's `--check-tree` validates what it can - manifest shape, catalog entry, and that the
+  source path is a plugin root containing every shipped skill.
+- **The operator-name scan skips the generated tree.** It excludes transcript records by their
+  source path; the byte copy of the same records under `CoworkConfig/plugin/skills/` sat at a path
+  the exclusion did not name, and the first run of this release failed the local gate on it (3
+  lines). The source is scanned and `--check-tree` proves the copy identical, so the copy is skipped
+  whole; the self-test plants a copy with a hit and proves it is neither counted nor rewritten by
+  `--fix` (12 -> 15 cases).
+- `CITATION.cff` 0.3.4. The skills plugin stays at 0.6.1: no skill changed.
+
 ## 0.3.3 - 2026-09-15
 
 Housekeeping after the 2026-09-15 public validation - a fresh clone of `73eedf4`, the GitHub API,

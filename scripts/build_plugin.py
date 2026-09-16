@@ -25,6 +25,8 @@ Usage
     python3 scripts/build_plugin.py --platform macos    # only macOS-declared skills
     python3 scripts/build_plugin.py --strict            # fail on Windows-only text
     python3 scripts/build_plugin.py --list              # show what would ship
+    python3 scripts/build_plugin.py --tree              # regenerate CoworkConfig/plugin/skills
+    python3 scripts/build_plugin.py --check-tree        # exit 3 if that tree is stale; the gate runs this
 
 Exit codes: 0 ok, 2 usage/manifest error, 3 validation failure.
 """
@@ -43,6 +45,14 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 SKILLS_SRC = ROOT / "CoworkConfig" / "Skills"
 MANIFEST = ROOT / "CoworkConfig" / "plugin" / ".claude-plugin" / "plugin.json"
+# The plugin root a marketplace installs: the manifest above plus a skills/ tree generated from
+# SKILLS_SRC. Claude Code copies this directory into its cache and refuses component paths that
+# leave it, so the tree is a copy, not a reference. --tree writes it; --check-tree fails when it
+# differs from the source by one byte. Never edit it by hand.
+PLUGIN_ROOT = ROOT / "CoworkConfig" / "plugin"
+TREE = PLUGIN_ROOT / "skills"
+MARKETPLACE = ROOT / ".claude-plugin" / "marketplace.json"
+COPY_IGNORE = shutil.ignore_patterns(".DS_Store", "__pycache__", "*.pyc")
 OUT_DIR = ROOT / "Outputs" / "Skills Plugin"
 
 # The same signals the acceptance test greps for. A skill declared as
@@ -173,9 +183,16 @@ PLATFORMS = ["windows", "macos"]
 
 def select(manifest: dict, platform: str | None,
            product: str = "claude") -> list[dict]:
-    entries = manifest.get("skills")
+    # The shipping list lives under metadata, never at the top level. Claude Code reads a
+    # top-level `skills` as component PATHS and fails to load a manifest whose `skills` is a list
+    # of objects - measured against the plugins reference 2026-09-16 - while `metadata` is the
+    # free-form object the schema reserves for a plugin's own data.
+    if isinstance(manifest.get("skills"), list) and any(isinstance(e, dict) for e in manifest["skills"]):
+        fail("manifest carries the shipping list at top-level 'skills'; Claude Code reads that field as "
+             "component paths and would refuse to load the plugin. Move the list to metadata.skills.", 2)
+    entries = (manifest.get("metadata") or {}).get("skills")
     if not isinstance(entries, list) or not entries:
-        fail("manifest has no 'skills' array -- nothing to package", 2)
+        fail("manifest has no metadata.skills array -- nothing to package", 2)
     entries = [e for e in entries if product in e.get("products", PRODUCTS)]
     if not entries:
         fail(f"no skills declared for product '{product}'", 2)
@@ -188,8 +205,82 @@ def select(manifest: dict, platform: str | None,
 
 
 def packaged_manifest(manifest: dict) -> dict:
-    """Strip build-time keys so the shipped plugin.json carries only plugin metadata."""
-    return {k: v for k, v in manifest.items() if not k.startswith("_") and k != "skills"}
+    """The shipped plugin.json: the manifest without the build-time metadata object."""
+    return {k: v for k, v in manifest.items() if not k.startswith("_") and k != "metadata"}
+
+
+def tree_files(base: Path) -> dict[str, bytes]:
+    """Every file under base as posix-relative path -> bytes, ignoring what the copy ignores."""
+    out: dict[str, bytes] = {}
+    for path in sorted(base.rglob("*")):
+        if not path.is_file():
+            continue
+        rel = path.relative_to(base)
+        if any(part in {"__pycache__", ".DS_Store"} for part in rel.parts) or path.suffix == ".pyc":
+            continue
+        out[rel.as_posix()] = path.read_bytes()
+    return out
+
+
+def expected_tree(staged: list[tuple[str, Path]]) -> dict[str, bytes]:
+    want: dict[str, bytes] = {}
+    for name, skill_dir in staged:
+        for rel, data in tree_files(skill_dir).items():
+            want[f"{name}/{rel}"] = data
+    return want
+
+
+def tree_drift(staged: list[tuple[str, Path]]) -> list[str]:
+    """What differs between the generated skills/ tree and its source. Empty means current."""
+    want = expected_tree(staged)
+    have = tree_files(TREE) if TREE.is_dir() else {}
+    drift = [f"missing: skills/{rel}" for rel in sorted(set(want) - set(have))]
+    drift += [f"extra: skills/{rel}" for rel in sorted(set(have) - set(want))]
+    drift += [f"differs: skills/{rel}" for rel in sorted(set(want) & set(have)) if want[rel] != have[rel]]
+    return drift
+
+
+def write_tree(staged: list[tuple[str, Path]]) -> int:
+    """Rewrite the generated tree from the source. Whatever was there is removed first, so a
+    file the source no longer has cannot survive in the copy; a tree that is already gone, or
+    goes while being removed, is not an error - the goal is its absence."""
+    shutil.rmtree(TREE, ignore_errors=True)
+    TREE.mkdir(parents=True, exist_ok=True)
+    for name, skill_dir in staged:
+        shutil.copytree(skill_dir, TREE / name, ignore=COPY_IGNORE)
+    return len(expected_tree(staged))
+
+
+def catalog_problems(manifest: dict) -> list[str]:
+    """The marketplace catalog names this plugin root, and the manifest is a shape Claude Code loads."""
+    problems: list[str] = []
+    if not re.fullmatch(r"[a-z][a-z0-9]*(-[a-z0-9]+)*", str(manifest.get("name", ""))):
+        problems.append(f"plugin.json name {manifest.get('name')!r} is not kebab-case")
+    for key, kind in (("keywords", list), ("author", dict), ("metadata", dict)):
+        if key in manifest and not isinstance(manifest[key], kind):
+            problems.append(f"plugin.json {key} must be a {kind.__name__}")
+    if not MARKETPLACE.is_file():
+        problems.append(f"{MARKETPLACE.relative_to(ROOT).as_posix()} is missing")
+        return problems
+    try:
+        catalog = json.loads(MARKETPLACE.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        return problems + [f"marketplace.json is not valid JSON: {exc}"]
+    if not catalog.get("name") or not isinstance(catalog.get("owner"), dict) or not catalog["owner"].get("name"):
+        problems.append("marketplace.json needs a name and an owner with a name")
+    entries = [e for e in catalog.get("plugins", []) if isinstance(e, dict)]
+    mine = [e for e in entries if e.get("name") == manifest.get("name")]
+    if len(mine) != 1:
+        problems.append(f"marketplace.json must list {manifest.get('name')!r} exactly once, found {len(mine)}")
+        return problems
+    source = str(mine[0].get("source", ""))
+    if not source.startswith("./"):
+        problems.append(f"marketplace entry source {source!r} must be a relative path starting with ./")
+    elif (ROOT / source[2:]).resolve() != PLUGIN_ROOT.resolve():
+        problems.append(f"marketplace entry source {source!r} does not point at {PLUGIN_ROOT.relative_to(ROOT).as_posix()}")
+    if not mine[0].get("description"):
+        problems.append("marketplace entry has no description")
+    return problems
 
 
 def main() -> int:
@@ -202,6 +293,10 @@ def main() -> int:
     parser.add_argument("--strict", action="store_true",
                         help="fail the build if a macos-declared skill contains Windows-only text")
     parser.add_argument("--list", action="store_true", help="report what would ship and exit")
+    parser.add_argument("--tree", action="store_true",
+                        help="regenerate CoworkConfig/plugin/skills from CoworkConfig/Skills and exit")
+    parser.add_argument("--check-tree", action="store_true",
+                        help="exit 3 if CoworkConfig/plugin/skills, the manifest or the marketplace catalog would not install")
     parser.add_argument("--out", type=Path, default=None, help="output .plugin path")
     args = parser.parse_args()
 
@@ -243,6 +338,25 @@ def main() -> int:
 
         staged.append((name, skill_dir))
 
+    if args.tree or args.check_tree:
+        if problems:
+            for problem in problems:
+                print(f"FAIL  {problem}", file=sys.stderr)
+            print(f"\n{len(problems)} problem(s) -- the tree was not touched.", file=sys.stderr)
+            return 3
+        if args.tree:
+            count = write_tree(staged)
+            print(f"PLUGIN_TREE: WRITTEN ({len(staged)} skill(s), {count} file(s) under {TREE.relative_to(ROOT).as_posix()})")
+            return 0
+        drift = tree_drift(staged) + catalog_problems(manifest)
+        for line in drift:
+            print(f"FAIL  {line}", file=sys.stderr)
+        if drift:
+            print(f"PLUGIN_TREE: STALE ({len(drift)} finding(s)) -- run scripts/build_plugin.py --tree", file=sys.stderr)
+            return 3
+        print(f"PLUGIN_TREE: CURRENT ({len(staged)} skill(s), {len(expected_tree(staged))} file(s); manifest and catalog install)")
+        return 0
+
     if args.list:
         for name, skill_dir in staged:
             files = sum(1 for p in skill_dir.rglob("*") if p.is_file())
@@ -280,8 +394,7 @@ def main() -> int:
             json.dumps(packaged_manifest(manifest), indent=2) + "\n", encoding="utf-8"
         )
         for name, skill_dir in staged:
-            shutil.copytree(skill_dir, stage / "skills" / name,
-                            ignore=shutil.ignore_patterns(".DS_Store", "__pycache__", "*.pyc"))
+            shutil.copytree(skill_dir, stage / "skills" / name, ignore=COPY_IGNORE)
         if out_path.exists():
             out_path.unlink()
         with zipfile.ZipFile(out_path, "w", zipfile.ZIP_DEFLATED) as bundle:

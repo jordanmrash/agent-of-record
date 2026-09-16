@@ -98,6 +98,13 @@ CHECKS = [
         "skill plugin manifest",
         [sys.executable, str(ROOT / "scripts" / "build_plugin.py"), "--strict", "--list"],
     ),
+    # CoworkConfig/plugin/skills is a generated copy of CoworkConfig/Skills that a marketplace
+    # installs; a stale copy would ship skills the source no longer says. The same check proves
+    # the manifest and the catalog are shapes Claude Code loads.
+    Check(
+        "skill plugin tree currency",
+        [sys.executable, str(ROOT / "scripts" / "build_plugin.py"), "--check-tree"],
+    ),
     Check(
         "synthetic control loop",
         [sys.executable, str(ROOT / "examples" / "synthetic-control-loop" / "run.py"), "--check"],
