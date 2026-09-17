@@ -4,7 +4,7 @@ All notable changes to the published repository. Through 0.3.0 each entry
 summarized one rebuilt snapshot; from 0.3.0 `main` keeps its history and each
 entry summarizes a release.
 
-## Unreleased
+## 0.3.5 - 2026-09-16
 
 The approved executor ships on its own as an MCP Bundle, and the repository carries the metadata
 the MCP Registry and the Glama directory read.
@@ -33,6 +33,7 @@ the MCP Registry and the Glama directory read.
 - **Not operated yet.** The bundle has been built and handshaken on the publishing machine and in
   CI; no desktop host has installed it. `docs/install/claude-cowork.md` says so, and the cell moves
   on evidence.
+- `CITATION.cff` 0.3.5. The skills plugin stays at 0.6.1: no skill changed.
 
 ## 0.3.4 - 2026-09-16
 
