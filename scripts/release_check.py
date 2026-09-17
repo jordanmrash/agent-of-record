@@ -105,6 +105,16 @@ CHECKS = [
         "skill plugin tree currency",
         [sys.executable, str(ROOT / "scripts" / "build_plugin.py"), "--check-tree"],
     ),
+    # The approved executor also ships on its own as an MCP Bundle (.mcpb) that a desktop host
+    # installs from its own settings dialog. The bundle is generated from
+    # Startup/CommandBridge/batch-exec-server.js and the manifest beside it; --check builds it to a
+    # temporary folder and refuses a manifest whose name or version has drifted from the server it
+    # packages, a packaged copy that does not parse, or a strip that left the operator's lessons
+    # block in the tool description.
+    Check(
+        "executor bundle",
+        [sys.executable, str(ROOT / "scripts" / "build_mcpb.py"), "--check"],
+    ),
     Check(
         "synthetic control loop",
         [sys.executable, str(ROOT / "examples" / "synthetic-control-loop" / "run.py"), "--check"],
@@ -125,6 +135,9 @@ ROOT_SELFTESTS = [
     ROOT / "scripts" / "build_plugin_selftest.py",
     ROOT / "scripts" / "measured_table_selftest.py",
     ROOT / "scripts" / "operator_name_check_selftest.py",
+    # Builds the executor bundle to a temporary folder, extracts it, completes a real MCP
+    # handshake with the packaged server, and proves the six ways the build must refuse.
+    ROOT / "scripts" / "build_mcpb_selftest.py",
 ]
 
 SELFTESTS = [

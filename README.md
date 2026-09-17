@@ -42,7 +42,7 @@ The scenario, the recorded transcripts and what each exit code means are in the 
 | **Status** | v0.3.4 - portable. Windows and macOS, with a contributor on the macOS side. `main` keeps its history; changes arrive by pull request and the gate runs on both platforms in CI. Interfaces may still change between minor versions. |
 | **Platform** | Windows and macOS/Linux. The local layer is VS Code tasks over per-platform launchers - PowerShell and batch files on Windows, shell scripts under `Startup/posix/` elsewhere. The command bridge is one implementation with one refusal set, proven on whichever platform runs the gate. |
 | **Host** | The four bridges are standard MCP servers. Microsoft 365 Copilot Cowork is the client this repository was built and operated against; it is reached through a dev tunnel only because that client is cloud-hosted. Claude Cowork, in a local desktop session, starts the one server it needs - the approved command executor - as a stdio process with no tunnel. That route ran on a Mac on 2026-09-15 ([evidence](docs/evidence/mac-operated-2026-09-15.md)): the executor and the install check are operated, and the skills-plugin upload is not yet confirmed. |
-| **Install** | [Choose your route](docs/install/README.md), then your platform: [Copilot Cowork on Windows](docs/setup.md) or the [Claude Cowork pages](docs/install/claude-cowork.md) - a bare machine to reachable bridges and an installed configuration, with `scripts/install_check.py` proving it by completing a real MCP handshake against each bridge. On the hosted route `scripts/copilot/personalize.py` replaces every placeholder in one pass and each bridge ships its connector package under `Startup/Plugins/`. The ten skills ship as one plugin, two ways: this repository is a plugin marketplace (`/plugin marketplace add jordanmrash/agent-of-record`, then `/plugin install agent-of-record-skills@agent-of-record`), and each release carries the built `agent-of-record-skills-<platform>.plugin` for **Customize → Plugins → Add → Upload plugin**. Neither install has been operated on a real machine yet. |
+| **Install** | [Choose your route](docs/install/README.md), then your platform: [Copilot Cowork on Windows](docs/setup.md) or the [Claude Cowork pages](docs/install/claude-cowork.md) - a bare machine to reachable bridges and an installed configuration, with `scripts/install_check.py` proving it by completing a real MCP handshake against each bridge. On the hosted route `scripts/copilot/personalize.py` replaces every placeholder in one pass and each bridge ships its connector package under `Startup/Plugins/`. The ten skills ship as one plugin, two ways: this repository is a plugin marketplace (`/plugin marketplace add jordanmrash/agent-of-record`, then `/plugin install agent-of-record-skills@agent-of-record`), and each release carries the built `agent-of-record-skills-<platform>.plugin` for **Customize → Plugins → Add → Upload plugin**. From 0.3.5 each release also carries the executor on its own as an MCP Bundle, `aor-batch-exec-<version>.mcpb`, for a desktop host that installs bundles from its own settings dialog ([how](docs/install/claude-cowork.md#the-executor-as-a-bundle)). None of the three installs has been operated on a real machine yet. |
 
 Professional work is adopting AI faster than it is developing the controls, operating models, and institutional knowledge needed to use it reliably.
 
@@ -140,8 +140,8 @@ These are measurements from the published tree, not aspirational claims. The tab
 | Lesson keys routed into skills | 86 |
 | Lesson keys routed into plugin tools | 5 |
 | Routed skills | 8 |
-| Self-test suites run by the gate | 17 |
-| Checks in the release gate | 30 |
+| Self-test suites run by the gate | 18 |
+| Checks in the release gate | 32 |
 | Behaviorally verified effective rules | 1 |
 | Behaviorally verified inert rules | 0 |
 | Rules a checker enforces on some surfaces and is blind on others | 6 |
@@ -221,7 +221,7 @@ python scripts/public_scan.py
 python scripts/release_check.py --json release-results.json
 ```
 
-The release check runs the lessons validator, digest currency check, skill and plugin delivery checks, enforcement-scope audit, per-surface gate audit, the cross-surface bridge facts check, the measured-table currency check, the operator-name scan, the plugin-tree currency check, the synthetic control-loop demonstration, and the negative-control self-test suites. `--json` writes the results in machine-readable form. GitHub Actions runs the same checks on `windows-latest` and `macos-latest` for every push and pull request, and publishes a results file per platform as a build artifact.
+The release check runs the lessons validator, digest currency check, skill and plugin delivery checks, enforcement-scope audit, per-surface gate audit, the cross-surface bridge facts check, the measured-table currency check, the operator-name scan, the plugin-tree currency check, the executor bundle build, the synthetic control-loop demonstration, and the negative-control self-test suites. `--json` writes the results in machine-readable form. GitHub Actions runs the same checks on `windows-latest` and `macos-latest` for every push and pull request, and publishes a results file per platform as a build artifact.
 
 ## Author perspective
 

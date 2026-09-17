@@ -4,6 +4,36 @@ All notable changes to the published repository. Through 0.3.0 each entry
 summarized one rebuilt snapshot; from 0.3.0 `main` keeps its history and each
 entry summarizes a release.
 
+## Unreleased
+
+The approved executor ships on its own as an MCP Bundle, and the repository carries the metadata
+the MCP Registry and the Glama directory read.
+
+- **`aor-batch-exec-<version>.mcpb` joins the release assets.** `scripts/build_mcpb.py` packages
+  `Startup/CommandBridge/batch-exec-server.js` with `Startup/CommandBridge/mcpb-manifest.json`
+  into a deterministic zip (fixed timestamps, sorted entries, LF terminators, so a Windows and a
+  macOS builder produce the same digest) that a desktop host installs from its own settings dialog.
+  The manifest declares one `directory` setting, the tooling root, which reaches the server as
+  `COWORK_ROOT`; the host is expected to start the server on the Node runtime it bundles, which is
+  the `PATH` fault the 0.3.2 launcher worked around by hand. To be confirmed by the first real
+  install. The packaged copy differs from the source in one respect: the generated `PLUGIN-LESSONS`
+  block is removed from the tool description, because it is the operator's own record and the
+  2026-09-15 Mac run measured it as inapplicable on another machine. The live reminder read at run
+  time is unchanged.
+- **The release gate builds the bundle.** `build_mcpb.py --check` joins `release_check.py` and
+  refuses a manifest whose name or version drifted from `SERVER_NAME` and `SERVER_VERSION`, a
+  packaged server that does not parse, or a strip that left the lessons block behind.
+  `scripts/build_mcpb_selftest.py` joins the self-test suites: it builds to a temporary folder,
+  extracts the bundle, completes a real MCP handshake with the packaged server, and proves six
+  refusals. The gate is `RELEASE_CHECK: CLEAN (32 checks)`.
+- **Registry and directory metadata.** `build_mcpb.py --server-json` writes the `server.json` the
+  MCP Registry takes for an `mcpb` package - the release asset URL and its SHA-256 - under the name
+  `io.github.jordanmrash/aor-batch-exec`; `glama.json` at the root names the maintainer for the
+  Glama directory. Publishing to the registry is a step on the release and is recorded there.
+- **Not operated yet.** The bundle has been built and handshaken on the publishing machine and in
+  CI; no desktop host has installed it. `docs/install/claude-cowork.md` says so, and the cell moves
+  on evidence.
+
 ## 0.3.4 - 2026-09-16
 
 The skills plugin is installable from this repository as a marketplace; closes #21.
