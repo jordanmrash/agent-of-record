@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: The asset server.json names exists and matches its digest
         run: |
@@ -34,14 +34,15 @@ jobs:
           echo "$sha  asset.mcpb" | sha256sum -c -
 
       - name: Install mcp-publisher from the registry's latest release
-        env:
-          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          url=$(gh release view --repo modelcontextprotocol/registry --json assets --jq '.assets[] | select(.name | test("linux_amd64.*\\.tar\\.gz$")) | .url' | head -n 1)
-          test -n "$url" || { echo "no linux_amd64 tarball on the latest registry release"; exit 1; }
+          # The documented install: the archive name is fixed per platform, so the latest
+          # release is one direct URL. No gh, jq or head in the path - the first dispatch
+          # died at exit 141 when head closed the pipe on gh under pipefail.
+          url=https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_linux_amd64.tar.gz
           echo "publisher : $url"
-          curl -sSfL "$url" | tar xz mcp-publisher
+          curl -sSfL -o mcp-publisher.tar.gz "$url"
+          tar xzf mcp-publisher.tar.gz mcp-publisher
           ./mcp-publisher --version
 
       - name: Log in with the repository's identity (GitHub OIDC)
