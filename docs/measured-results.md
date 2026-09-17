@@ -11,8 +11,8 @@
 | Lesson keys routed into skills | 86 |
 | Lesson keys routed into plugin tools | 5 |
 | Routed skills | 8 |
-| Self-test suites run by the gate | 17 |
-| Checks in the release gate | 30 |
+| Self-test suites run by the gate | 18 |
+| Checks in the release gate | 32 |
 | Behaviorally verified effective rules | 1 |
 | Behaviorally verified inert rules | 0 |
 | Rules a checker enforces on some surfaces and is blind on others | 6 |

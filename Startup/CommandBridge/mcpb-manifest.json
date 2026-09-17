@@ -1,0 +1,62 @@
+{
+  "manifest_version": "0.3",
+  "name": "aor-batch-exec",
+  "display_name": "Agent of Record: approved batch executor",
+  "version": "1.3.0",
+  "description": "Runs one existing script a person has read and approved, by relative name under one folder. No command, arguments, environment, working directory, timeout or elevation can be supplied.",
+  "long_description": "The approved batch executor from the Agent of Record repository, packaged as an MCP Bundle.\n\nIt exposes exactly one tool, `run_batch_file`, whose only input is the relative name of a `.bat`/`.cmd` (Windows) or `.sh` (macOS, Linux) file that already exists under `<tooling root>/CommandJobs`. The caller cannot supply a command string, arguments, an interpreter, a working directory, environment variables, an output directory, a timeout override or an elevation option. Absolute, drive-qualified, UNC and environment-variable paths are refused before any process exists, and so is anything that resolves outside the folder after symlinks and junctions are followed.\n\nEvery job runs with a fixed 300 second timeout and process-tree kill, 5 MB output caps, one job at a time, no console, no elevation and no interactive input. The result carries stdout, stderr, the exit code, timing, and every file the job created, modified or deleted. Deliverables belong under `<tooling root>/Outputs`; the approved script declares its own destination with a `COWORK_OUTPUT` directive that the server verifies.\n\nThe unit of approval is a file a person can read in full before it runs. The agent proposes the script, the person approves it, and the executor runs that named file and nothing else.",
+  "author": {
+    "name": "Jordan Rash",
+    "url": "https://github.com/jordanmrash"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jordanmrash/agent-of-record.git"
+  },
+  "homepage": "https://github.com/jordanmrash/agent-of-record",
+  "documentation": "https://github.com/jordanmrash/agent-of-record/blob/main/docs/install/claude-cowork.md",
+  "support": "https://github.com/jordanmrash/agent-of-record/issues",
+  "license": "MIT",
+  "keywords": ["mcp", "human-in-the-loop", "approval", "executor", "governance", "agent-of-record"],
+  "server": {
+    "type": "node",
+    "entry_point": "server/index.js",
+    "mcp_config": {
+      "command": "node",
+      "args": ["${__dirname}/server/index.js"],
+      "env": {
+        "COWORK_ROOT": "${user_config.tooling_root}",
+        "COWORK_CONFIG_ROOT": "${user_config.config_root}",
+        "COWORK_ROUTE": "claude"
+      }
+    }
+  },
+  "tools": [
+    {
+      "name": "run_batch_file",
+      "description": "Execute an existing, approved .bat/.cmd (Windows) or .sh (macOS, Linux) file under <tooling root>/CommandJobs, named by relative path. Returns stdout, stderr, exit code, timing and every file touched."
+    }
+  ],
+  "tools_generated": false,
+  "compatibility": {
+    "platforms": ["darwin", "win32", "linux"],
+    "runtimes": {
+      "node": ">=20.0.0"
+    }
+  },
+  "user_config": {
+    "tooling_root": {
+      "type": "directory",
+      "title": "Tooling root",
+      "description": "The one folder the executor is confined to. Scripts run only from <root>/CommandJobs and deliverables go under <root>/Outputs; both are created if absent. Use your agent-of-record clone to get the shipped jobs, or an empty folder to start clean.",
+      "required": true,
+      "default": "${HOME}/agent-of-record"
+    },
+    "config_root": {
+      "type": "directory",
+      "title": "Cowork config root (optional)",
+      "description": "Folder holding cowork-memory/cowork-lessons.md if you keep an operating corpus. Leave empty otherwise; the executor then serves no operating-rules reminder.",
+      "required": false
+    }
+  }
+}

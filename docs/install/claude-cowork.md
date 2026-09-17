@@ -98,6 +98,30 @@ packages, the watchdog, the personalizer, the pointer-tier memory conventions wr
 the Copilot store, and `copilot-instructions.md` as a loaded file — the digest it carries
 reaches this host through the generated blocks in the skills instead.
 
+## The executor as a bundle
+
+From 0.3.5 each release also carries the executor on its own as an MCP Bundle,
+`aor-batch-exec-<version>.mcpb`, beside the skills plugin. A bundle is a zip the desktop app
+installs from its own settings dialog. It holds the server, a manifest that declares one
+setting - the tooling root - and nothing else: no launcher, no clone, no `PATH` of your own to
+get right, and the host is expected to start the server on the Node runtime it bundles (to be
+confirmed by the first real install). Choose the tooling root when the dialog asks; the
+executor creates `CommandJobs/`, `CommandJobs/Logs/` and `Outputs/` under it if they are
+absent, and everything in the executor paragraph above applies unchanged, because the file
+inside the bundle is the same `batch-exec-server.js` the launcher starts.
+
+One difference is deliberate. The packaged copy carries no operating-rules block in its tool
+description: that block is the operator's own record, regenerated from their corpus, and a new
+install starts with an empty corpus. The live reminder the executor reads from
+`cowork-lessons.md` at run time is unchanged and simply stays empty until you have one.
+
+`scripts/build_mcpb.py` builds the bundle from the same source, deterministically, and the
+release gate refuses a manifest whose name or version has drifted from the server it packages.
+Verify the download against the `.sha256` sidecar on the release before installing it. The
+bundle install is **not yet operated** on a real machine; the script route above is the one
+with evidence behind it. When a bundle install runs end to end, the result belongs in
+`docs/evidence/` and this line changes.
+
 ## Skills on this host
 
 Two install paths, neither yet operated on a real machine.
