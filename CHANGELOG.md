@@ -4,6 +4,17 @@ All notable changes to the published repository. Through 0.3.0 each entry
 summarized one rebuilt snapshot; from 0.3.0 `main` keeps its history and each
 entry summarizes a release.
 
+## Unreleased
+
+- **The MCP Registry entry lives in the repository, and CI publishes it.** `server.json` at the
+  root is the registry entry for the executor bundle, `io.github.jordanmrash/aor-batch-exec`: the
+  v0.3.5 asset URL and its SHA-256, written by `build_mcpb.py --server-json` on the release.
+  `.github/workflows/mcp-registry.yml` publishes it when a release is published, or on demand,
+  with the repository's own identity through GitHub OIDC, so no token is stored anywhere. Before
+  it publishes, the workflow downloads the asset `server.json` names and checks the digest, so an
+  entry cannot point at a file that differs from what the release carries. The file names one
+  asset and one digest, so it is regenerated when the bundle changes and committed before the tag.
+
 ## 0.3.5 - 2026-09-16
 
 The approved executor ships on its own as an MCP Bundle, and the repository carries the metadata

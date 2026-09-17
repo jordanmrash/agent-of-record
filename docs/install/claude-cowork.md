@@ -122,6 +122,14 @@ bundle install is **not yet operated** on a real machine; the script route above
 with evidence behind it. When a bundle install runs end to end, the result belongs in
 `docs/evidence/` and this line changes.
 
+The bundle is also an entry in the MCP Registry, `io.github.jordanmrash/aor-batch-exec`. The
+entry is `server.json` at the repository root - the release asset URL and its SHA-256, written by
+`build_mcpb.py --server-json` on the release - and `.github/workflows/mcp-registry.yml` publishes
+it with the repository's own identity (GitHub OIDC, no stored token) when a release is published
+or on demand. Before it publishes, the workflow downloads the asset the entry names and checks the
+digest, so a host that installs from the registry gets the file the release carries and nothing
+else.
+
 ## Skills on this host
 
 Two install paths, neither yet operated on a real machine.
