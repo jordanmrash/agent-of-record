@@ -1,0 +1,72 @@
+name: MCP Registry
+
+# Publishes server.json (repository root) to the official MCP Registry with the
+# repository's own identity: GitHub OIDC grants the io.github.<owner>/* namespace,
+# so no token is stored anywhere. Before publishing, the asset server.json names
+# is downloaded and its digest checked, so the entry cannot point at a file that
+# differs from what the release carries. Runs when a release is published, and on
+# demand for an entry that was written after its release.
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    name: publish server.json
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: The asset server.json names exists and matches its digest
+        run: |
+          set -euo pipefail
+          url=$(python3 -c 'import json; print(json.load(open("server.json"))["packages"][0]["identifier"])')
+          sha=$(python3 -c 'import json; print(json.load(open("server.json"))["packages"][0]["fileSha256"])')
+          echo "asset : $url"
+          curl -sSfL -o asset.mcpb "$url"
+          echo "$sha  asset.mcpb" | sha256sum -c -
+
+      - name: Install mcp-publisher from the registry's latest release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          url=$(gh release view --repo modelcontextprotocol/registry --json assets --jq '.assets[] | select(.name | test("linux_amd64.*\\.tar\\.gz$")) | .url' | head -n 1)
+          test -n "$url" || { echo "no linux_amd64 tarball on the latest registry release"; exit 1; }
+          echo "publisher : $url"
+          curl -sSfL "$url" | tar xz mcp-publisher
+          ./mcp-publisher --version
+
+      - name: Log in with the repository's identity (GitHub OIDC)
+        run: ./mcp-publisher login github-oidc
+
+      - name: Publish
+        run: ./mcp-publisher publish
+
+      - name: Read the entry back from the registry
+        run: |
+          set -euo pipefail
+          sleep 5
+          name=$(python3 -c 'import json; print(json.load(open("server.json"))["name"])')
+          curl -sSf "https://registry.modelcontextprotocol.io/v0/servers?search=$name" > readback.json
+          python3 - "$name" <<'PY'
+          import json, sys
+          name = sys.argv[1]
+          doc = json.load(open("readback.json"))
+          hits = []
+          for entry in doc.get("servers", []):
+              srv = entry.get("server", entry)
+              if srv.get("name") == name:
+                  hits.append((srv.get("version"), entry.get("_meta", {})))
+          for version, meta in hits:
+              print(f"registry : {name} {version} {json.dumps(meta)[:300]}")
+          if not hits:
+              print(f"::warning::{name} not returned by the registry search yet; the publish step above is the record")
+          PY

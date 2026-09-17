@@ -34,6 +34,8 @@
 - CoworkConfig/Skills/self-improvement/
 - .claude-plugin/marketplace.json
 - CoworkConfig/plugin/.claude-plugin/plugin.json
+- server.json
+- .github/workflows/mcp-registry.yml
 - GitHubSetup/
 
 ## Synthetic example
