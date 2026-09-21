@@ -136,7 +136,7 @@ def main() -> int:
     case(count("devtunnel", "drops are the devtunnel hop") == 1, "'devtunnel' fires in prose")
 
     # MANIFEST DEFAULT: once every skill is portable, an entry with no platforms field means both.
-    manifest_fixture = {"skills": [{"name": "portable"}, {"name": "windows-only", "platforms": ["windows"]}]}
+    manifest_fixture = {"metadata": {"skills": [{"name": "portable"}, {"name": "windows-only", "platforms": ["windows"]}]}}
     case([e["name"] for e in bp.select(manifest_fixture, "macos")] == ["portable"], "a manifest entry with no platforms field defaults to both")
     case([e["name"] for e in bp.select(manifest_fixture, "windows")] == ["portable", "windows-only"], "the default-both entry also ships on Windows")
 
@@ -146,17 +146,33 @@ def main() -> int:
     # 2026-09-15: every skill ships to every product. A skill that duplicates a host capability
     # in one configuration is kept and marked (docs/skills-by-configuration.md), and the person
     # disables it in the host; the products axis stays available for a narrower build.
-    case(len(manifest_real["skills"]) == 10, f"real manifest names ten skills ({len(manifest_real['skills'])})")
+    real_list = (manifest_real.get("metadata") or {}).get("skills") or []
+    case(len(real_list) == 10, f"real manifest names ten skills under metadata.skills ({len(real_list)})")
+    case("skills" not in manifest_real, "the real manifest has no top-level skills field (Claude Code would read it as paths)")
+    case(isinstance(manifest_real.get("metadata"), dict) and isinstance(manifest_real.get("keywords"), list),
+         "metadata is an object and keywords an array, the shapes Claude Code loads")
+    # The old shape is refused, not silently packaged as nothing.
+    import contextlib, io
+    refused = False
+    with contextlib.redirect_stderr(io.StringIO()):
+        try:
+            bp.select({"skills": [{"name": "x"}]}, None, "claude")
+        except SystemExit as exc:
+            refused = exc.code == 2
+    case(refused, "a manifest with the shipping list at top-level skills is refused with exit 2")
+    stripped = bp.packaged_manifest(manifest_real)
+    case("metadata" not in stripped and "skills" not in stripped and stripped.get("name") == manifest_real.get("name"),
+         "the packaged manifest drops metadata and carries no skills field")
     claude_skills = bp.select(manifest_real, None, "claude")
     copilot_skills = bp.select(manifest_real, None, "copilot")
     case(len(claude_skills) == 10, f"ten skills ship to claude ({len(claude_skills)})")
     case(len(copilot_skills) == 10, f"ten skills ship to copilot ({len(copilot_skills)})")
     case({s["name"] for s in copilot_skills} - {s["name"] for s in claude_skills} == set(),
          "no skill is product-scoped: every skill ships to both products, redundancy is documented per configuration")
-    case(bp.select({"skills": [{"name": "x"}]}, None, "claude")[0]["name"] == "x",
+    case(bp.select({"metadata": {"skills": [{"name": "x"}]}}, None, "claude")[0]["name"] == "x",
          "a manifest entry with no products field defaults to both")
-    case(all("platforms" not in e for e in manifest_real["skills"]), "the temporary per-skill platforms field is gone")
-    dirty_real = {e["name"]: bp.scan_windows_text(repo_root / "CoworkConfig" / "Skills" / e["name"]) for e in manifest_real["skills"]}
+    case(all("platforms" not in e for e in real_list), "the temporary per-skill platforms field is gone")
+    dirty_real = {e["name"]: bp.scan_windows_text(repo_root / "CoworkConfig" / "Skills" / e["name"]) for e in real_list}
     dirty_real = {k: v for k, v in dirty_real.items() if v}
     case(dirty_real == {}, f"all ten real skills have zero unpaired units ({dirty_real})")
 
@@ -178,6 +194,40 @@ def main() -> int:
         hits = bp.scan_windows_text(dirty)
         case(sorted(hits) == sorted(["SKILL.md: 1x .bat", "SKILL.md: 1x bridge port"]),
              f"one prose line yields exactly one .bat and one bridge-port hit ({hits})")
+
+    # THE GENERATED TREE: tree_drift reads the real plugin root against the real source, and a
+    # planted difference is reported by kind. Nothing under the repository is written.
+    staged_real = [(e["name"], repo_root / "CoworkConfig" / "Skills" / e["name"]) for e in real_list]
+    case(bp.tree_drift(staged_real) == [], f"CoworkConfig/plugin/skills matches CoworkConfig/Skills byte for byte ({bp.tree_drift(staged_real)[:3]})")
+    case(bp.catalog_problems(manifest_real) == [], f"marketplace.json names the plugin root and the manifest loads ({bp.catalog_problems(manifest_real)})")
+    with tempfile.TemporaryDirectory() as td:
+        src = Path(td) / "src"
+        (src / "alpha").mkdir(parents=True)
+        (src / "alpha" / "SKILL.md").write_text("---\nname: alpha\n---\nbody\n", encoding="utf-8")
+        (src / "alpha" / "__pycache__").mkdir()
+        (src / "alpha" / "__pycache__" / "x.pyc").write_bytes(b"\x00")
+        saved_tree = bp.TREE
+        bp.TREE = Path(td) / "plugin" / "skills"
+        try:
+            staged_fx = [("alpha", src / "alpha")]
+            case(bp.tree_drift(staged_fx) == ["missing: skills/alpha/SKILL.md"], "an absent tree reports every file as missing")
+            count = bp.write_tree(staged_fx)
+            case(count == 1 and bp.tree_drift(staged_fx) == [], "--tree writes the copy and ignores __pycache__; the copy is then current")
+            (bp.TREE / "alpha" / "SKILL.md").write_text("edited by hand\n", encoding="utf-8")
+            case(bp.tree_drift(staged_fx) == ["differs: skills/alpha/SKILL.md"], "a hand edit to the copy is reported as differs")
+            (bp.TREE / "alpha" / "extra.md").write_text("x\n", encoding="utf-8")
+            case("extra: skills/alpha/extra.md" in bp.tree_drift(staged_fx), "a file only in the copy is reported as extra")
+            bp.write_tree(staged_fx)
+            case(bp.tree_drift(staged_fx) == [], "--tree removes the extra file and restores the edit")
+        finally:
+            bp.TREE = saved_tree
+    # A manifest whose recognised fields have the wrong shape is refused by the catalog check.
+    bad_shape = dict(manifest_real)
+    bad_shape["keywords"] = "cowork"
+    case(any("keywords" in p for p in bp.catalog_problems(bad_shape)), "keywords as a string is a load error and is reported")
+    bad_name = dict(manifest_real)
+    bad_name["name"] = "Agent Of Record"
+    case(any("kebab-case" in p for p in bp.catalog_problems(bad_name)), "a non-kebab-case name is reported")
 
     if bad:
         print(f"BUILD_PLUGIN_SELFTEST: FAIL {bad} of {ran} cases")

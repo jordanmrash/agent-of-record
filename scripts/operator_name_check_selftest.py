@@ -87,6 +87,22 @@ def main() -> int:
         code, out = run(clean)
         case("a tree without hits is CLEAN", code == 0 and "CLEAN" in out, out)
 
+        # The generated plugin tree is a byte copy of the skills; its source is scanned, the copy is
+        # not, so a record excluded at its source path stays excluded in the copy and --fix never
+        # rewrites the copy (that would make --check-tree fail instead).
+        planted = "[\n  \"Avery asked for the file twice.\"\n]\n"
+        put(clean, "CoworkConfig/Skills/self-improvement/scripts/verification_cases.json", planted)
+        put(clean, "CoworkConfig/plugin/skills/self-improvement/scripts/verification_cases.json", planted)
+        put(clean, "CoworkConfig/plugin/skills/demo/SKILL.md", "Tell Avery before deleting anything.\n")
+        code, out = run(clean)
+        case("the generated plugin tree is not scanned", code == 0 and "CLEAN" in out and "plugin/skills" not in out, out)
+        code, out = run(clean, "--fix")
+        copy = (clean / "CoworkConfig/plugin/skills/demo/SKILL.md").read_text(encoding="utf-8")
+        case("--fix leaves the generated copy byte-identical", "Tell Avery before" in copy and "rewrote 0 line(s)" in out, out)
+        put(clean, "CoworkConfig/Skills/demo/rules.md", "Tell Avery before deleting anything.\n")
+        code, out = run(clean)
+        case("the same text at its source path is still a hit", code == 1 and "CoworkConfig/Skills/demo/rules.md:1" in out, out)
+
     passed = sum(1 for r in results if r)
     if passed == len(results):
         print(f"OPERATOR_NAME_SELFTEST: OK - {passed} of {len(results)} cases passed")

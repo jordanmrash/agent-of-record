@@ -1,0 +1,34 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.jordanmrash/aor-batch-exec",
+  "title": "Agent of Record: approved batch executor",
+  "description": "Runs one existing, person-approved script by relative name under one folder. No command, arguments, environment, timeout or elevation can be supplied.",
+  "repository": {
+    "url": "https://github.com/jordanmrash/agent-of-record",
+    "source": "github"
+  },
+  "websiteUrl": "https://github.com/jordanmrash/agent-of-record/blob/main/docs/install/claude-cowork.md",
+  "version": "1.3.0",
+  "packages": [
+    {
+      "registryType": "mcpb",
+      "identifier": "https://github.com/jordanmrash/agent-of-record/releases/download/v0.3.5/aor-batch-exec-1.3.0.mcpb",
+      "fileSha256": "d6dfc6fab9b4926e526d4857232faa59262617de83d20412f43697e67ed7985b",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "COWORK_ROOT",
+          "description": "The one folder the executor is confined to: scripts under <root>/CommandJobs, deliverables under <root>/Outputs.",
+          "isRequired": true
+        },
+        {
+          "name": "COWORK_CONFIG_ROOT",
+          "description": "Optional folder holding cowork-memory/cowork-lessons.md for the operating-rules reminder.",
+          "isRequired": false
+        }
+      ]
+    }
+  ]
+}

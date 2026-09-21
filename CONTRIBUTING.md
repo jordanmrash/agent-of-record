@@ -61,7 +61,9 @@ against it. Change the manifest first, then the surfaces.
 **Generated blocks are regenerated, not edited.** The lesson blocks in each
 `SKILL.md` and the digest in `copilot-instructions.md` come from
 `CoworkConfig/cowork-memory/cowork-lessons.md`. Edit the lesson; rerun the
-generator.
+generator. `CoworkConfig/plugin/skills/` is a generated copy of `CoworkConfig/Skills/`
+for the marketplace install; after any skill change run
+`python scripts/build_plugin.py --tree`, or the gate's tree-currency check fails.
 
 **A checker change needs a self-test change.** Every checker has a `_selftest.py`
 sibling that breaks it on purpose. A change to one without the other is

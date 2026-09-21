@@ -29,6 +29,12 @@
 *.yml   text eol=lf
 *.yaml  text eol=lf
 
+# The dream analyser's approval marker has no extension rule above, so a Windows checkout with
+# core.autocrlf=true gave it CRLF while dream_analyze_selftest.py rewrites it LF on every platform;
+# the generated plugin tree then differed from its source and the Windows CI gate failed (0.3.4,
+# first run). Declared here so every checkout matches the regenerated file byte for byte.
+*.approved text eol=lf
+
 # Binary - never touch, never diff.
 *.png   binary
 *.jpg   binary
