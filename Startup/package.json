@@ -17,6 +17,6 @@
   "license": "MIT",
   "type": "commonjs",
   "dependencies": {
-    "supergateway": "3.4.3"
+    "supergateway": "4.0.0"
   }
 }
