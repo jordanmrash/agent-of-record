@@ -134,10 +134,10 @@ These are measurements from the published tree, not aspirational claims. The tab
 <!-- MEASURED:start -->
 | Measure | Result |
 |---|---:|
-| Recorded lesson entries | 120 |
-| Entries with an authored rule | 94 |
-| Rules in the always-on tier | 31 |
-| Lesson keys routed into skills | 86 |
+| Recorded lesson entries | 175 |
+| Entries with an authored rule | 139 |
+| Rules in the always-on tier | 42 |
+| Lesson keys routed into skills | 108 |
 | Lesson keys routed into plugin tools | 5 |
 | Routed skills | 8 |
 | Self-test suites run by the gate | 18 |
