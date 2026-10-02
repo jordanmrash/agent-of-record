@@ -199,7 +199,7 @@ did not start, and `install-mac.sh --verify` reads them for you. The launchers t
 
 | What | Command | Register it? |
 |---|---|---|
-| Approved batch executor | `<clone>/Startup/posix/exec-server.sh` | **Yes** — registered as `aor-batch-exec`. One tool: `run_batch_file`. Runs `.sh` only. Plain `node`, no dependencies, fetches nothing at start. Finds `node` under the minimal PATH a desktop app passes (`COWORK_NODE` in `cowork-env.sh` wins) and says so on stderr when it cannot. |
+| Approved batch executor | `<clone>/Startup/posix/exec-server.sh` | **Yes** — registered as `aor-batch-exec`. Two tools: `run_batch_file` and `run_job`. Runs `.sh` only. Plain `node`, no dependencies, fetches nothing at start. Finds `node` under the minimal PATH a desktop app passes (`COWORK_NODE` in `cowork-env.sh` wins) and says so on stderr when it cannot. |
 
 That is the whole table. There is no POSIX launcher for anything else in this repository:
 the two that existed were retired on 2026-09-15 because the host already does both jobs,

@@ -1,6 +1,6 @@
 COWORK COMMAND BRIDGE -- port 8933 implementation
 =================================================
-Startup\CommandBridge\batch-exec-server.js        v1.3.0
+Startup\CommandBridge\batch-exec-server.js        v1.9.0
 
 Launched by  Startup\exec-server.cmd  on Windows and  Startup/posix/exec-server.sh
 on macOS and Linux; tasks.json points --stdio at whichever fits the host.
@@ -11,20 +11,33 @@ executable extension (.bat/.cmd vs .sh), the comment marker the COWORK_OUTPUT
 directive hides behind (REM/:: vs #), and how a runaway process tree is killed
 (taskkill /T vs a process-group SIGKILL). Everything in PATH BOUNDARY below is
 one implementation used by both, and scripts/exec_bridge_selftest.py starts the
-real server and tries forty ways out of it in the host's own script
+real server and tries seventy ways (seventy-four on Windows) out of it in the host's own script
 language - so a refusal that held on one platform and not the other fails the
 gate rather than shipping. The tooling root comes from COWORK_ROOT, set by the
 launcher, never from the MCP caller, who cannot set an environment variable
-through the one tool this server exposes.
+through either tool this server exposes.
 Plain Node, already installed. No npx, no installs, no package dependencies,
 nothing fetched from the network at start time.
 
 
-THE ONE TOOL
-------------
+THE TWO TOOLS
+-------------
   run_batch_file { "file": "<relative filename or relative path under CommandJobs>" }
+  run_job        { "file": "<plain filename, no folders>", "content": "<complete script text, up to 64 KB>" }
 
-Input schema, exactly:
+run_job (since 1.7.0) saves the script under CommandJobs, replacing a file of
+that name, then runs it exactly as run_batch_file runs it: same path boundary,
+same timeout, same logs and operation record, same reply. Write access to
+CommandJobs was already execute access (see the note on write access below); run_job
+makes that one call instead of two. Since 1.4.0 one job runs at a time - a
+second call while a job holds the lock returns EXECUTOR_BUSY and starts
+nothing - and every run writes CommandJobs\Logs\ops\<script>.latest.json
+(ACCEPTED, STARTED, COMPLETED, FAILED or TIMED_OUT) so a lost reply is read
+back rather than rerun. Since 1.5.0 the reply carries the first 1,000 and last
+3,000 characters of stdout and of stderr and 25 entries per file list; the
+complete result is in the result file it names.
+
+Input schema of run_batch_file, exactly:
   type                  object
   properties.file       string, required
   additionalProperties  false
