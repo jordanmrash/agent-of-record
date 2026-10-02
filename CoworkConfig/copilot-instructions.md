@@ -72,51 +72,62 @@ other rule is in cowork-lessons.md and loads with
 at the moment it applies.
 
 **bridge**
+- Drops are the devtunnel hop, not the bridge process. 0% local; the tunnel measured 1-2% on 2026-08-21 and roughly 1 in 3 on 2026-10-01, so budget a verify-then-retry on EVERY write rather than treating a drop as rare. _(4x)_
+- A connector can vanish OR arrive mid-session. Do not restart anything on the PC; start a new chat instead. _(4x)_
 - Prove a bridge by CALLING it, never by reading a tool list. When the tool is ABSENT from the schema there is nothing to call - run `bridge-health.bat` through 8933 as the callable substitute. Re-probe before saying it is down AND again before closing out. Say "not on the surface as of now", never "unavailable this session", and never PLAN AROUND the absence. _(3x)_
 - Check PID creation times and listening state before restarting anything. _(2x)_
-- Drops are the devtunnel hop, not the bridge process. 0% local, 1-2% tunnel. Retry once, but verify before retrying a write. _(2x)_
 - Run `bridge-health.bat` before characterising tunnel state. It is read-only and measures all three legs. _(2x)_
-- A connector can vanish OR arrive mid-session. Do not restart anything on the PC; start a new chat instead. _(2x)_
+- `search_files` glob-matches against the path RELATIVE to the search root - it is not a substring search. A pattern with no wildcards matches nothing, and `*` does not cross a directory separator, so nested files need a leading `**/`. Search `**/*term*`, and still never read "No matches found" as proof of absence. _(2x)_
 - The error "couldn't be reached, so its tools may be unavailable" is ONE CALL failing on the devtunnel hop, not a bridge state. RETRY the call before saying anything about the bridge. Never tell the operator a bridge is down on the strength of a single failed call. _(2x)_
 - After ANY edit to `tasks.json`, resync `Startup\KnownGood\tasks.json` from live in the SAME job and prove it byte-identical. An unsynced snapshot turns `bridge-restore-tasksjson.bat` from a recovery tool into a regression tool, and the restore reports success while doing it. _(2x)_
+- Send approval-gated 8932 writes ONE per tool block. A second write batched beside the first is auto-denied while that approval is still pending. _(2x)_
 - Call `run_batch_file` with `file=` holding a path relative to CommandJobs. There is no path, args, cwd or timeout parameter.
-- Files written through 8932 arrive LF-only and cmd mis-parses them. Run the CRLF fix job after writing any new .bat.
-- 8933 does not inherit a working directory, so start every job with `cd /d <repo>`. PATH is intact and bare interpreter names resolve; only user-profile variables are empty.
-- Send approval-gated 8932 writes ONE per tool block. A second write batched beside the first is auto-denied while that approval is still pending.
+- FIXED AT SOURCE 2026-09-09 - executor 1.3.0 rewrites an LF-only .bat/.cmd to CRLF in place before running it and reports `line_endings`. The CRLF fix job is no longer required before a first run; it stays as the lint gate. What survives: a script another tool wrote may not be in the platform's convention - read `line_endings` in the result instead of assuming.
+- FIXED AT SOURCE 2026-09-09 - executor 1.3.0 hands jobs a complete environment: the profile variables and the user PATH, derived from the account. What survives: the working directory is CommandJobs, so start every job with `cd /d <repo>`; there is no console and no elevation.
 
 **git**
+- Read the actual git status before describing repo state. Do not narrate from memory of what you changed. _(3x)_
+- Before running any exact-string tool - anchor patch, heredoc extractor, delimiter split - against a file in the Windows clone, read that file's line endings and build the local fixture in the SAME convention. The agent-of-record clone checks out `.sh` as CRLF and `.md`/`.json` as LF; a Mac checkout has everything LF. Normalise on read (`text.replace("\r\n", "\n")`) or adapt the anchor to the file, and put a CRLF case in the self-test so the fixture cannot pass where the repo fails. _(3x)_
 - A self-committing job must stage its own permanent file and never its ephemeral inputs. _(2x)_
-- Read the actual git status before describing repo state. Do not narrate from memory of what you changed. _(2x)_
+- Read the script before designing around a remembered constraint about what it does. A stored scope claim decays silently when the script is fixed. _(2x)_
 - Committing a deletion does not sanitize git history - the path survives in every prior commit and every clone. A repo that ever held engagement content can never be the one pushed; populate a NEW repo by copying named folders in, never by cloning and filtering.
 - Before stripping a client name, check whether the CONTENT is also client-specific. If the file's substance is the client's work product, renaming is concealment rather than sanitization - stop and put the decision to the owner.
 
 **skills**
+- Calibrate a voice profile by mechanically diffing his real rewrite, never from description. Test any proposed rule against the whole finished document. _(3x)_
 - Never edit a SKILL.md or the lessons file in place with EditArtifact. Edit a local copy, republish the folder, confirm by hash. _(2x)_
 
 **memory**
-- Keep a memory under 512 characters and read the success field of every save - an over-length save stores nothing. _(4x)_
-- A fact gets ONE home. Pointer tier is short keys; the deep file is mechanism and evidence. On conflict the file wins. _(2x)_
-- Scope any structural regex to its target section and anchor on the FULL heading. Over a whole file a prefix matches prose and returns a false negative. _(2x)_
+- Keep a memory under 512 characters and read the success field of every save - an over-length save stores nothing. _(7x)_
+- Scope any structural regex to its target section and anchor on the FULL heading. Over a whole file a prefix matches prose and returns a false negative. _(3x)_
+- A fact gets ONE home. Pointer tier is short keys; the deep file is mechanism and evidence. On conflict the LATER-DATED statement wins and the stale store is corrected in the same pass - the file is authoritative only while it is current. _(3x)_
 - Repair a stale digest by computing it on a WRITABLE scratch copy, proving the repair with `lesson_gate preflight` against that copy into a SEPARATE receipt dir, then applying the difference to the PC file through the 8932 bridge with `edit_file` - never by pointing `digest_apply.py` at `/mnt/user-config/`, which is read-only. Afterwards expect the mount to keep serving the OLD file: hash it against the pre-repair copy to tell sync lag from a failed write, and never read that fresh exit 1 as a second failure. _(2x)_
 - Regenerate the digest with --limit set to the authored-Rule count, then diff old against new and confirm nothing was dropped.
 
 **files**
 - The mount can serve a stale or partly-flushed file. Wait ~20s and hash before concluding anything was lost. _(3x)_
+- Never write a file ANY strict JSON parser will read - GitHub's API, Node `JSON.parse` in the M365 Agents Toolkit CLI - with `Set-Content -Encoding UTF8` in Windows PowerShell 5 - it prepends a byte-order mark. Use `[IO.File]::WriteAllText($path, $text, (New-Object System.Text.UTF8Encoding($false)))` for `gh --input` bodies AND for committed files such as `.github/CODEOWNERS`, and prove it by reading the first three bytes back (EF BB BF is the defect), locally and from the GitHub contents API after the push. _(3x)_
 - Both sync legs cost minutes, so pick the one that does not block you. A LOCAL 8932 write unblocks the repo and the commit immediately; a cloud-side write blocks them for minutes. _(2x)_
 - ERROR 389 `0x185` "The cloud operation was unsuccessful" is a DEHYDRATED PLACEHOLDER that cannot be fetched - not a lock, not a robocopy fault, and `attrib +P -U` does NOT recover it. FIRST count how many placeholders fail: if several across different folders fail, and each fails in well under a second, the OneDrive CLIENT is stuck and one restart fixes every file at once. Only rebuild individual files from the cloud copy when a restart has been tried and the failure is genuinely confined. _(2x)_
+- Before moving, deleting or changing the behaviour of a file, grep the whole tracked tree for what REFERENCES or ASSERTS on it - self-tests included - and add every hit to the change list. A filename-and-timestamp audit, or a design written from the files you read, proves nothing about what depends on them. _(2x)_
+- Route a write by PAYLOAD: small or new file, write_file local. Existing large file, edit_file local so only the diff crosses. Bulk or binary, CopyArtifact. Verify a local write THROUGH THE BRIDGE, never the mount. _(2x)_
+- A rule is settled only when EVERY surface that states it agrees. Before calling one done, grep the instructions file, every SKILL.md, the memory folder and the stored-memory index for the old wording, and fix them in the same pass - routing loads whichever copy it reaches first, and the dangerous copy is usually the one that loads precisely when the rule matters. _(2x)_
 - A file carrying the deliverable's NAME but not its content is a false delivery, not an honest gap. Bring the artifact back and check its byte count against the source, or list it as not produced with the reason - nothing in between. Counting files is exactly the check a stub passes.
 
 **claims**
+- For every check, name the failure it CANNOT catch. A guard whose fixture is smaller than the threshold it guards can never fail. _(4x)_
 - A checker must gather every piece of evidence BEFORE it adjudicates, once, at the end. Never jump to a FAIL label mid-stream - that skips the step that could contradict it. Take a baseline from a file the run wrote, never from a literal pasted at authoring time. And never let a failure message NAME a cause the job did not test - derive the verdict from a comparison that could have come out the other way. _(4x)_
-- For every check, name the failure it CANNOT catch. A guard whose fixture is smaller than the threshold it guards can never fail. _(3x)_
+- Never hardcode a phrase copied from a lesson's `Rule:` text into the check that verifies it. Read the Rule out of `cowork-lessons.md` at check time and assert against that. A copied literal is correct only until the wording moves, and when it goes stale it fails LOUDLY and confidently while the thing it guards is fine. _(3x)_
 - Read the file or config surface this session before proposing a change to it, and quote the lines that are or are not there. Memory records conclusions, not file text. Say plainly when a recommendation turns out to be unfounded rather than quietly dropping it. _(3x)_
 - Break your own checker before trusting it. Positive control first, then negatives that each assert WHY it failed. _(2x)_
-- Never hardcode a phrase copied from a lesson's `Rule:` text into the check that verifies it. Read the Rule out of `cowork-lessons.md` at check time and assert against that. A copied literal is correct only until the wording moves, and when it goes stale it fails LOUDLY and confidently while the thing it guards is fine. _(2x)_
 
 **other**
-- When a lesson's Rule text is sharpened - or when the THING it counts is redefined - grep for the CHECK that enforces it and update it in the same pass. A check is a frozen copy of the rule as it read on the day it was written. Two ways it goes stale: the wording is sharpened and the check keeps the old wording, or the population is re-tiered and the check keeps counting the old population. In both cases the check keeps firing confidently and its output reads as a measurement. _(2x)_
+- When a job gates on a number - cases run, files changed, rows matched - take the number from the inventory you already ran, or compute it in the job from the same source the tool uses. A count typed from memory is a second assertion about the world, and when it is wrong the gate reverts a correct result and reports the tool as the failure. _(4x)_
+- When a lesson's Rule text is sharpened - or when the THING it counts is redefined - grep for the CHECK that enforces it and update it in the same pass. A check is a frozen copy of the rule as it read on the day it was written. Two ways it goes stale: the wording is sharpened and the check keeps the old wording, or the population is re-tiered and the check keeps counting the old population. In both cases the check keeps firing confidently and its output reads as a measurement. _(3x)_
+- In an 8933 job, an argument that PowerShell 5.1 hands to a native executable (`gh`, `git`, `node`) must contain NO double quotes: PS 5.1 re-quotes the token and drops the inner quotes, so a jq program such as `.title == "x"` or `.conclusion // "-"` reaches gh as `.title == x` and fails to parse. Shape jq output with `@tsv` (a null renders as an empty field, so no quoted default is needed) and compare strings in PowerShell afterwards. And test the call's exit code before reading its output - a parse error read as data looks exactly like "no result yet". _(3x)_
+- Before drawing a conclusion from a number in a generated report, grep for every site that WRITES it. A field with one assignment and no update site is a decoration, and printed beside a real count it reads as a measurement. This includes a "score" or "certified" figure: read the scorer and count how many of its inputs are computed. _(2x)_
 
-<!-- LESSON-DIGEST:END - 31 always-on of 94 rules from 120 entries -->
+<!-- LESSON-DIGEST:END - 42 always-on of 139 rules from 175 entries -->
 
 **Before acting on a surface above, one call gets the detail:**
 `python /mnt/user-config/skills/self-improvement/scripts/lesson_brief.py <lessons.md> --for bridge`

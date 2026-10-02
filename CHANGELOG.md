@@ -6,6 +6,15 @@ entry summarizes a release.
 
 ## Unreleased
 
+- **The published lessons corpus is current with the operating copy.** `CoworkConfig/cowork-memory/cowork-lessons.md`
+  goes from 120 to 175 entries, the operating corpus as of 2026-10-02, neutralised for publication as before:
+  operator name, home paths, employer and internal-system tokens replaced; `operator_name_check` and `public_scan`
+  clean. Every generated surface is regenerated from it in the same change - the instructions LESSON-DIGEST
+  (139 rules from 175 entries), the SKILL-LESSONS blocks of seven skills, the executor's `PLUGIN-LESSONS` segment
+  (4 rules, 1,160 of 1,200 bytes; the three rules that described executor traps fixed in 1.3.0 now say FIXED AT
+  SOURCE), the installable plugin tree and the measured table - so the currency checks in `release_check.py` pass
+  against the corpus they were written for. Gate on the publishing machine: `RELEASE_CHECK: CLEAN (32 checks)`.
+
 - **The MCP Registry entry lives in the repository, and CI publishes it.** `server.json` at the
   root is the registry entry for the executor bundle, `io.github.jordanmrash/aor-batch-exec`: the
   v0.3.5 asset URL and its SHA-256, written by `build_mcpb.py --server-json` on the release.
