@@ -59,6 +59,11 @@ DEFAULT_OUT = REPO / "Outputs" / "MCP Bundle"
 
 BUNDLE_BASENAME = "aor-batch-exec"
 REGISTRY_NAME = "io.github.jordanmrash/aor-batch-exec"
+# The registry entry's one-line description. server.schema.json (2025-12-11) caps `description`
+# at 100 characters and mcp-publisher validates against the schema before publishing; the first
+# entry carried 150 and would have been refused. The check below holds the line at the source.
+REGISTRY_DESCRIPTION = "Runs one existing person-approved script by relative name under one folder. No command or arguments."
+REGISTRY_DESCRIPTION_MAX = 100
 RELEASE_URL = "https://github.com/jordanmrash/agent-of-record/releases/download/{tag}/{file}"
 SCHEMA_URL = "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json"
 
@@ -216,16 +221,23 @@ def build(out_dir: Path | None, quiet: bool = False) -> tuple[Path | None, str, 
     return written, version, sha, data
 
 
+def check_registry_description() -> None:
+    """The server.json description must fit the registry schema: 1 to 100 characters."""
+    n = len(REGISTRY_DESCRIPTION)
+    if not 1 <= n <= REGISTRY_DESCRIPTION_MAX:
+        raise BuildError(
+            f"registry description is {n} characters; server.schema.json allows 1-{REGISTRY_DESCRIPTION_MAX}"
+        )
+
+
 def server_json(tag: str, version: str, sha: str, out_dir: Path) -> Path:
+    check_registry_description()
     filename = f"{BUNDLE_BASENAME}-{version}.mcpb"
     doc = {
         "$schema": SCHEMA_URL,
         "name": REGISTRY_NAME,
         "title": "Agent of Record: approved batch executor",
-        "description": (
-            "Runs one existing, person-approved script by relative name under one folder. "
-            "No command, arguments, environment, timeout or elevation can be supplied."
-        ),
+        "description": REGISTRY_DESCRIPTION,
         "repository": {"url": "https://github.com/jordanmrash/agent-of-record", "source": "github"},
         "websiteUrl": "https://github.com/jordanmrash/agent-of-record/blob/main/docs/install/claude-cowork.md",
         "version": version,
@@ -269,6 +281,7 @@ def main(argv: list[str]) -> int:
         if a.check:
             with tempfile.TemporaryDirectory() as td:
                 _, version, sha, data = build(Path(td), quiet=True)
+            check_registry_description()
             print(f"MCPB_CHECK: CLEAN - {BUNDLE_BASENAME} {version}, {len(data)} bytes, sha256 {sha[:12]}...")
             return 0
         if a.server_json:
