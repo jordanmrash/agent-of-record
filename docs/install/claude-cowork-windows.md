@@ -145,7 +145,7 @@ test.
 
 | What | Command | Register it? |
 |---|---|---|
-| Approved batch executor | `<tooling root>\Startup\exec-server.cmd` | **Yes.** One tool: `run_batch_file`. Runs `.bat`/`.cmd` only. Plain `node`, no dependencies, fetches nothing at start. |
+| Approved batch executor | `<tooling root>\Startup\exec-server.cmd` | **Yes.** Two tools: `run_batch_file` and `run_job`. Runs `.bat`/`.cmd` only. Plain `node`, no dependencies, fetches nothing at start. |
 
 Nothing else. The repository's other launchers exist for the hosted Copilot route; on this
 route the host reads and writes connected folders and drives a browser itself, so

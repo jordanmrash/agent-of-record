@@ -15,6 +15,27 @@ entry summarizes a release.
   entry cannot point at a file that differs from what the release carries. The file names one
   asset and one digest, so it is regenerated when the bundle changes and committed before the tag.
 
+- **Executor 1.9.0: the published server and the operating copy are one file again.** The
+  operating executor had moved on to 1.8.0 while the repository stayed at 1.3.0; 1.9.0 merges the
+  two. New since 1.3.0: one job at a time, enforced by a lock file - a second call while a job runs
+  returns `EXECUTOR_BUSY` and starts nothing (1.4.0); an operation record per run under
+  `CommandJobs/Logs/ops/<script>.latest.json` with status ACCEPTED, STARTED, COMPLETED, FAILED or
+  TIMED_OUT, so a lost reply is read back instead of rerun (1.4.0); bounded replies - the first
+  1,000 and last 3,000 characters of stdout and of stderr and 25 entries per file list, the
+  complete result in the named result file (1.5.0); on failure, at most three lessons attached and
+  only when the same script also failed on its previous run, replacing the periodic reminder
+  (1.6.0); a second tool, `run_job`, which saves a complete script text under `CommandJobs` by
+  plain filename and runs it exactly as `run_batch_file` would - write access to that folder was
+  already execute access, so the trust boundary is unchanged (1.7.0); and a concise reply shape
+  (1.8.0). Kept from the repository's 1.3.0: the `aor-batch-exec` name, platform-derived tool text,
+  the `Routes:`/`Platforms:` scoping of delivered lessons, and operator-neutral wording.
+  `scripts/exec_bridge_selftest.py` grows from 40 to 70 cases (74 on Windows, which has four cases
+  with no POSIX counterpart) to cover `run_job`, the single-flight lock, the bounded reply and the
+  targeted lessons; three negative controls (a server that accepts a busy second call, that leaks
+  the full output, or that attaches lessons on a first failure) fail the suite. The MCP Bundle
+  manifest declares both tools at 1.9.0; `server.json` still names the v0.3.5 asset and is
+  regenerated on the next release.
+
 ## 0.3.5 - 2026-09-16
 
 The approved executor ships on its own as an MCP Bundle, and the repository carries the metadata
