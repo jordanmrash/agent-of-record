@@ -60,7 +60,7 @@ session that loads this skill; it does not reach one that never does.
 | Pattern-Key | Rule |
 |---|---|
 | `memory-digest-repair-blocked-by-its-own-gate` **(repeat)** | Repair a stale digest by computing it on a WRITABLE scratch copy, proving the repair with `lesson_gate preflight` against that copy into a SEPARATE receipt dir, then applying the difference to the PC file through the 8932 bridge with `edit_file` - never by pointing `digest_apply.py` at `/mnt/user-config/`, which is read-only. Afterwards expect the mount to keep serving the OLD file: hash it against the pre-repair copy to tell sync lag from a failed write, and never read that fresh exit 1 as a second failure. |
-| `memory-two-stores-drift` **(repeat)** | A fact gets ONE home. Pointer tier is short keys; the deep file is mechanism and evidence. On conflict the file wins. |
+| `memory-two-stores-drift` **(repeat)** | A fact gets ONE home. Pointer tier is short keys; the deep file is mechanism and evidence. On conflict the LATER-DATED statement wins and the stale store is corrected in the same pass - the file is authoritative only while it is current. |
 | `onedrive-read-mount-locally` | READ the Cowork tree from the mounted user folder rather than downloading it, and WRITE it through the 8932 bridge at its local path - a `user` surface write reaches only the container mirror. |
 | `onedrive-user-surface-not-live` | Write config, memory and lesson files to the LOCAL OneDrive path via the 8932 bridge. The repo sees it instantly. Cloud-side artifact writes are the fallback for when the bridge is down. |
 | `savememory-512-cap-rejects-silently` **(repeat)** | Keep a memory under 512 characters and read the success field of every save - an over-length save stores nothing. |

@@ -9,32 +9,25 @@ when the **Why** is reasoning rather than something probed.
 
 **Key format:** `<subsystem>-<short-behavior>` — subsystem first, so dedupe works.
 
-**Scope:** `Routes:` and `Platforms:` narrow where a rule is served. Both are optional and
-absent means everywhere, so an untagged entry behaves exactly as before. `Routes: copilot`
-marks a rule about hosted-route machinery — the dev tunnel, `supergateway`, the Ports
-panel, the watchdog, `tasks.json`, the 8931/8932/8934 bridges, the OneDrive delivery
-surface — none of which exist on the Claude route. `Platforms: windows` marks a rule about
-a Windows job shape. Scope on what the **Rule** says, not on what the example cites: a
-universal rule whose `Failed:` block happens to show a `.bat` stays universal. The entry is
-never deleted or moved; only its delivery is narrowed.
-
 ---
 
 ## Failures
 
 ### A product-capability claim was asserted as a correction without checking
 - **Pattern-Key:** verify-product-claim-before-correcting-the-operator
+- **Distinct-from:** assumption-from-the-brief-encoded-as-a-durable-rule - there an assumption from the USER'S framing was carried into a skill file as a permanent rule; here an assumption about a PRODUCT'S capability was asserted to the user without a lookup. One is about what gets written down, the other about what gets checked before it is said.
 - **Date:** 2026-09-15
 - **Trigger:** failure
 - **Rule:** Before telling the operator a product cannot do something, search once. A capability claim is a fact to check, not an inference to make.
 - **Delivered-to:** self-improvement, gamma-tango
-- **Failed:** The operator asked about an open LLM inside Claude Cowork. The reply opened by correcting him: the model cannot be swapped. It can - Claude Desktop's third-party inference mode runs Cowork against any gateway or a local model, and Ollama documents the integration. The rest of the answer stood on the false premise and had to be withdrawn.
+- **Failed:** the operator asked about an open LLM inside Claude Cowork. The reply opened by correcting him: the model cannot be swapped. It can - Claude Desktop's third-party inference mode runs Cowork against any gateway or a local model, and Ollama documents the integration. The rest of the answer stood on the false premise and had to be withdrawn.
 - **Why:** The premise sounded like product knowledge and was a stale assumption. No lookup was made because the answer felt certain, and certainty was treated as evidence.
 - **Worked:** One web search before answering. Two results settled it in under a minute, and the corrected answer changed the design conclusion: the host stays Claude, so the narrowing stands; what changes is memory availability under a gateway and the data boundary.
 - **Evidence:** measured - the exchange of 2026-09-15 21:16-21:22 UTC; Ollama blog 2026-08-25 and docs.ollama.com/integrations/claude-desktop.
 
 ### The `.plugin` file is uploaded, never opened
 - **Pattern-Key:** plugin-install-is-upload-not-open
+- **Distinct-from:** claude-cowork-connectors-dialog-is-remote-only - that entry is about WHERE a stdio executor can be registered (the Connectors dialog cannot; claude_desktop_config.json can); this is about HOW a built .plugin file is installed (Upload plugin, never Finder open). Different dialog, different artifact, and the fix for one does nothing for the other.
 - **Date:** 2026-09-15
 - **Trigger:** failure
 - **Rule:** Install a built `.plugin` through Customize → Plugins → Add → Upload plugin. Never tell anyone to open or double-click the file.
@@ -46,6 +39,7 @@ never deleted or moved; only its delivery is narrowed.
 
 ### A skipped handshake makes a CLEAN install check meaningless
 - **Pattern-Key:** install-check-skipped-handshake-hides-dead-bridge
+- **Distinct-from:** claude-cowork-agent-vm-validation-proves-repo-not-host - there the checks ran in the WRONG PLACE (the Linux VM instead of the host) so a clean result was true of the wrong machine; here the check ran in the right place but SKIPPED THE STEP that fails (never started the server), so a clean result was true of a smaller question. Fix there is where to run; fix here is what to exercise.
 - **Date:** 2026-09-15
 - **Trigger:** failure
 - **Rule:** A check that skips the thing that can fail is not a check. Handshake every stdio server and inspect the tool schemas it returns.
@@ -57,6 +51,7 @@ never deleted or moved; only its delivery is narrowed.
 
 ### The filesystem pin was measured on the wrong axis
 - **Pattern-Key:** fs-server-pin-measured-output-schema-only
+- **Distinct-from:** narrow-before-fixing-duplicated-capability - that is a scoping question (should this component exist at all); this is a measurement defect inside a fix that was warranted (the pin measured one schema axis and missed the broken one). cowork-draft07-well-formed-untested - that is the OPEN question of whether a complete draft-07 schema is accepted; this entry's defect was measuring the wrong AXIS, which would mislead whichever answer that question gets.
 - **Date:** 2026-09-15
 - **Trigger:** failure
 - **Rule:** When pinning a dependency against a schema fault, measure every schema the server emits, not the one that prompted the investigation.
@@ -68,6 +63,7 @@ never deleted or moved; only its delivery is narrowed.
 
 ### The Cowork session's own shell is not the machine
 - **Pattern-Key:** device-shell-is-a-linux-vm-not-the-host
+- **Distinct-from:** claude-cowork-agent-vm-validation-proves-repo-not-host - same underlying fact (the session shell is a Linux VM), different scope: that entry is the install-verdict consequence and its fix (run the checks in the Mac's own Terminal); this one is the general rule for ANY evidence claim made from the session shell and names the approved executor as the only path to the machine. Kept as the general statement; the install entry is the worked case.
 - **Date:** 2026-09-15
 - **Trigger:** failure
 - **Rule:** Evidence that a thing works "on the Mac" must come through the approved executor. The session's own shell runs in a sandboxed Linux VM with the folders mounted.
@@ -79,6 +75,7 @@ never deleted or moved; only its delivery is narrowed.
 
 ### Check branch protection before pushing, because the undo may be blocked
 - **Pattern-Key:** git-protected-branch-bypass-not-reversible
+- **Distinct-from:** git-repo-state-read-from-worktree-only - that is about READING repo state from the wrong source (a file listing instead of git/gh commands); this is about a WRITE whose undo is governed by a different permission than the write itself. One misreads what landed, the other cannot take back what landed.
 - **Date:** 2026-09-15
 - **Trigger:** failure
 - **Rule:** Read the branch's protection rules before pushing to it. An admin bypass that succeeds does not imply an undo that succeeds.
@@ -90,6 +87,7 @@ never deleted or moved; only its delivery is narrowed.
 
 ### Editing a skill description can silently cross the 1024-character cap
 - **Pattern-Key:** skill-description-cap-crossed-by-edit
+- **Distinct-from:** skill-over-description-cap-silently-dropped - that entry establishes the FACT (an over-cap description unloads the skill with no error) and its detection (validate_skill.py); this entry is the PROCESS gap that re-creates the fault after the fact is known: an edit path with no re-check, because release_check does not read descriptions. Same cap, different failure point.
 - **Date:** 2026-09-15
 - **Trigger:** failure
 - **Rule:** After editing any skill's frontmatter description, re-run the cap check. The loader drops an over-cap skill with no error.
@@ -118,7 +116,7 @@ never deleted or moved; only its delivery is narrowed.
 - **Delivered-to:** command-bridge
 - **Failed:** Treating "MCP server couldn't be reached" as a plain retry. A blind retry risks running a state-changing job twice.
 - **Why:** The transport can drop while the job either did or did not start. The error alone does not distinguish them.
-- **Worked:** Check for the job's declared output folder / log via the 8932 filesystem bridge. Folder absent = never started, safe to retry. Also read `Outputs\2026-08-18 - Bridge Hardening\watchdog\status.txt` — it refreshes every 2 minutes and reports each port UP/DOWN, so it distinguishes "port dead" from "this session's connection dead". Twice on 2026-08-18 the ports were UP and a single informed retry succeeded.
+- **Worked:** Check for the job's declared output folder / log via the 8932 filesystem bridge. Folder absent = never started, safe to retry. Also read `Outputs\2026-08-18 - Bridge Hardening\watchdog\status.txt` — it refreshes every 2 minutes and reports each port UP/DOWN, so it distinguishes "port dead" from "this session's connection dead". Twice on 2026-08-18 the ports were UP and a single informed retry succeeded. For 8932 WRITES the check is `get_file_info` before the retry: size unchanged = write never landed, safe to retry. 2026-10-01: eight such verifies, eight retries, zero double-writes, including one `write_file` that dropped twice and landed on the third attempt.
 - **Evidence:** measured — outcome observed; Why is inference unverified
 - **See also:** bridge-session-bound-to-pid
 
@@ -135,19 +133,18 @@ never deleted or moved; only its delivery is narrowed.
 
 ### Files written through the filesystem bridge arrive LF-only and break cmd
 - **Pattern-Key:** bridge-8932-writes-lf
-- **Routes:** copilot
 - **Date:** 2026-08-18
 - **Trigger:** failure
-- **Rule:** Files written through 8932 arrive LF-only and cmd mis-parses them. Run the CRLF fix job after writing any new .bat.
+- **Rule:** FIXED AT SOURCE 2026-09-09 - executor 1.3.0 rewrites an LF-only .bat/.cmd to CRLF in place before running it and reports `line_endings`. The CRLF fix job is no longer required before a first run; it stays as the lint gate. What survives: a script another tool wrote may not be in the platform's convention - read `line_endings` in the result instead of assuming.
 - **Delivered-to:** command-bridge, git-bridge, local-file-bridge
 - **Failed:** Running a `.bat` straight after writing it via the 8932 bridge — cmd can exit silently, and `call :label` constructs break outright.
 - **Why:** The bridge writes LF line endings; cmd's parser requires CRLF for reliable label and block handling.
 - **Worked:** Run `2026-08-18-fix-crlf-all.bat` after every write and before executing. It normalizes and reports which files it touched. Also avoid `call :label` menus entirely.
 - **Evidence:** measured
+- **Fixed-at-source:** 2026-09-09 - `batch-exec-server.js` 1.3.0 (agent-of-record PR #9, `main f0f5518`, ported to the live bridge the same day) normalizes the script's terminators before the run. Measured twice through the live bridge: bridge-written .bat files ran with `line_endings: lf-to-crlf` and clean output, one of them containing an `if ( ) else ( )` block. The 2026-08-18 fix job still runs the lint gate for new jobs.
 
 ### `-WindowStyle Hidden` does not suppress a scheduled task's console flash
 - **Pattern-Key:** schtask-hidden-window
-- **Routes:** copilot
 - **Delivered-to:** command-bridge
 - **Date:** 2026-08-18
 - **Trigger:** better-approach
@@ -158,7 +155,6 @@ never deleted or moved; only its delivery is narrowed.
 
 ### Read skills and memory from the local mirror, not by downloading
 - **Pattern-Key:** onedrive-read-mount-locally
-- **Routes:** copilot
 - **Supersedes key:** read-user-folder-locally
 - **Date:** 2026-08-24
 - **Trigger:** better-approach
@@ -171,7 +167,6 @@ never deleted or moved; only its delivery is narrowed.
 
 ### Writing to the user surface does not reach OneDrive on its own
 - **Pattern-Key:** onedrive-user-surface-not-live
-- **Routes:** copilot
 - **Supersedes key:** user-surface-not-onedrive
 - **Date:** 2026-08-18
 - **Trigger:** false-success
@@ -206,6 +201,16 @@ never deleted or moved; only its delivery is narrowed.
 - **Worked:** `powershell.exe -NoProfile -Command "$d=Get-PSDrive C; '{0:N2} GB free of {1:N2} GB' -f ($d.Free/1GB),(($d.Used+$d.Free)/1GB)"` — same answer, no elevation. Prefer PowerShell/CIM over elevation-gated console utilities generally.
 - **Evidence:** measured
 
+### Classify a skill by scanning its CONTENT, not by reading its folder name
+- **Pattern-Key:** skill-classification-needs-content-scan
+- **Date:** 2026-08-20
+- **Trigger:** failure
+- **Failed:** Treating `CoworkConfig\` as generic tooling and widening the config-sync filter without checking what was in it. The widened pass went from 24 to 102 files and pulled engagement material into the git mirror.
+- **Why:** Some skills are engagement-specific. `<client>-apportionment` names a client in the FOLDER PATH — a repo tree discloses the engagement in a directory listing, before anyone opens a file. Worse, `tax-provision-report-replication` sounds generic and still carries client references inside `SKILL.md` and `OTP_REFERENCE.md`, so a name-based rule misses it entirely.
+- **Worked:** Content-scan every skill folder, then exclude engagement-specific ones at the SOURCE with robocopy `/XD` (a `.gitignore` is too late — the mirror already holds the file). After adding `/XD`, delete what already landed: `/XD` stops future copies but does not purge existing ones. Verify with a residual scan and a re-run that copies nothing. Prefer an ALLOWLIST over a blocklist, because a new client skill fails open under a blocklist.
+- **Evidence:** measured — 102 → 56 files, residual scan reported CLEAN, re-run copied nothing
+- **See also:** git-deletion-does-not-sanitize-history
+
 ### Deleting a file does not remove it from git history
 - **Pattern-Key:** git-deletion-does-not-sanitize-history
 - **Date:** 2026-08-20
@@ -217,6 +222,18 @@ never deleted or moved; only its delivery is narrowed.
 - **Worked:** Accept that this repo can never be the one pushed. Any GitHub repo must be NEW, populated by copying named folders in — never by cloning and filtering, which carries invisible history. State the limitation in the deletion commit body so no one later mistakes it for a sanitization.
 - **Evidence:** measured — tracked-deletion status read after the commit
 
+### A slide render cannot be shown inline in chat — it reaches the user as a FILE
+- **Pattern-Key:** render-not-inline-in-chat
+- **Date:** 2026-08-20
+- **Trigger:** failure
+- **Failed:** Running the `deck-builder` §11.5 slide-by-slide review as written — "publish the renders and show them one per row." The agent published 39 JPGs to `output/review/` and then wrote prose describing three options per slide as though the operator could see them. He could not. The review looked functional for two slides before he said "after the second slide i no longer see slides to select."
+- **Why:** There is no path from a workspace image to the conversation. `RenderSlide` returns a file PATH — opening it shows the image to the AGENT only. `render_ui` renders allowlisted image URLs, and a workspace path is not a URL. The skill instructed a step the environment cannot perform, and the agent improvised something that resembled it instead of naming the limit.
+- **Rule:** Never describe a visual as though the user can see it. A workspace image reaches him only as a named file - name the file, or put the comparison in a chat table instead.
+- **Delivered-to:** deck-builder
+- **Worked:** Rewrote §11.5 (skill v3.0 → v3.1, uploaded and re-listed to confirm). §11.5a states the constraint and adds the hard rule *never describe a visual as though the user can see it*; §11.5b makes a comparison TABLE in chat the default review, with self-describing filenames (`slide-12-A-table.jpg`) and a per-slide A/B/C comparison strip; §11.5c keeps the sequential loop only on explicit request and requires a `Glob` of the review folder before the first question. Added `reference/review_strip.py` (5,578 bytes) so the mechanics cannot be skipped — it builds the renames, the strips, and prints the table, and exits non-zero naming missing files.
+- **Evidence:** measured — script run end to end, 52 files over 13 slides; a tofu-box glyph from an em dash in the strip label was caught in the render and fixed to ASCII
+- **See also:** skill-alwayson-defeated-by-routing
+
 ### Do not narrate an action as done before it has been done
 - **Pattern-Key:** agent-claims-action-before-doing-it
 - **Date:** 2026-08-20
@@ -226,11 +243,20 @@ never deleted or moved; only its delivery is narrowed.
 - **Rule:** State an action as done only after its confirming call returns. When the check is cheap - `list_memories`, `Glob output/**`, a folder re-list - run it rather than reporting from memory.
 - **Worked:** State an action as done only after the confirming call returns — and when the check is cheap (`list_memories`, `Glob output/**`, a folder re-list), run it rather than reporting from memory. If something can only be delivered as a file, say so in the same sentence and name the file.
 - **Evidence:** measured — the missed save was found by listing memories, then actually written
-- **See also:** onedrive-user-surface-not-live
+- **See also:** render-not-inline-in-chat, onedrive-user-surface-not-live
+
+### The deck layout engine refuses long copy rather than overflowing it
+- **Pattern-Key:** gtdeck-engine-refuses-long-copy
+- **Delivered-to:** deck-builder
+- **Date:** 2026-08-20
+- **Trigger:** failure
+- **Failed:** Treating build errors like `cards: no column count fits this region` and `kpi label ... too long for a 2.85 in tile` as bugs to work around, which cost roughly ten build cycles on a 15-slide, 3-version deck.
+- **Why:** `gt_layout.js` measures text and refuses any placement that would collide, overflow, or break a word — by design. The error names the element and states the remedy; it is the engine working, not failing.
+- **Worked:** Read the error's stated fix and shorten the CONTENT (KPI labels to ~4 words, card headings to ~3), or swap the device for one that suits the region — a narrow split-panel region takes a table or icon rows, not four cards. Reach past the engine to hand-place a box only for a device it has no primitive for. Cap `s.region.bottom` before a device when a chevron banner must sit beneath it.
+- **Evidence:** measured — final three versions each pre-flighted 0 failures
 
 ### A cloud write can take minutes to reach the laptop — never commit a partial set
 - **Pattern-Key:** onedrive-cloud-to-laptop-lag
-- **Routes:** copilot
 - **Rule:** Both sync legs cost minutes, so pick the one that does not block you. A LOCAL 8932 write unblocks the repo and the commit immediately; a cloud-side write blocks them for minutes.
 - **Delivered-to:** local-file-bridge
 - **Date:** 2026-08-24
@@ -257,7 +283,6 @@ never deleted or moved; only its delivery is narrowed.
 
 ### Vanishing tools mean an expired session, not a dead bridge
 - **Pattern-Key:** bridge-idle-session-expiry
-- **Routes:** copilot
 - **Date:** 2026-08-21
 - **Trigger:** correction
 - **Rule:** Check PID creation times and listening state before restarting anything.
@@ -272,7 +297,6 @@ never deleted or moved; only its delivery is narrowed.
 
 ### A VS Code restart alone does not apply a tasks.json change
 - **Pattern-Key:** bridge-restart-needs-pid-kill
-- **Routes:** copilot
 - **Date:** 2026-08-21
 - **Trigger:** failure
 - **Rule:** Restarting VS Code does not replace a bridge listener that already holds the port. Kill the old PIDs, then prove the edit is live by comparing netstat PIDs before and after - identical PIDs mean the old process is still serving.
@@ -285,7 +309,6 @@ never deleted or moved; only its delivery is narrowed.
 
 ### Changing a config also means changing everything that restores it
 - **Pattern-Key:** bridge-recovery-scripts-revert-config
-- **Routes:** copilot
 - **Date:** 2026-09-02
 - **Trigger:** failure
 - **Rule:** After ANY edit to `tasks.json`, resync `Startup\KnownGood\tasks.json` from live in the SAME job and prove it byte-identical. An unsynced snapshot turns `bridge-restore-tasksjson.bat` from a recovery tool into a regression tool, and the restore reports success while doing it.
@@ -300,17 +323,17 @@ never deleted or moved; only its delivery is narrowed.
 
 ### Transport drops are the devtunnel hop, not the bridge processes
 - **Pattern-Key:** bridge-drops-are-tunnel-not-bridge
-- **Routes:** copilot
-- **Date:** 2026-08-21
+- **Date:** 2026-10-02
 - **Trigger:** correction
-- **Rule:** Drops are the devtunnel hop, not the bridge process. 0% local, 1-2% tunnel. Retry once, but verify before retrying a write.
+- **Rule:** Drops are the devtunnel hop, not the bridge process. 0% local; the tunnel measured 1-2% on 2026-08-21 and roughly 1 in 3 on 2026-10-01, so budget a verify-then-retry on EVERY write rather than treating a drop as rare.
 - **Delivered-to:** command-bridge, local-file-bridge
-- **Hits:** 2   (2026-08-21 measured 400-request baseline; 2026-08-24 two first-contact drops in four calls, both recovered on an immediate retry, all three PIDs unchanged — n=4 is far too small to move the measured rate)
+- **Hits:** 4   (2026-08-21 measured 400-request baseline; 2026-08-24 two first-contact drops in four calls, both recovered on an immediate retry, all three PIDs unchanged — n=4 is far too small to move the measured rate; 2026-10-01 roughly 8 first-attempt failures in ~25 bridge calls - write_file x5, edit_file x1, list_allowed_directories x1, get_file_info 1 of 4 - every retry succeeded, PIDs not checked, no local-vs-tunnel split re-measured; 2026-10-02 roughly 1 in 4 calls dropped across the 1.4.1/1.4.2 build - edit_file, write_file (`HOST_CALL_LOST_WRITE`), move_file x2 - every drop confirmed by read-back, every retry or split landed, a 10-file 73 KB read_multiple_files passed)
+- **Hit 4, 2026-10-02 - when the same payload drops twice, split it before a third retry.** An `edit_file` carrying two description fields in `ai-plugin.json` returned "couldn't be reached" twice in a row, read-back unchanged both times; split into two one-field edits, both landed first try. A six-edit batch on `ai-plugin_2.json` dropped once; split 3+3, both landed first try. Smaller calls dropped too (a one-line manifest edit, a `write_file`, two `move_file`) but each landed on a single retry. So the retry discipline stands, with one addition: a repeat drop on the SAME payload is the cue to split it, not to retry it a third time. Whether size drives the drop probability is inference unverified - two large payloads and ~20 calls cannot establish a rate - and this is a transport DROP (nothing written, read-back unchanged), not the content corruption in `bridge-8932-large-write-corrupts-a-character`.
 - **Failed:** Inferring from five in-session failures that all landed on 8932 that the filesystem bridge specifically was unreliable.
 - **Why:** Small-sample bias. Five observations cannot separate a per-port fault from a shared transport fault.
 - **Worked:** Measure it - 400 requests, 100 each against the local listener and the public tunnel for both ports. Local loopback dropped 0/100 on BOTH 8932 and 8933 (avg 1ms and 0ms). The tunnel dropped 2/100 and 1/100, every failure an operation timeout (avg 125ms and 134ms). The bridge processes drop nothing; the tunnel leg loses 1-2 percent, and a 2-vs-1 split at n=100 is noise, not a per-port pattern. For scale, stateful 8932 measured 16 percent. A single informed retry remains the correct response.
 - **Evidence:** measured - script and detail CSV committed as 1e983e5
-- **See also:** bridge-8933-transport-drop-verify-first
+- **See also:** bridge-8933-transport-drop-verify-first, bridge-8932-large-write-corrupts-a-character, batch-one-reconcile-job-beats-many-bridge-edits
 - **Promoted-to:** copilot-instructions.md, "Rules already paid for" (LESSON-DIGEST block) - rule text confirmed present in the digest 2026-08-28.
 
 ### Quarantine by moving with a manifest instead of deleting
@@ -325,7 +348,6 @@ never deleted or moved; only its delivery is narrowed.
 
 ### Editing a file through PowerShell can silently re-encode the rest of it
 - **Pattern-Key:** file-edit-reencodes-existing-characters
-- **Platforms:** windows
 - **Date:** 2026-08-21
 - **Trigger:** failure
 - **Rule:** Never round-trip a UTF-8 file through PowerShell `Get-Content`/`Set-Content`. 5.1 decodes a BOM-less UTF-8 file as ANSI and re-encodes the damage into content the edit never touched, so exit 0 and a plausible size delta prove nothing. Use `[System.IO.File]::ReadAllText`/`WriteAllText` with an explicit no-BOM UTF8Encoding, and verify by diffing a known non-ASCII line against the backup.
@@ -398,11 +420,14 @@ never deleted or moved; only its delivery is narrowed.
 
 ### `save_memory` rejects an over-length entry and stores nothing
 - **Pattern-Key:** savememory-512-cap-rejects-silently
-- **Date:** 2026-09-02
+- **Date:** 2026-10-02
 - **Trigger:** failure
 - **Rule:** Keep a memory under 512 characters and read the success field of every save - an over-length save stores nothing.
 - **Delivered-to:** persistent-memory
-- **Hits:** 4
+- **Hits:** 7
+- **Hit 7, 2026-10-02.** Two rejections, both on `update_memory` (not `save_memory`) - each returning `success:false` with "Content must be at most 512 characters", read and trimmed and re-saved the same turn. Widening only: the cap and its explicit error apply to `update_memory` identically. The key's "silently" is already defined above as batch-non-interrupting, not API-silent, so this is NOT a contradiction. Same drafting-step miss as hits 4-6; the escalation named at hit 6 (a `len()` gate in the save path) is still the only thing that would move this.
+- **Hit 6, 2026-10-01.** Two saves rejected over 512 characters, `success:false` read both times, trimmed and re-saved. No new mechanism; the trap fired at the DRAFTING step again, with the Rule live in the always-on digest. As with `deferred-tools-read-as-absent-bridge` at hit 3, another sentence will not move this - the next escalation is a runnable `len()` gate in the save path, not prose.
+- **Hit 5, 2026-09-10.** A preference memory (`pref-article-paragraph-openers-and-significance-tails-2026-09-10`, ~530 chars) was drafted with no character count, rejected with `{"success":false,"error":"Content must be at most 512 characters","reason":"invalid_content"}`, trimmed BY EYE to ~520 and rejected again with the same error, then trimmed under 512 and saved `success:true`. The `success` field was read every time, so nothing was lost; the counter moves because two writes were burned before one landed, and the retry in Worked failed once because it was a trim, not a count.
 - **Hit 4, 2026-09-02.** A memory recording the 8934 bridge verification was drafted for completeness rather than to the cap, came in slightly over, and returned `success:false / invalid_content`. The `success` field was read on the same turn and a trimmed version saved cleanly, so the recovery in Worked held. The counter moves because the trap still fires at the DRAFTING step, not the recovery step - compose to the cap, do not compose and then discover it.
 - **Failed:** Saving two pointer memories of roughly 520-540 characters in a batch of six. Both
   returned `success:false / invalid_content` while the other four succeeded, so a glance at the
@@ -411,8 +436,8 @@ never deleted or moved; only its delivery is narrowed.
 - **Why:** The cap is 512 characters and enforcement is all-or-nothing — there is no truncation
   and no partial save. In a parallel batch the failures do not interrupt anything.
 - **Worked:** Keep pointer memories near 300-450 characters, and read the `success` field of every
-  `save_memory` result individually rather than assuming a batch succeeded. Retry the trimmed
-  version in the same turn. Note this is the 512-char store cap, unrelated to the 1024-char
+  `save_memory` result individually rather than assuming a batch succeeded. Count the content with `len()`
+  before the first save AND before any retry, then retry the counted version in the same turn. Note this is the 512-char store cap, unrelated to the 1024-char
   SKILL.md description cap — two different limits on two different surfaces.
   Confirmed again 2026-08-28, and the key's wording needs care: every rejection observed is
   EXPLICIT. Over-length returns `{"success":false,"error":"Content must be at most 512
@@ -420,13 +445,12 @@ never deleted or moved; only its delivery is narrowed.
   empty","reason":"invalid_key"}`. "Silently" in this key means the failure does not
   interrupt a parallel batch and is easy to miss in one - it does NOT mean the API is
   silent. Always pass a key on the first call, and read the `success` field of every result.
-- **Evidence:** measured — 3 rejected saves across the session, all re-saved after trimming; 2026-08-28 both rejection strings read verbatim, then a trimmed save returned success
+- **Evidence:** measured — 3 rejected saves across the session, all re-saved after trimming; 2026-08-28 both rejection strings read verbatim, then a trimmed save returned success; 2026-09-10 two rejections (~530 then ~520 chars, same error string) read verbatim, then a save under 512 returned success:true
 - **See also:** skill-over-description-cap-silently-dropped
 - **Promoted-to:** copilot-instructions.md, "Persistent memory — two tiers, one home per fact" (the 512-character bullet). Already there and worded compatibly ("rejected outright — nothing is stored, and the failure is easy to miss") — read and confirmed 2026-08-28, so no new promotion is proposed.
 
 ### A tool missing from the visible list is not an absent bridge — call it before declaring failure
 - **Pattern-Key:** deferred-tools-read-as-absent-bridge
-- **Platforms:** windows
 - **Date:** 2026-09-01
 - **Trigger:** correction
 - **Rule:** Prove a bridge by CALLING it, never by reading a tool list. When the tool is ABSENT from the schema there is nothing to call - run `bridge-health.bat` through 8933 as the callable substitute. Re-probe before saying it is down AND again before closing out. Say "not on the surface as of now", never "unavailable this session", and never PLAN AROUND the absence.
@@ -507,6 +531,42 @@ never deleted or moved; only its delivery is narrowed.
 
 ---
 
+### A converted workflow is not converted until it has RUN on real data
+- **Pattern-Key:** alteryx-static-audits-miss-runtime-defects
+- **Delivered-to:** alteryx-to-python
+- **Date:** 2026-08-28
+- **Trigger:** failure
+- **Failed:** Treating a PASSing coverage audit plus a clean `py_compile` as evidence the conversion was sound. On Sales Workflow 2024 (139 nodes) both passed on a script that could not complete a single stage. Three separate defects only appeared on execution against the real 1.69 GB source set: (1) the Join helper renamed `Right_DC State` back to `DC State` while the left's own `DC State` was still present, so `pd.concat` raised "cannot reindex on an axis with duplicate labels"; (2) after ToolIDs 185 and 227 the stream already carried a `Right_State`, so ToolID 229's prefixing produced "The column label 'Right_State' is not unique"; (3) ToolID 109's declared `ImportLine=5` had been transcribed into CONFIG as `1`, giving `KeyError: 'Customer'`.
+- **Why:** Coverage is a static diff of ToolIDs against a registry and `py_compile` only parses syntax. Neither touches data, so neither can see a column-name collision or a wrong header row. The failures surface only when real frames flow through the joins.
+- **Worked:** Run the generated script end to end on the real source data before reporting anything, and treat each traceback as a finding rather than a nuisance. Where the data cannot come into the session, run it on the user's machine through the 8933 bridge. Three run-fix cycles took ~10 minutes and turned a plausible-looking script into a working one.
+- **Evidence:** measured
+- **Hits:** 1
+- **See also:** alteryx-skip-schema-check-costs-a-run-cycle
+
+### Run the schema pre-flight before writing conversion code, not after it fails
+- **Pattern-Key:** alteryx-skip-schema-check-costs-a-run-cycle
+- **Delivered-to:** alteryx-to-python
+- **Date:** 2026-08-28
+- **Trigger:** failure
+- **Failed:** Skipping gate G2 (`schema_check.py`) on Sales Workflow 2024 because the source data was a 1.69 GB zip on the user's PC rather than in the session, and going straight from the conversion brief to writing code. ToolID 109's header row was transcribed as 1 when the workflow declares `ImportLine=5`; the error surfaced ~3.5 minutes into a full run as `KeyError: 'Customer'`.
+- **Why:** The brief reports which fields each tool CONSUMES but does not verify them against the actual files, and `ImportLine` is a per-source attribute that is easy to lose when transcribing five sources into a CONFIG block by hand. G2 exists precisely to catch that class of mistake before any code is written.
+- **Worked:** When the data is not reachable in-session, push a small probe script to the machine that holds it and dump every declared sheet's first three rows plus the sheet list. That probe took 18 seconds and revealed the title block above ToolID 109's header, the duplicate `Billing type` columns on the BEX sheets, and the real BEX file count - all before another run cycle.
+- **Evidence:** measured
+- **Hits:** 1
+- **See also:** alteryx-static-audits-miss-runtime-defects
+
+### Transcribing a literal table by hand fabricates data that looks right
+- **Pattern-Key:** alteryx-handwritten-lookup-table-is-fabrication
+- **Date:** 2026-08-28
+- **Trigger:** false-success
+- **Failed:** Writing ToolID 418's 82-row State/Recode table into the generated script from memory of a truncated config dump. The hand-written version listed ~25 foreign codes and ~56 US states, all plausible, none checked.
+- **Why:** The config dump had been printed with a character limit, so only the first rows were ever visible, and a US-state list is easy to reconstruct convincingly from general knowledge. The result compiles, runs, and produces wrong apportionment silently.
+- **Rule:** Never transcribe a data table by hand from a dump that may have been truncated - extract it programmatically from the source. A plausible reconstruction compiles, runs, and is silently wrong.
+- **Delivered-to:** alteryx-to-python
+- **Worked:** Extract every Text Input table programmatically from the manifest (`Data/r[i]/c[j]` keys, sized by `NumRows@value`) and write it into the script from the extracted values. The real table was entirely different: 82 rows ALL flagged Foreign, including `MEX`, `GTO`, `NSW`, `KZN`, `YUC`, bare numeric codes like `00`/`13`/`020`, a literal `N/A`, a `WI,` with a trailing comma, and one row whose key cell is null. Not one of those was guessable.
+- **Evidence:** measured
+- **Hits:** 1
+
 ### A 1.69 GB source zip does not need to cross the wire
 - **Pattern-Key:** bridge-extract-on-pc-instead-of-downloading
 - **Date:** 2026-08-28
@@ -522,29 +582,30 @@ never deleted or moved; only its delivery is narrowed.
 - **Pattern-Key:** delivery-pointer-file-passes-as-artifact
 - **Date:** 2026-08-28
 - **Trigger:** false-success
-- **Failed:** Shipping a conversion zip containing `AUDIT_TRAIL_NOTE.md` - a short file saying the real audit trail lived at `...\data\Output\AUDIT_TRAIL.md` on the PC that ran the job - in the slot where the contract listed `AUDIT_TRAIL.md`. The archive was verified by listing contents, counting files and checking the CRC. All three passed. The operator asked "is the audit trail not in the zip?" It was not.
+- **Failed:** Shipping a conversion zip containing `AUDIT_TRAIL_NOTE.md` - a short file saying the real audit trail lived at `...\data\Output\AUDIT_TRAIL.md` on the PC that ran the job - in the slot where the contract listed `AUDIT_TRAIL.md`. The archive was verified by listing contents, counting files and checking the CRC. All three passed. the operator asked "is the audit trail not in the zip?" It was not.
 - **Why:** Nothing was invented, so it did not register as fabrication - but a pointer file carries the deliverable's NAME while withholding its CONTENT, so the file listing looks complete and the gap becomes invisible. An outright omission would have been noticed. The verification compounded it: counting files is exactly the check a stub passes.
 - **Rule:** A file carrying the deliverable's NAME but not its content is a false delivery, not an honest gap. Bring the artifact back and check its byte count against the source, or list it as not produced with the reason - nothing in between. Counting files is exactly the check a stub passes.
 - **Worked:** Two permitted responses when an artifact was produced somewhere unreachable - bring it back (base64 through the bridge, decoded and the byte count checked against the source rather than retyped) or list it as not produced with the reason. Nothing in between. And verify archives by CONTENT: per-file minimum size plus a marker string only the real file contains, plus, for a run log, a figure from THAT run. The recovered file decoded to exactly 6,532 bytes matching the source.
 - **Evidence:** measured
 - **Hits:** 1
-- **See also:** verifier-ignores-structural-diff
+- **See also:** verifier-ignores-structural-diff, alteryx-handwritten-lookup-table-is-fabrication
 
 ### A verification that cannot fail on the thing you fear is not a verification
 - **Pattern-Key:** verification-scoped-away-from-the-risk
-- **Date:** 2026-08-28
+- **Date:** 2026-10-01
 - **Trigger:** better-approach
 - **Rule:** For every check, name the failure it CANNOT catch. A guard whose fixture is smaller than the threshold it guards can never fail.
 - **Failed:** Four separate checks reported success on one job while never examining the thing that was actually wrong. A coverage audit diffed ToolIDs against a registry and passed on code that could not complete a stage. `py_compile` parsed syntax and ran nothing. A row-count check would have accepted an 82-row lookup table transcribed by hand. An archive check counted files and never opened them.
 - **Why:** Each check was sound within its own scope, and each scope excluded the failure mode. Passing them in sequence produces a strong feeling of verification with none of the substance, because the gaps are between the checks rather than inside any of them.
 - **Worked:** For each check, name the failure it CANNOT catch, then decide whether something else covers that. Where nothing does, add a check that touches the real artifact: execute the code on real data, assert a marker string inside each delivered file, verify a decoded byte count against its source. Cheap and specific beats broad and structural.
 - **Evidence:** measured
-- **Hits:** 3   (2026-08-28 four checks that each excluded the real defect; 2026-08-28 a regression guard whose fixture was too small to trip the threshold it guarded; 2026-09-01 a selftest fixture whose two neighbours fell BELOW a floor set by an unrelated pair)
+- **Hits:** 4   (2026-08-28 four checks that each excluded the real defect; 2026-08-28 a regression guard whose fixture was too small to trip the threshold it guarded; 2026-09-01 a selftest fixture whose two neighbours fell BELOW a floor set by an unrelated pair; 2026-10-01 behaviour certifications with no model in the loop)
+- **Repeat 2026-10-01 - the certification's behavioural checks could not fail on behaviour:** the Phase 6 BROWSER_ACTION cert calls 127.0.0.1:8931 directly with no LLM in the loop, and the AGENTIC_PROBLEM_SOLVING cert writes hardcoded JSON stage files. Each is sound about the bridge and says nothing about the agent. Same shape as `py_compile` and `node --check` standing in for a run.
 - **Repeat 2026-08-28 - the guard written FOR this lesson had this exact defect:** after finding that `lesson_brief.py --digest` truncated at 24, a selftest case was added to stop it regressing. The fixture held 2 rules. A 2-rule file cannot be truncated by a limit of 24, so the guard reported OK against a deliberately reintroduced bug - 18/18, exit 0, no signal at all. Only the negative control exposed it. Widening the fixture to 30 rules made the same reintroduction fail at 17/18, exit 1. A test fixture is part of the scope: sizing it below the threshold under test scopes the risk out just as completely as checking the wrong artifact.
 - **Worked (addendum):** Size every fixture ABOVE the boundary it exercises, and run the negative control - reintroduce the bug and confirm the suite actually fails - before trusting any new guard. `sed` the default back, re-run, assert a non-zero exit.
 - **Repeat 2026-09-01 - the same defect, one layer further out:** a new selftest for the lesson_dupe Distinct-from fix passed against the KNOWN-BROKEN script. The fixture held 7 entries, and lesson_dupe's floor is the p99.5 of pairwise similarity, which on 21 pairs is simply the maximum. That maximum belonged to a pair of BASELINE entries, so the new entry's two neighbours scored 0.9863 and 0.9846 against a floor of 0.9976 and neither was ever "above floor". The gate therefore never reached the branch under test. Sizing the fixture is not enough - the fixture must be able to REACH the threshold, and when the threshold is derived from the fixture's own distribution, an unrelated pair can hold it out of reach. Fixed by making the three entries byte-identical in the compared text so all three tied at the maximum; the case then failed on the broken script and passed on the fixed one.
 - **Promoted-to:** copilot-instructions.md, "Rules already paid for" (LESSON-DIGEST block) - 2026-08-28.
-- **See also:** delivery-pointer-file-passes-as-artifact, lessons-digest-default-limit-truncates
+- **See also:** delivery-pointer-file-passes-as-artifact, alteryx-static-audits-miss-runtime-defects, lessons-digest-default-limit-truncates
 
 ### Reconcile every requested path after a DeleteArtifact - `ok:true` can hide skipped files
 - **Pattern-Key:** artifact-delete-recursive-skips-file-paths
@@ -629,6 +690,22 @@ never deleted or moved; only its delivery is narrowed.
 - **Worked:** Judge each reported conflict by hand, and resolve a real one by adding a reciprocal pointer in the delegated-to skill's description ("for the combined open/close routine use gamma-tango"). Treat single-word keyword overlaps as noise.
 - **Evidence:** measured — scan output read in full
 
+### Calibrate a voice profile from a real user rewrite, not from invented examples
+- **Pattern-Key:** skill-voiceprofile-calibrate-from-user-diff
+- **Date:** 2026-09-10
+- **Trigger:** better-approach
+- **Rule:** Calibrate a voice profile by mechanically diffing his real rewrite, never from description. Test any proposed rule against the whole finished document.
+- **Delivered-to:** myvoice
+- **Hits:** 3   (2026-08-21 first hand-rewrite; 2026-08-28, which carried TWO passes - a hand-edited .docx with red comments and a second pasted edit pass; 2026-09-10 red-ink review of a v2 .docx, diffed the same way. Hits counts SESSIONS, not passes.)
+- **Failed:** Trusting the `myvoice` profile's nine rules, several of which carried invented illustrative quotes rather than the operator's own sentences. Drafts kept reading close-but-wrong, and one rule was actively backwards — it mandated a wry rhetorical-question close on every piece, which he deleted from a long technical article and replaced with practical advice.
+- **Why:** A profile written from description rather than from a measured diff encodes the writer's theory of the voice, not the voice. Nothing in the file was falsifiable, so no rule ever got disproved.
+- **Worked:** Have him rewrite a full AI draft by hand, then diff it mechanically. Count punctuation before reading for tone — that surfaced zero em dashes and zero semicolons across 2,542 words, the single strongest tell, which no amount of reading for "feel" had caught. Replace invented examples with his actual sentences, scope any rule he contradicted rather than deleting it, and add a restraint cap since he removed roughly as much colour as he added. Profile went from 9 rules to 21, score 100.
+- **Promoted-to:** `myvoice` SKILL.md - the punctuation ban and the count-before-rewriting rule are the encoded form of this method.
+- **Evidence:** measured — punctuation counted in Python across the pasted rewrite
+- **Held on two further passes 2026-08-28:** the same mechanical diff (`difflib.SequenceMatcher` over paragraph lists, then read the opcodes) surfaced what reading for tone did not - a structural complaint he wrote three times in one document, and on the second pass a spelling register nobody thought to check. Profile is now 42 rules, score 100. The method's value rises with each pass rather than falling, because the cheap tells get taken early and what is left is the non-obvious.
+- **Held on a third pass 2026-09-10:** the same difflib diff (paragraph then word level) confined his edits to 5 paragraphs plus 4 red comments, and what it surfaced this time was paragraph SHAPE, not punctuation or register: the one-line paragraph opener and the "..., and that is the X" closing tail he marked as AI tells were shapes the profile's own rules 36 and 33 had supplied. Two calibration passes had not tested the profile's example and fix sentences against its other rules or against his sentences, and the pre-ship mechanical count covered punctuation and register only. Method held; the count now has to include openers, summarizers and closers - see skill-voiceprofile-own-example-is-the-ai-tell.
+- **See also:** skill-score-needs-literal-guardrails-heading, voice-us-register-sweep, assumption-from-the-brief-encoded-as-a-durable-rule, skill-voiceprofile-own-example-is-the-ai-tell
+
 ### A "No tools found" probe is a reading of NOW, never a verdict on the session
 - **Pattern-Key:** bridge-absent-probe-is-not-permanent
 - **Date:** 2026-08-28
@@ -636,7 +713,7 @@ never deleted or moved; only its delivery is narrowed.
 - **Rule:** An anchored `^tool_name$` probe cannot match a fully qualified `<server>-<tool>` and reads as absent even when the bridge is up.
 - **Delivered-to:** command-bridge, local-file-bridge
 - **Status:** NEAR-DUPLICATE of `deferred-tools-read-as-absent-bridge`, which owns this failure. Hits deliberately NOT set here to avoid double-counting the cluster. Kept only for the anchored-regex fault, which is specific and is recorded nowhere else.
-- **Failed:** Probed for `run_batch_file` and `list_allowed_directories` by exact name, got "No tools found", and reported the git step as impossible for the rest of the session. The operator said "the bridge should be up, dig deeper, probe" - a re-probe found BOTH servers fully present, with all 14 filesystem tools and the batch tool. The whole gamma-tango close had already been reported with git skipped.
+- **Failed:** Probed for `run_batch_file` and `list_allowed_directories` by exact name, got "No tools found", and reported the git step as impossible for the rest of the session. the operator said "the bridge should be up, dig deeper, probe" - a re-probe found BOTH servers fully present, with all 14 filesystem tools and the batch tool. The whole gamma-tango close had already been reported with git skipped.
 - **Why:** TWO faults, and the first was not noticed until a fresh-context review. (1) The confirming probe was written `^run_batch_file$`, which is anchored and therefore CANNOT match the fully qualified tool name `jordan-approved-batch-8933-v1-run_batch_file` whether the bridge is present or not. "No tools found" was evidence about the pattern, not about the bridge. The real evidence was the earlier UNANCHORED probe returning only `skill`. A malformed probe was read as a confirming second opinion. (2) Even the sound probe was treated as a standing property of the session rather than a timestamped reading. `bridge-connector-removed-midsession` already records that connectors ARRIVE mid-session as well as vanish, so a negative probe has a shelf life measured in minutes.
 - **Worked:** Re-probe before reporting a bridge step as impossible, and again before closing out any routine that needs it. Say "not on the surface as of now" rather than "unavailable this session", and offer the re-probe rather than waiting to be asked. The absent-probe rule stands for what it proves, that no tool definition exists to call at that instant, and stops there.
 - **Evidence:** measured - both probes ran in the same conversation about an hour apart, the first returning only `skill` and the second the full tool set, ending in commits 8d42c40 and 95672b6. The anchored-regex fault is measured by inspection of the pattern against the tool name. WHY the surface changed is unprobed and remains inference.
@@ -652,25 +729,28 @@ never deleted or moved; only its delivery is narrowed.
 - **Why:** A credential scan and credential theft look identical to endpoint detection - same process, same pattern list, same target extensions. The control is legitimate and the alert is correct, which is exactly why re-running it casually is expensive.
 - **Worked:** Hash instead. `certutil -hashfile <path> MD5` on each file about to be staged, compared against the hash of the content the agent itself authored. A match proves the repo copy is byte-identical to known content, which is a STRONGER guarantee than a pattern grep, since it rules out anything riding along rather than only the patterns someone thought to list. Pair it with a `forfiles` size check for the 10 MB rule. Four files verified this way before commit 8d42c40, all four matching. Use the grep only for content the agent did NOT author and therefore cannot hash against a known good.
 - **Evidence:** measured - the SOC email quotes the exact findstr command line; the four MD5 values matched the container-side hashes exactly
+- **See also:** work-is-an-exercise-not-an-engagement
 
 ### A connector can vanish mid-session, not just fail to load at start
 - **Pattern-Key:** bridge-connector-removed-midsession
-- **Date:** 2026-08-26
+- **Date:** 2026-10-02
 - **Trigger:** correction
 - **Rule:** A connector can vanish OR arrive mid-session. Do not restart anything on the PC; start a new chat instead.
 - **Delivered-to:** command-bridge, local-file-bridge
-- **Hits:** 2   (2026-08-21 a connector vanished mid-session; 2026-08-26 the reverse — a connector ARRIVED mid-session when the plugin was re-enabled)
+- **Hits:** 4   (2026-08-21 a connector vanished mid-session; 2026-08-26 the reverse — a connector ARRIVED mid-session when the plugin was re-enabled; 2026-09-07 a "couldn't be found" that reversed itself, then a removal that did not; 2026-10-02 two in-chat arrivals with no new chat - minutes after the Ports panel went Public, and about an hour and a half after a PC reboot removed all three namespaces)
+- **Hit 4, 2026-10-02 - the return can take over an hour, a new chat was never needed, and "another client is using the bridges" is evidence FOR waiting, not against it.** Two instances in one session. (a) At chat start 8932/8933/8931 were absent because the chat opened before the operator set the VS Code ports Public; the session told him "new chat" twice, including after a 75-second wait, and all bridge tools then arrived by `tools_changed_notice` in the SAME chat about eight minutes after the ports went Public. (b) After a PC reboot a `tools_changed_notice` removed all bridge tools; five separated probes over roughly 36 minutes all read absent while the operator reported the same bridges serving M365 Copilot/ACL; the namespaces returned to THIS chat about 95 minutes after the reboot with no new chat and nothing done on the PC beyond ports Public. Three consequences: the Hit-3 wording "open the new chat only if the second, separated probe also fails" is still too eager - today several separated probes failed and no new chat was required (whether one would have been FASTER was not tested); a report that another client is using the bridges proves the PC and tunnel are healthy and locates the fault in this chat's registration; and the wait is unbounded - minutes to over an hour - so keep working on what does not need the bridge rather than blocking on it.
+- **Distinct-from:** `bridge-session-bound-to-pid` - there the bridge PROCESS died or was replaced and the chat stayed bound to the dead PID; here every process is healthy and the PLATFORM registers or removes the connector namespace, in both directions, with no process event at all. `bridge-server-edit-live-without-restart` - there a code edit changes tool BEHAVIOUR instantly while one newly ADDED tool lags a few minutes; here nothing was edited and a whole namespace of existing tools appears or vanishes.
+- **Hit 3, 2026-09-07 - "couldn't be found" has two durations, and only a LATER re-probe tells them apart.** At 22:22 CDT on 2026-09-06 `run_batch_file` and then `search_files` both returned `couldn't be found, so its tools are unavailable` after nine minutes of successful calls. The session followed this rule to the letter and wrote "resume in a NEW chat" to memory. the operator typed "proceed" thirteen minutes later in the SAME chat, and both bridges answered on the first call - no plugin toggle was reported and nothing on the PC was restarted. The namespaces then carried roughly three hours of work until a `tools_changed_notice` removed 8932, 8933 and 8934 together at 00:29 CDT, and that removal did NOT reverse within the session. So the rule stands but its first move is wrong: before telling the operator to open a new chat, WAIT several minutes and re-call once (`bridge-reprobe-must-be-separated-in-time`); open the new chat only if the second, separated probe also fails. When the surface is genuinely gone, the close still completes - lessons and memory go cloud-side by the documented fallback, and the git step is deferred and reported as deferred, never skipped silently.
 - **Failed:** TWO mistakes. (1) Assuming the filesystem bridge (8932) would still be there because it worked earlier in the same session; a `tools_changed_notice` removed `jordan-local-filesystem-8932-v1-write_file` mid-session, which breaks `git-bridge`'s core mechanic since it authors a `.bat` with 8932 and runs it with 8933. (2) Writing this entry at all without first scanning the `bridge-` keys — `bridge-session-bound-to-pid` and `bridge-idle-session-expiry` already explained the mechanism, and this started life as a near-duplicate with a vaguer Why.
 - **Why:** The tool surface is fixed when a chat starts and binds to the process alive at that moment. If that process is replaced — by the watchdog, by GO.bat, or by hand — the chat cannot re-initialize against the new one, so the tool disappears while the bridge itself is perfectly healthy. 8933 survived here because its process was not replaced.
 - **Worked:** Do not restart anything and do not re-set the tunnel ports. Start a NEW chat, which binds to the live processes. Within the doomed session, existing `.bat` files in `CommandJobs\` still run through 8933, so read-only git jobs survive while anything needing a NEW script does not — report the specific missing tool and what it blocks, never fall back to the autorun queue or artifact tools. And scan sibling keys before opening an entry: the correct action here was to increment the two existing entries, not add a third.
-- **Repeat 2026-08-26 — the surface moves in BOTH directions, and a DISABLED PLUGIN is a third cause class:** a session told the operator to open a new chat because "it will bind all three bridges at start". He opened one; that session probed three ways (broad regex, tool-name regex, exact `list_allowed_directories` / `run_batch_file`), found no bridge namespace, declared the bridges down, and blamed the PC — GO.bat, the Ports panel. **That attribution was wrong.** The operator's reply was "the plugins were disabled. i have turned them back on", and seconds later a `tools_changed_notice` registered all fourteen 8932 tools plus `run_batch_file` INSIDE the already-running chat; both answered on the first call. Two corrections follow. (1) The tool surface is NOT immutably fixed at session start — re-enabling a connector registers its namespace mid-session, exactly as disabling one removes it. The old absolute wording ("a bridge absent at start will NOT appear later in that same chat") is too strong: it holds for a bridge PROCESS started mid-session, not for a connector toggled back on. (2) Check causes in this order before blaming the machine: **is the plugin turned on in Cowork?** → are the listeners up / Ports panel Public? → is the tunnel re-established? Nothing was ever wrong with the PC on 2026-08-26.
-- **Evidence:** measured — 2026-08-21 the removal notice was explicit, the status job still ran, no new job could be written; 2026-08-26 three probes found nothing, then a plugin re-enable registered both namespaces mid-session and both bridges answered immediately
+- **Repeat 2026-08-26 — the surface moves in BOTH directions, and a DISABLED PLUGIN is a third cause class:** a session told the operator to open a new chat because "it will bind all three bridges at start". He opened one; that session probed three ways (broad regex, tool-name regex, exact `list_allowed_directories` / `run_batch_file`), found no bridge namespace, declared the bridges down, and blamed the PC — GO.bat, the Ports panel. **That attribution was wrong.** the operator's reply was "the plugins were disabled. i have turned them back on", and seconds later a `tools_changed_notice` registered all fourteen 8932 tools plus `run_batch_file` INSIDE the already-running chat; both answered on the first call. Two corrections follow. (1) The tool surface is NOT immutably fixed at session start — re-enabling a connector registers its namespace mid-session, exactly as disabling one removes it. The old absolute wording ("a bridge absent at start will NOT appear later in that same chat") is too strong: it holds for a bridge PROCESS started mid-session, not for a connector toggled back on. (2) Check causes in this order before blaming the machine: **is the plugin turned on in Cowork?** → are the listeners up / Ports panel Public? → is the tunnel re-established? Nothing was ever wrong with the PC on 2026-08-26.
+- **Evidence:** measured — 2026-08-21 the removal notice was explicit, the status job still ran, no new job could be written; 2026-08-26 three probes found nothing, then a plugin re-enable registered both namespaces mid-session and both bridges answered immediately; 2026-09-07 the "couldn't be found" text, the successful call thirteen minutes later, and the 00:29 tools_changed_notice are all in one session transcript
 - **See also:** bridge-session-bound-to-pid, bridge-idle-session-expiry, bridge-restart-needs-pid-kill
 - **Promoted-to:** copilot-instructions.md, "Rules already paid for" (LESSON-DIGEST block) - rule text confirmed present in the digest 2026-08-28.
 
 ### Unexplained ~5-minute terminal flash
 - **Pattern-Key:** schtask-unexplained-5min-flash
-- **Routes:** copilot
 - **Delivered-to:** command-bridge
 - **Supersedes key:** unexplained-5min-flash
 - **Date:** 2026-08-18
@@ -694,7 +774,6 @@ never deleted or moved; only its delivery is narrowed.
 
 ### A SharePoint folder's Modified date does not track edits to files inside it
 - **Pattern-Key:** onedrive-folder-mtime-not-child-mtime
-- **Routes:** copilot
 - **Delivered-to:** local-file-bridge
 - **Date:** 2026-08-24
 - **Trigger:** failure
@@ -706,15 +785,16 @@ never deleted or moved; only its delivery is narrowed.
 
 ### Two approval-gated bridge writes sent in one tool block: the second is auto-denied
 - **Pattern-Key:** bridge-8932-parallel-writes-denied
-- **Routes:** copilot
-- **Date:** 2026-08-26
+- **Date:** 2026-09-07
 - **Trigger:** failure
 - **Rule:** Send approval-gated 8932 writes ONE per tool block. A second write batched beside the first is auto-denied while that approval is still pending.
 - **Delivered-to:** local-file-bridge
-- **Hits:** 1
+- **Hits:** 2   (2026-08-26 two 8932 writes in one block; 2026-09-07 twice more, and an 8934 read denied beside an 8932 read - the limit is global)
+- **Promotion:** COMPLETE at 2 hits, by the counter: at Hits 2 the unchanged Rule is selected into the always-on block on the next `digest_apply` (run 2026-09-07 on a scratch copy with the bridge absent - see that close report). No second copy written; the self-improvement SKILL.md environment-facts sentence already states the same rule.
+- **Repeat 2026-09-07 - twice in one session, and the limit is GLOBAL, not per bridge.** (1) Two `write_file` calls in one block: the first came back `couldn't be reached, so its tools may be unavailable` (a tunnel drop - a different failure class, see `bridge-drops-are-tunnel-not-bridge`) and the second `denied by the user: Another approval-needing call is already pending`. `search_files` confirmed NEITHER file had landed before the writes were re-sent one per block, and both then succeeded. (2) Earlier the same night `bridge_status` on the 8934 Power Automate bridge was denied with the identical text when batched beside an 8932 `list_allowed_directories` and an 8931 `browser_tabs`. One pending approval blocks every other gated call on EVERY bridge, so the rule is not an 8932 quirk: any two approval-gated calls in one block cost a denial, whichever bridges they target.
 - **Separate 2026-08-28 observation, mechanism NOT established:** four `get_file_info` READS were sent in one tool block and two came back `MCP server ... couldn't be reached`. Both succeeded when retried serially. That is NOT this entry's failure - reads are not approval-gated and the error text is a reachability error, not the auto-deny string. It was briefly mis-attributed to this key during a live audit, which is exactly the dedupe hazard of reasoning from a key NAME instead of its body. The honest reading: n=4, and `bridge-drops-are-tunnel-not-bridge` measured 1-2% on a 400-request baseline, so two failures in four is either bad luck or an unmeasured concurrency limit on parallel reads. Do NOT record a per-port pattern from four observations - that entry exists because exactly that inference was wrong before. If it recurs, measure it properly before writing a rule.
 - **Failed:** Batching two `jordan-local-filesystem-8932-v1-write_file` calls in a single tool block to create a .bat and its companion .ps1. The first succeeded; the second returned `Tool 'write_file' was denied by the user: Another approval-needing call is already pending - wait for the user to approve or deny it, then retry`.
-- **Why:** Each bridge write raises its own approval prompt and only one approval can be outstanding at a time. A parallel sibling is denied OUTRIGHT rather than queued, so it is a hard failure, not a wait. The denial text names the user, which misleads: The operator never saw or refused a prompt.
+- **Why:** Each bridge write raises its own approval prompt and only one approval can be outstanding at a time. A parallel sibling is denied OUTRIGHT rather than queued, so it is a hard failure, not a wait. The denial text names the user, which misleads: the operator never saw or refused a prompt.
 - **Worked:** Issue bridge writes SEQUENTIALLY - one call, wait for the result, then the next. Retrying the denied call unchanged in the following block succeeded. Sequential costs one round trip per file; batching costs the same round trips PLUS a denial.
 - **Evidence:** measured - reproduced once on 2026-08-26, retry succeeded with byte-identical content
 - **See also:** bridge-8932-writes-lf
@@ -750,7 +830,7 @@ never deleted or moved; only its delivery is narrowed.
 - **Date:** 2026-08-27
 - **Trigger:** false-success
 - **Hits:** 1
-- **Failed:** Scanning which skills carried an email address with `grep -c PATTERN "$d"/*.md | awk -F: '{s+=$2}'`. Reported 3 affected skills; the real number was 16. The operator approved a scope of "all four" based on that wrong figure.
+- **Failed:** Scanning which skills carried an email address with `grep -c PATTERN "$d"/*.md | awk -F: '{s+=$2}'`. Reported 3 affected skills; the real number was 16. the operator approved a scope of "all four" based on that wrong figure.
 - **Why:** `grep -c` prefixes `filename:` only when given MORE THAN ONE file. With a single .md in the folder it prints the bare count, so `awk -F:` finds no second field and sums 0. Folders with several .md files reported correctly, which is why the output looked plausible rather than obviously broken.
 - **Worked:** Use `grep -rl` and count paths, or do the counting in Python. Never pipe `grep -c` through a field split unless the multi-file form is guaranteed. Sanity-check any scan whose result seems small before acting on it.
 - **Evidence:** measured - re-scan with `grep -rln` found 16 where the awk pipeline found 3
@@ -759,7 +839,6 @@ never deleted or moved; only its delivery is narrowed.
 
 ### The user-config mount lags behind writes - its absence is not evidence
 - **Pattern-Key:** onedrive-user-mount-read-lag
-- **Routes:** copilot
 - **Supersedes key:** copyartifact-mount-read-lag
 - **Date:** 2026-08-28
 - **Trigger:** failure
@@ -790,13 +869,81 @@ never deleted or moved; only its delivery is narrowed.
 - **Promoted-to:** Skills/alteryx-to-python/SKILL.md - the `gate_check_selftest.py` paragraph (17 deliberately-broken workspaces each failing on the expected gate with the expected message) and "Every zero reported to the user needs a positive control". Read on the mount 2026-08-28 and already present in concrete form, so no move is proposed; this entry is now the evidence trail. The generic form is NOT stated in `copilot-instructions.md`.
 - **See also:** delivery-pointer-file-passes-as-artifact, verification-scoped-away-from-the-risk
 
+### Alteryx is the reference - fix the conversion, document the workflow's own defects
+- **Pattern-Key:** alteryx-fix-conversion-not-original-defect
+- **Delivered-to:** alteryx-to-python
+- **Date:** 2026-08-28
+- **Trigger:** correction
+- **Failed:** Read the alteryx-to-python skill's "flag defects, never fix them" boundary as a blanket rule covering every wrong number. Acting on that, one bad line found on review got written up as the skill breaking its own guarantee, and a true statement in a published article was softened to accommodate the imagined violation. the operator corrected it twice before it was right.
+- **Why:** Two different failures were collapsed into one word. "Defect" in that boundary means a defect in the ORIGINAL Alteryx workflow. A wrong number in the generated Python is a CONVERSION error, an entirely different thing, and it is meant to be fixed.
+- **Worked:** Hold the loop in this exact shape. The Alteryx workflow is the reference. If the Python does not give the same answer, that is a conversion error - analyse it and fix the conversion until the two agree. A defect in the underlying Alteryx workflow is detected, written into the generated documentation, and LEFT IN the Python, because silently improving on what the original workflow produced makes the reconciliation impossible. The remediation path is not the agent's to take: the workflow owner reads the write-up, fixes the Alteryx, and re-runs the skill, at which point the Python comes back corrected because it still tracks its source. Authority stays with the owner and the conversion follows it. Corollary worth carrying: with no Alteryx baseline there is no parity comparison, so a conversion error in a delivered script has nothing to catch it, which is exactly how one survived into a finished script on 2026-08-28.
+- **Evidence:** measured - the operator stated the loop directly; the conversion it describes was parity UNVERIFIED and the defect surfaced only when he ran the finished script
+- **Corrected 2026-08-28:** this entry originally attributed the bad line to a client's report and to a client desk. the operator states plainly that NONE of this work was for a client - the skill build was an exercise in what can be built inside Cowork, and the bad line was found on his own review. Key left unchanged so existing references still resolve; see `work-is-an-exercise-not-an-engagement`.
+- **Hits:** 1
+- **See also:** alteryx-static-audits-miss-runtime-defects, verification-scoped-away-from-the-risk
+
+### Sweep for US spelling and contractions the same way you sweep for em dashes
+- **Pattern-Key:** voice-us-register-sweep
+- **Date:** 2026-08-28
+- **Trigger:** failure
+- **Rule:** Final mechanical pass on his writing is three greps: em dash and semicolon, British spellings, then contractions by judgement.
+- **Delivered-to:** myvoice
+- **Hits:** 1
+- **Failed:** Delivered a 4,500-word article for the operator carrying organised, behaviour, realisation, licence, organisation and the verb "reckons", plus zero contractions. He corrected every one by hand. The `myvoice` punctuation sweep for em dashes and semicolons ran and passed, so the piece was reported as voice-compliant while the register was visibly wrong.
+- **Why:** The voice profile had a mechanical final-pass rule for punctuation only. Spelling and contraction register are equally mechanical and equally invisible to a read-for-tone check, but nothing in the file named them, so nothing looked for them.
+- **Worked:** Extend the final mechanical pass to three greps, not one. (1) em dash and semicolon, (2) `-ise/-isation/-our/licence` and British idiom, (3) where an uncontracted clause reads stiff, prefer the contraction, as he did with exactly one clause on this pass. Do NOT treat a low contraction count as a defect on its own. Greps (1) and (2) run in one Python pass over the paragraph list before delivery; (3) is a judgement call, not a gate. Encoded as `myvoice` rules 37 and 38.
+- **Evidence:** MIXED. Measured - his edit pass corrected 5 spellings and 1 idiom, and a regex over the rebuilt article confirms zero British forms remain. INFERRED and now partly DISPROVED - the contraction guidance was generalised from a single observed conversion and was never run as a gate on the deliverable.
+- **Corrected 2026-08-28 by a fresh-context review:** the first version of this entry told the reader to treat zero contractions across a long piece as a defect. His own hand-finished article carries TWO verbal contractions in 4,534 words, so the deliverable he shipped fails the rule this entry derived from it. A rule taken from one sentence in a diff is a sample of one, and the artifact was sitting right there to test it against. Test a proposed rule against the whole finished document before writing it down, not only against the diff hunk that suggested it.
+- **See also:** skill-voiceprofile-calibrate-from-user-diff
+
+### Never encode an unstated premise from the opening request into a durable rule
+- **Pattern-Key:** assumption-from-the-brief-encoded-as-a-durable-rule
+- **Date:** 2026-08-28
+- **Trigger:** correction
+- **Rule:** Never write a premise from the opening request into a skill file as if it were verified. Confirm it first, or constrain the rule to what was observed.
+- **Hits:** 1
+- **Failed:** The session opened with "convert this workflow for a client that does not have an Alteryx license." That premise was carried forward as established fact for the whole session, written as client framing through an article, and then written into `myvoice` as a PERMANENT rule - a clause explicitly protecting the word "client" as legitimate domain vocabulary. the operator then stated that none of the work was for a client at all. The rule just written would have defended the exact phrasing he was asking to have removed.
+- **Why:** A premise stated once in an opening request has the same surface form as a verified fact, and nothing downstream re-checks it. Writing it into a skill file promotes an inference to a standing instruction, applied silently by future sessions that never saw the conversation it came from. The blast radius of a wrong durable rule is far larger than a wrong sentence in a draft.
+- **Worked:** Before a framing assumption goes into a skill file, name it back to the user as an assumption and get it confirmed. Cheaper still, write the rule so it constrains only what was actually observed: "cut third-party attribution" was observed, "the word client is fine as background colour" was invention. When correcting the rule, grep every other artifact the assumption reached - here it had spread to an article, a lesson entry and a memory file. Corrected form is `myvoice` rules 35 and 36 plus `work-is-an-exercise-not-an-engagement`.
+- **Evidence:** measured - the operator's correction is explicit; the wrong exception clause was published and then replaced, and the stale attributions were found in three files by grep
+- **See also:** work-is-an-exercise-not-an-engagement, alteryx-fix-conversion-not-original-defect
+
+### The skill builds are exercises, not engagements - never write them as client work
+- **Pattern-Key:** work-is-an-exercise-not-an-engagement
+- **Date:** 2026-08-28
+- **Trigger:** correction
+- **Rule:** the operator's builds are exercises in what Cowork can do. Never write them up as client or engagement work.
+- **Delivered-to:** myvoice
+- **Hits:** 1
+- **Failed:** Framing the alteryx-to-python build and its outputs as work performed for a client, in an article, in a lesson entry and in conversation. Also staging a third party as a reviewer of the output.
+- **Why:** the operator builds these to find out what can be built inside Cowork. Nobody is waiting on the result, which is precisely what makes the accuracy-over-speed stance affordable and defensible. Client framing misstates the motive and imports an engagement that does not exist.
+- **Worked:** Write the build as something he made because he wanted to know whether it could be done, and write every finding as something he found on his own review. State it once, early, in any write-up: what was being tested, and that nobody was waiting on the output. NOT a blanket ban on the word in every context - a corpus note recording where a baseline workflow came from is a different claim, and those were deliberately left alone rather than rewritten on an over-broad reading of the correction.
+- **Evidence:** measured - the operator stated it twice in consecutive turns
+- **See also:** assumption-from-the-brief-encoded-as-a-durable-rule
+
+### Build a .docx with python-docx, not a 90-element insert_paragraph patch array
+- **Pattern-Key:** docx-build-with-python-docx-not-patch-array
+- **Date:** 2026-08-28
+- **Trigger:** better-approach
+- **Rule:** Build a .docx with python-docx from the source text, then verify paragraph-by-paragraph. Never hand-write a long insert_paragraph patch array.
+- **Delivered-to:** deck-builder
+- **Hits:** 1
+- **Failed:** Rebuilding the same 92-paragraph article twice by hand-writing a `host-EditArtifact` patch array with one `insert_paragraph` op per paragraph, each carrying the full paragraph text plus an `after` index and a style. Every revision meant re-emitting the entire body verbatim, and `host-GetArtifactModel` then returned 57 KB that had to be parsed out of a temp file just to verify it.
+- **Why:** The patch-array path makes the model the transport for the document body, so cost scales with document length on every rebuild, and the index arithmetic (`after: max(0, i-1)`) is hand-maintained and silently wrong the moment a paragraph is inserted.
+- **Worked:** `python-docx` 1.2.0 is present in the container. Build in `working/` from the source text file with a script - set section size and margins, `add_paragraph(style='Title'|'Heading 1')` off a heading set, set core properties - then verify by re-opening with python-docx and comparing paragraph-by-paragraph against the source, then `host-CopyArtifact(surface="output")`. The third rebuild took one short script instead of a full-body emission, matched the source with zero mismatches, and asserted the heading count (17 of 17) rather than eyeballing it.
+- **Evidence:** measured - all three rebuilds ran in the same session; the python-docx build verified 93/93 paragraphs identical and 17 headings styled
+- **See also:** skill-editartifact-patch-rejected-republish-folder
+
+
 ### Anchor a section insert on the FULL heading, never a prefix
 - **Pattern-Key:** lessons-file-section-anchor-must-be-exact
-- **Date:** 2026-08-28
+- **Date:** 2026-09-07
 - **Trigger:** failure
 - **Rule:** Scope any structural regex to its target section and anchor on the FULL heading. Over a whole file a prefix matches prose and returns a false negative.
 - **Delivered-to:** self-improvement
-- **Hits:** 2
+- **Hits:** 3
+- **Distinct-from:** `classifier-substring-match-silently-misfiles` - there a content regex ROUTES a lesson to the wrong skill block; here a heading prefix LOCATES the wrong position in the lessons file for an insert or a placement check. Both are loose matches, but one misfiles across files by classification and the other misplaces within one file by position, and the fix differs: route on the authored key there, anchor on the full heading here.
+- **Hit 3, 2026-09-07 - same file, same prefix, caught by an assertion instead of a false verdict.** A scratch-copy edit inserted three entries using the FULL heading as the insert anchor (correct, matched once) and then verified placement with `text.index('## Contradictions')` - the bare prefix, which matched the entry body at line 849 first and reported the new entries misfiled when they were not. The assertion halted the run before any file was written; the fix was to compare against the full heading. Sharper wording of the rule: use the SAME anchor string for the write and for the check - a check anchored more loosely than the write it verifies is the false negative waiting to happen.
 - **Failed:** Twice, in the same file, from the same cause. (1) Appending new entries "at the end" of `cowork-lessons.md` put them under `## Contradictions`, because `## Failures` is the FIRST section and the end of the file is a different section entirely - 21 of 65 entries were misfiled before anyone counted. (2) Verifying the 2026-08-28 four new entries with `s.index('## Contradictions')` reported all four MISFILED when all four were correct: that prefix occurs twice in the file, once inside an entry body, and `index` returned the earlier text mention rather than the heading.
 Third instance, same day, different file: a rule-numbering check on `myvoice/SKILL.md` matched numbered lines outside the Voice Profile section and printed `rules: 1 to 7 | count 49 | contiguous False`. Re-scoping the regex to that section alone printed `voice rules: 1 - 42 count 42 contiguous True`. The rules were fine. The check was scoped over the whole file.
 - **Why:** All three are the same mistake at different ends of the operation. A section identifier that is a prefix of ordinary body text is not an anchor, and the file discusses its own section names, so prefixes match prose.
@@ -808,7 +955,6 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 
 ### A stateless bridge spawns a fresh process per call, so in-process state never persists
 - **Pattern-Key:** bridge-8933-stateless-defeats-in-process-state
-- **Routes:** copilot
 - **Date:** 2026-08-28
 - **Trigger:** failure
 - **Rule:** 8931/8932/8933 run stateless, so a module-level variable in a bridge server resets on EVERY call. Persist any cross-call state to a file.
@@ -834,14 +980,16 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 - **Sharpened 2026-09-02, then CORRECTED the same hour - read both halves:** 8934 was edited from v0.2.0 to v0.3.0 mid-session. The BEHAVIOUR changes landed instantly and were confirmed on the next call - new version string, eight environments parsed from a rewritten config, and a production guard that correctly refused `ProdCRM`. Three tools added in the SAME edit (`analyze_flow`, `find_flows_using_connector`, `list_environments`) were rejected as "Tool ... does not exist". I wrote that up as "the tool surface is fixed at session start, so a new tool needs a NEW CHAT" - and that was WRONG. All three arrived in the SAME chat about two to three minutes later (edit ~18:26Z, tools announced 18:29Z), with no restart, no new session and no action of any kind, and all three then worked first time. The surface is not fixed; it REFRESHES, and it does so in both directions - `bridge-connector-removed-midsession` records the same thing happening in reverse. The correct response to a missing new tool is to WAIT and retry, exactly as that entry says for a vanished one. Recording the wrong version too, because the mistake is the instructive part: a first observation was generalised into a permanent-sounding rule after one reading, when the difference between "not there" and "not there YET" needed only a second look a few minutes later.
 - **See also:** bridge-8933-stateless-defeats-in-process-state, bridge-session-bound-to-pid, bridge-connector-removed-midsession
 
+
 ### Both OneDrive legs are slow, so choose the one that does not block the commit
 - **Pattern-Key:** onedrive-pick-the-leg-that-does-not-block
-- **Routes:** copilot
 - **Date:** 2026-08-28
 - **Trigger:** better-approach
 - **Rule:** Route a write by PAYLOAD: small or new file, write_file local. Existing large file, edit_file local so only the diff crosses. Bulk or binary, CopyArtifact. Verify a local write THROUGH THE BRIDGE, never the mount.
 - **Delivered-to:** local-file-bridge
-- **Hits:** 1
+- **Hits:** 2
+- **Promotion:** 2026-09-09 - second hit; the Rule is carried into the copilot-instructions.md LESSON-DIGEST at Hits 2, so it now loads every session.
+- **Repeat 2026-09-09 - the bulk leg, used on purpose:** a 60 KB pinned land input (`bundle.txt`, the whole executor plus its self-test) would otherwise have been re-typed through `write_file`. It went `CopyArtifact` to `output/` -> OneDrive -> the PC's OneDrive root in about ten minutes, then `move_file` across roots into `Outputs\Agent of Record\executor-1.3.0\`; the land job's pin hash then proved it byte-exact. The four small inputs (under 9 KB) went by `write_file` directly. Same routing rule, third payload class exercised.
 - **Failed:** Publishing every memory, lesson, skill and instructions file cloud-side with `CopyArtifact(surface="user")` and then waiting for OneDrive to replicate it down before the repo could see it. Six or seven times in one session, roughly five minutes each, somewhere near 20 to 30 minutes of a single session spent waiting. The bridge was up and instant throughout. `copilot-instructions.md` already marked the local path PREFERRED and the cloud path FALLBACK, only when the bridge is unavailable.
 - **Why:** Both legs take minutes, so neither is "fast", and the real question is which one blocks. It is the wrong question to ask which write is quicker. A cloud-side write reaches the container mount at once and the PC minutes later, so the REPO and therefore the COMMIT are blocked. A local write reaches the repo at once and the mount minutes later, and the mount lag costs nothing because the content is already in `working/`.
 - **Worked:** Route by PAYLOAD SIZE, which the first version of this entry got wrong. (1) NEW or SMALL file, roughly under 30 KB: `write_file` on the 8932 bridge under `OneDrive\Documents\Cowork\`. (2) EXISTING LARGE file: `edit_file` on that same local path, which sends only the anchors. The lessons file is 124 KB, so `write_file` would push all of it through a tool call to change three paragraphs. (3) BULK, BINARY or a whole folder: `CopyArtifact`, which copies server-side and sends no content at all, accepting the replication wait. Verify any local write by reading it back THROUGH THE BRIDGE, because the mount serves the old bytes for minutes. Once a file has been written locally in a session, keep using the local path for it: a later cloud-side write based on a stale mount read would clobber it.
@@ -849,6 +997,7 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 - **Down-leg is VARIABLE, do not quote a single number:** measured 2026-08-28 at roughly 5 minutes early in the session and roughly 10 minutes later the same hour; 20 to 35 minutes was recorded on 2026-08-24. Plan for tens of minutes, never for five.
 - **Evidence:** measured 2026-08-28 - a probe written to the local path at 23:11:14Z became visible on the container mount at 23:14:24Z, 3 min 10 s for the UP leg. The DOWN leg was observed at roughly 5 minutes twice the same day. Both are minutes; only one of them blocks the commit.
 - **See also:** onedrive-cloud-to-laptop-lag, onedrive-user-surface-not-live, onedrive-user-mount-read-lag
+
 
 ### Classify by an authored key, never by matching content substrings
 - **Pattern-Key:** classifier-substring-match-silently-misfiles
@@ -873,7 +1022,7 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 - **Why:** A rule feels most certain at the moment of writing, because it was distilled from a case still fresh in mind. That is also the moment it has been tested against exactly one example. Encoding it into a skill file or a script promotes a hypothesis to a standing instruction, and standing instructions are applied silently by sessions that never saw the case that produced them. Three of the four above were caught only because someone used the rule immediately; a rule written and then not exercised would have sat there being wrong.
 - **Worked:** Test the candidate rule against material already available before writing it down. For a writing rule, count the pattern across the whole finished document, not the diff hunk that suggested it, which is `myvoice` rule 43. For a code rule, run it over the full corpus and diff the before and after, which is how the classifier's second wrong fix was caught before shipping. For a process rule, do the very next instance of that process deliberately and watch whether the rule holds. Where the rule survives none of that, write it as a scoped observation rather than an absolute.
 - **Evidence:** measured - all four instances occurred and were corrected in this session, each with the correction recorded in its own entry
-- **See also:** classifier-substring-match-silently-misfiles, onedrive-pick-the-leg-that-does-not-block
+- **See also:** assumption-from-the-brief-encoded-as-a-durable-rule, classifier-substring-match-silently-misfiles, onedrive-pick-the-leg-that-does-not-block, voice-us-register-sweep
 
 ### The digest generator truncates to 24 rules unless told otherwise
 - **Pattern-Key:** lessons-digest-default-limit-truncates
@@ -908,8 +1057,8 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 - **Rule:** Re-probe means LATER, not again in the same breath. When the operator says the bridge is up, wait 60-120s and probe again. Say the connector has not registered in this chat, never that the bridge is down.
 - **Delivered-to:** command-bridge, local-file-bridge
 - **Hits:** 1
-- **Failed:** The operator said "the bridges are back" at 01:26. Three tool searches went out in ONE batch - the 8932 namespace, the 8933 namespace, and a broad pattern across all three ports - all read empty, and the bridges were reported absent. The registration notice arrived at 01:30, four minutes later. At 01:44 he said "Do it"; one probe, reported absent again, notice at 01:46. Both times he was right, and both times the disagreement was defended with a measurement.
-- **Why:** Three mechanisms, and the third is the one that matters. (1) SAMPLING - registration is time-varying, so three probes inside a single turn sample one instant. They carry the felt confidence of three readings and the information of one. `deferred-tools-read-as-absent-bridge` says re-probe; its letter was satisfied while its entire purpose was inverted. (2) LOCUS - "the bridges are down", "dropped", "off the surface" all name the MACHINE. What was actually missing is the connector registration in this chat. `bridge-session-bound-to-pid` already records that a dead bridge costs the chat and not the machine, but only as a diagnosis, never as a rule about wording, so every report implied a PC fault that did not exist. That is precisely what he kept disputing. (3) PRIORITY - The operator can see the Ports panel and the plugin toggles. His "the bridge is up" is EVIDENCE about the machine, not a hunch to be checked against a probe. Read as evidence it dissolves the contradiction on the spot: PC healthy, registration pending, therefore wait. Underneath all three, accuracy-over-speed is settled on file and speed won anyway, because answering instantly feels responsive.
+- **Failed:** the operator said "the bridges are back" at 01:26. Three tool searches went out in ONE batch - the 8932 namespace, the 8933 namespace, and a broad pattern across all three ports - all read empty, and the bridges were reported absent. The registration notice arrived at 01:30, four minutes later. At 01:44 he said "Do it"; one probe, reported absent again, notice at 01:46. Both times he was right, and both times the disagreement was defended with a measurement.
+- **Why:** Three mechanisms, and the third is the one that matters. (1) SAMPLING - registration is time-varying, so three probes inside a single turn sample one instant. They carry the felt confidence of three readings and the information of one. `deferred-tools-read-as-absent-bridge` says re-probe; its letter was satisfied while its entire purpose was inverted. (2) LOCUS - "the bridges are down", "dropped", "off the surface" all name the MACHINE. What was actually missing is the connector registration in this chat. `bridge-session-bound-to-pid` already records that a dead bridge costs the chat and not the machine, but only as a diagnosis, never as a rule about wording, so every report implied a PC fault that did not exist. That is precisely what he kept disputing. (3) PRIORITY - the operator can see the Ports panel and the plugin toggles. His "the bridge is up" is EVIDENCE about the machine, not a hunch to be checked against a probe. Read as evidence it dissolves the contradiction on the spot: PC healthy, registration pending, therefore wait. Underneath all three, accuracy-over-speed is settled on file and speed won anyway, because answering instantly feels responsive.
 - **Worked:** Measured tonight - 4 minutes and 1.5 minutes from the "absent" report to the registration notice, two for two, plus a roughly 60-minute instance earlier the same day already recorded under `deferred-tools-read-as-absent-bridge`. When he asserts the bridge is up: say the connector has not registered YET, keep working on anything that does not need it (the cloud fallback carried eight of nine files tonight while this argument ran), and re-probe on a DELAY instead of returning a verdict. A probe repeated inside one turn does not discharge the re-probe rule. Never report a bridge verdict until a second probe, separated by at least 60 seconds, has also come back empty.
 - **Evidence:** measured - conversation timestamps for both cycles, and the registration notices themselves
 - **See also:** deferred-tools-read-as-absent-bridge, bridge-absent-probe-is-not-permanent, bridge-session-bound-to-pid, bridge-connector-removed-midsession
@@ -933,9 +1082,9 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 - **Trigger:** correction
 - **Rule:** Before naming a known failure mode as the cause, check the evidence that would DISPROVE it. A cause that matches a remembered pattern is a hypothesis competing with others, not a finding.
 - **Hits:** 1
-- **Failed:** Reporting to the operator that `<client>-apportionment` was not loading and that its 1,019-character description - just under the 1,024 cap, past the 900 working ceiling - was the likely cause. The operator replied that the skill had been replaced by `state-apportionment`. It had been. The skill was not silently unloaded; it was deliberately superseded and deregistered, and the OneDrive folder is residue.
+- **Failed:** Reporting to the operator that `<client>-apportionment` was not loading and that its 1,019-character description - just under the 1,024 cap, past the 900 working ceiling - was the likely cause. the operator replied that the skill had been replaced by `state-apportionment`. It had been. The skill was not silently unloaded; it was deliberately superseded and deregistered, and the OneDrive folder is residue.
 - **Why:** `skill-description-over-cap-unloads-silently` is a lesson already in the digest, so a skill that is absent plus a description near the cap matched a stored pattern instantly. The disproving evidence was one call away and was not made: `state-apportionment` holds the same four stage scripts at near-identical sizes (34,000 / 83,070 / 97,501 / 28,652 against 34,008 / 82,928 / 95,366 / 28,556), the same helpers, seven added intake and validation scripts, a newer SKILL.md, and zero occurrences of the client name. A loaded rule made a wrong answer arrive faster and with more confidence, which is the failure mode of a digest rather than an argument against one.
-- **Worked:** State a cause as a hypothesis until the competing explanation has been checked, and for a MISSING component always ask first whether it was replaced. Comparing the two script folders settled it in one call. The operator's recollection outperformed the analysis, so treat a user contradiction as evidence to test immediately, never as something to defend against.
+- **Worked:** State a cause as a hypothesis until the competing explanation has been checked, and for a MISSING component always ask first whether it was replaced. Comparing the two script folders settled it in one call. the operator's recollection outperformed the analysis, so treat a user contradiction as evidence to test immediately, never as something to defend against.
 - **Evidence:** measured - both scripts folders listed and the SKILL.md files read after the claim was already made
 - **See also:** agent-recommends-edit-without-reading-file, config-contradiction-survives-in-second-file, prune-list-counts-drift-from-names
 
@@ -966,7 +1115,6 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 
 ### The standing close job reports OK even when its commit fails, and deletes the message
 - **Pattern-Key:** cowork-close-reports-ok-on-failed-commit
-- **Platforms:** windows
 - **Date:** 2026-08-29
 - **Trigger:** failure
 - **Rule:** Test every exit code; never echo one. A job that prints `git commit exit` and then unconditionally prints `COWORK_RESULT: OK` cannot tell a failed close from a good one. This is the DISCIPLINE, not a live warning about cowork-close.bat: that job was fixed on 2026-08-30 and now tests each code, preserves `_commit-msg.txt` on any failure, and guards staging with a negative-controlled check.
@@ -982,16 +1130,15 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 
 ### A dropped call was reported as a down bridge, repeatedly, until the operator said so
 - **Pattern-Key:** bridge-call-failure-reported-as-bridge-down
-- **Routes:** copilot
 - **Date:** 2026-08-30
 - **Trigger:** correction
 - **Rule:** The error "couldn't be reached, so its tools may be unavailable" is ONE CALL failing on the devtunnel hop, not a bridge state. RETRY the call before saying anything about the bridge. Never tell the operator a bridge is down on the strength of a single failed call.
 - **Delivered-to:** command-bridge, local-file-bridge, playwright-skill
 - **Hits:** 2 (2026-08-29 connector-absent, 2026-08-30 dropped write)
 - **Promotion:** 2026-08-30 - Rule authored and carried into the copilot-instructions.md LESSON-DIGEST, so it loads every session. Also served by the 8933 bridge's own operating-rules banner on the first call of a session, which is the surface where it is actually needed.
-- **Failed:** The operator: "it seems like you often think the bridges are down when they are actually up." He was right, and it had just happened twice in the same session. A `write_file` returned "couldn't be reached" and was treated as a bridge problem; the very next call to the SAME bridge answered instantly with a normal ENOENT. Earlier the same day, a `list_directory_with_sizes` failed while a `list_directory` issued in the same batch succeeded.
+- **Failed:** the operator: "it seems like you often think the bridges are down when they are actually up." He was right, and it had just happened twice in the same session. A `write_file` returned "couldn't be reached" and was treated as a bridge problem; the very next call to the SAME bridge answered instantly with a normal ENOENT. Earlier the same day, a `list_directory_with_sizes` failed while a `list_directory` issued in the same batch succeeded.
 - **Why:** The message names the SERVER ("'the operator Local Filesystem 8932' couldn't be reached") and speculates about its tools, so it reads as a diagnosis of the bridge rather than as a report about one request. Measured drop rate is 0% local and 1-2% on the tunnel, so a single failure is the EXPECTED case at this volume, not a signal. The existing rule `bridge-drops-are-tunnel-not-bridge` already said this - it was loaded in the digest and still not applied, which makes this a rule that reads as background knowledge instead of an instruction to act on.
-- **Worked:** Retry once, and let the SECOND result decide. If the retry answers, say nothing about bridge health - it was a dropped call. Only a measured probe that fails TWICE justifies the word "down". `bridge-autorecover.bat` now probes every port twice for exactly this reason and counts a port UP if either probe answers. Also: never conflate three different things - (1) a dropped call, retry it; (2) a tool absent from the session surface, start a new chat; (3) a port that fails a repeated probe, that alone is a real bridge failure.
+- **Worked:** Retry once, and let the SECOND result decide. If the retry answers, say nothing about bridge health - it was a dropped call. Only a measured probe that fails TWICE justifies the word "down". `bridge-autorecover.bat` now probes every port twice for exactly this reason and counts a port UP if either probe answers. Also: never conflate three different things - (1) a dropped call, retry it; (2) a tool absent from the session surface, start a new chat; (3) a port that fails a repeated probe, that alone is a real bridge failure. The proving call itself can be the drop: 2026-10-01 `list_allowed_directories` - the one-call bridge proof named in `deferred-tools-read-as-absent-bridge` - failed on first attempt at session start and answered on retry. Retry the probe before reading its failure as absence.
 - **Evidence:** measured - the failing write and the succeeding next call are both in the 2026-08-30 transcript, same bridge, seconds apart
 - **See also:** bridge-drops-are-tunnel-not-bridge, bridge-8933-transport-drop-verify-first, deferred-tools-read-as-absent-bridge
 
@@ -1002,7 +1149,7 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 - **Rule:** When the operator authorises an automatic action, encode WHEN it may fire as a tested decision table, not as prose. `bridge_policy.py` decides; the job obeys. An authorisation whose refusals are never tested is a rubber stamp.
 - **Delivered-to:** command-bridge
 - **Hits:** 1
-- **Failed:** Nothing yet - written at the moment of the grant rather than after an incident. The operator authorised automatic bridge start/restart; the naive reading is "restart whenever a bridge looks down", which would have fired on every one of the dropped calls above and taken healthy bridges off the air.
+- **Failed:** Nothing yet - written at the moment of the grant rather than after an incident. the operator authorised automatic bridge start/restart; the naive reading is "restart whenever a bridge looks down", which would have fired on every one of the dropped calls above and taken healthy bridges off the air.
 - **Why:** Three measured constraints make the blanket version harmful. A restart CANNOT register a connector - the tool surface is fixed at session start, so a missing tool is never a restart reason. `bridge-restart-all.bat` kills the bridge running it and leaves the tunnel ports PRIVATE, and devtunnel.exe is absent, so only the operator can restore them - an unnecessary full restart strands the machine until he is physically present. And 8933 cannot restart itself, because the restart job runs on 8933.
 - **Worked:** `bridge_policy.py` holds the whole authorisation as a table: NOACTION when healthy; RESTART only for 8931 or 8932 while 8933 stays up to verify PID turnover; REFUSE when 8933 is down or all three are down. `bridge_policy_selftest.py` is 14 cases and MOST of them assert a refusal, including one that walks all 8 possible states and asserts `bridge-restart-all.bat` is never proposed in any of them. The job runs the selftest before it will act at all.
 - **Evidence:** measured - selftest 14/14, and the live dry run measured 8931/8932/8933 all up and correctly chose NOACTION
@@ -1034,7 +1181,6 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 
 ### A hosted scheduler's success describes the trigger, not the work
 - **Pattern-Key:** schtask-hosted-success-describes-the-trigger
-- **Routes:** copilot
 - **Date:** 2026-08-31
 - **Trigger:** false-success
 - **Rule:** A scheduler reporting success proves a TRIGGER fired, never that work happened. Require an artifact the job itself wrote - a report, a heartbeat - and treat its absence as failure however green the scheduler looks.
@@ -1061,7 +1207,6 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 
 ### A scheduled prompt cannot pre-authorize a side-effecting tool
 - **Pattern-Key:** schtask-scheduled-prompt-cannot-preauthorize-a-send
-- **Routes:** copilot
 - **Date:** 2026-08-31
 - **Trigger:** missing-capability
 - **Rule:** An unattended run must WRITE A FILE AND END. `SetupEventTrigger` has `requested_tool_permissions`; the scheduled-prompt tools do not, so any send stalls forever waiting for an approval nobody is present to give.
@@ -1075,7 +1220,6 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 
 ### EditScheduledPrompt silently ignores a nested recurrence object
 - **Pattern-Key:** schtask-editscheduledprompt-ignores-nested-recurrence
-- **Routes:** copilot
 - **Date:** 2026-08-31
 - **Trigger:** false-success
 - **Rule:** Pass recurrence to the scheduled-prompt tools as FLAT frequency/interval/hours/minutes. A nested recurrence object is ignored and still reports success - the only signal is the message text: "still on its schedule" means IGNORED, "now on its new schedule" means APPLIED.
@@ -1101,6 +1245,19 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 - **Distinct-from:** verification-scoped-away-from-the-risk - that is a guard whose FIXTURE or threshold can never reach the defect, so it was born unable to fire. This one fired correctly for weeks and was disabled by an edit ELSEWHERE in the same function, which means the defence is re-running the suite after a refactor rather than designing the fixture better.
 - **See also:** verifier-ignores-structural-diff, integration-defects-outnumber-logic-errors
 
+### A format migrator must accept the format it is replacing
+- **Pattern-Key:** migrator-strict-on-the-old-format-cannot-migrate
+- **Date:** 2026-08-31
+- **Trigger:** failure
+- **Rule:** When a marker or schema changes, the MIGRATOR must match old and new while the GATE matches new only. Tightening both at once leaves the old format unreadable by the one tool that exists to replace it.
+- **Delivered-to:** alteryx-to-python
+- **Hits:** 1
+- **Failed:** Changed `digest_apply.END_RE` to the three-number tiered marker at the same time as `lesson_gate.END_RE`. Running the flip against the live file gave `FATAL: expected exactly one END marker, found 0` - the instructions file still carried the two-number marker, and the only tool able to rewrite it had just been taught not to recognise it.
+- **Why:** A migrator has two distinct jobs - LOCATE the old thing and WRITE the new thing - and one regex was serving both. Tightening it improved the write and broke the read.
+- **Worked:** Split the roles by intent: `digest_apply.END_RE` became a liberal locator matching `\d+ (?:always-on of \d+ )?rules from \d+ entries`, while the emitted marker still comes only from `cmd_digest` and `lesson_gate.END_RE` stayed strict so an out-of-date digest still FAILS the gate. Rehearsed on a copy of the live file first: 60 -> 26 always-on, marker upgraded, then gate audit and preflight both passed.
+- **Evidence:** measured - the strict version failed on the live file; the dual-form locator migrated a copy and then the real file, 24110 -> 18731 bytes, gate PASSED after
+- **Distinct-from:** integration-defects-outnumber-logic-errors - that is a dependency named in one section and absent from another, found by checking acquisition alongside use. This is a single component correctly updated for its FUTURE inputs and thereby made unable to read its PRESENT ones, which no manifest check would catch because nothing is missing.
+
 ### A new consumer of a guarded artifact did not consult the guard
 - **Pattern-Key:** guard-exists-but-the-new-consumer-never-reads-it
 - **Date:** 2026-08-31
@@ -1112,11 +1269,10 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 - **Worked:** Read the marker BEFORE running the analyser, strip-then-match `^[0-9a-f]{64}$`, compare against a fresh hash of the file, and on any mismatch skip the analyser entirely with a distinct exit code (3, a deliberate refusal) rather than reusing exit 2 (an accident). Every figure the analyser would have produced is then recorded as null, never 0, because "0 findings" and "findings not measured" are opposite claims. Proven on the PC in both directions: 32/32 selftest, a live negative control that moved the real marker aside and confirmed exit 3, then restored it.
 - **Evidence:** measured - the gap was found by re-reading the deployed job against the skill's own routine; the fix was verified by a live refuse-and-restore run on the machine
 - **Distinct-from:** integration-defects-outnumber-logic-errors - that one is about ACQUISITION, a routine naming a file its manifest never fetches, and `manifest_check.py` catches it by comparing two lists in one document. This is the opposite shape: every file was present and fetched, nothing was missing, and the defect is that an EXISTING protection was not invoked by a newly written caller. A manifest check passes cleanly on it.
-- **See also:** verification-scoped-away-from-the-risk
+- **See also:** verification-scoped-away-from-the-risk, migrator-strict-on-the-old-format-cannot-migrate
 
 ### WakeToRun reads True and is vetoed by the power scheme on battery
 - **Pattern-Key:** schtask-waketorun-vetoed-by-power-scheme-on-dc
-- **Routes:** copilot
 - **Date:** 2026-08-31
 - **Trigger:** failure
 - **Rule:** `WakeToRun` on a task is a REQUEST. Before trusting it, read `powercfg /query SCHEME_CURRENT SUB_SLEEP RTCWAKE` - the AC and DC indices are separate, and a DC index of 0x0 means no task will ever wake this machine on battery however the task reads back.
@@ -1149,7 +1305,6 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 
 ### A placeholder that will not hydrate means a stuck CLIENT - restart it before repairing any file
 - **Pattern-Key:** onedrive-placeholder-cannot-hydrate
-- **Routes:** copilot
 - **Date:** 2026-09-01
 - **Trigger:** failure
 - **Rule:** ERROR 389 `0x185` "The cloud operation was unsuccessful" is a DEHYDRATED PLACEHOLDER that cannot be fetched - not a lock, not a robocopy fault, and `attrib +P -U` does NOT recover it. FIRST count how many placeholders fail: if several across different folders fail, and each fails in well under a second, the OneDrive CLIENT is stuck and one restart fixes every file at once. Only rebuild individual files from the cloud copy when a restart has been tried and the failure is genuinely confined.
@@ -1168,15 +1323,17 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 
 ### A reported figure that no code path can change
 - **Pattern-Key:** nightly-constant-reported-as-a-measurement
-- **Date:** 2026-09-01
+- **Date:** 2026-10-01
 - **Trigger:** false-success
-- **Rule:** Before drawing a conclusion from a number in a generated report, grep for every site that WRITES it. A field with one assignment and no update site is a decoration, and printed beside a real count it reads as a measurement.
+- **Rule:** Before drawing a conclusion from a number in a generated report, grep for every site that WRITES it. A field with one assignment and no update site is a decoration, and printed beside a real count it reads as a measurement. This includes a "score" or "certified" figure: read the scorer and count how many of its inputs are computed.
 - **Delivered-to:** dream-cycle
 - **Failed:** Reading `proposals_emitted: 0` next to `findings: 15` in two consecutive nightly measurement files as evidence that dream_analyze's proposal path was dead.
 - **Why:** `proposals_emitted` was assigned the literal `0` at nightly_measure.py:305 and never touched again. Three references existed in the entire tree: the assignment, the report key, and a selftest asserting it equalled 0 - which passed whether or not the field carried meaning, because it was always 0. `findings`, by contrast, is genuinely parsed from the analyser's stdout at line 263. Setting the two side by side compared a measurement against a constant. The file's own invariant ten lines above states that a figure the analyser did not produce must be null and never 0, "because a zero would be read next morning as the analyser looked and found nothing" - which is exactly how this field read.
 - **Worked:** `grep -n proposals_emitted` across the scripts folder returned three lines and no update site, and running dream_analyze live showed it emitting proposals in quantity. Deleted the field at schema 3, since `findings` already counts them, and replaced the selftest case with one asserting the key is ABSENT so a reintroduction fails.
 - **Evidence:** measured - 3 grep hits with no write site; a live analyser run emitted 4 merge candidates, 5 retirement candidates, 1 fixed-but-live rule and 4 relative-date fixes; nightly_selftest 33/33 after the change
-- **Hits:** 1
+- **Hits:** 2
+- **Hit 2, 2026-10-01, found on review not in the act:** the ACL "96/100 certified" claim. `CommandJobs\acl-final-assessment.bat` sets six of seven dimension scores as literals (functional, routing, maintainability, efficiency, evidence, deployment_hygiene); only configuration is computed, and `projected_score` is itself a literal. 20 criteria are static file checks (JSON parses, version string equals, counts equal, status strings) and the startup test is `node --check`. `evals/prompts.json` was still the toolkit template. Conclusion given to the operator: self-graded, config-only certification with no behavioural evidence.
+- **Promotion:** 2026-10-01 - Rule exists; carried into the copilot-instructions.md LESSON-DIGEST by digest_apply.py at this close.
 - **Distinct-from:** verifier-warns-on-proxy-not-the-defect - that one is a check that fires on a proxy for the defect; here there is no check at all, only a reported number nothing computes.
 - **Distinct-from:** verification-scoped-away-from-the-risk - that one is about a check whose SCOPE excludes the failure; this field has no scope because it has no logic.
 - **Distinct-from:** guard-exists-but-the-new-consumer-never-reads-it - the nearest neighbour by vocabulary, because both live in nightly_measure.py and both argue the null-versus-zero point. The mechanisms are opposites. There, a real protection EXISTS and works, and the defect is that a newly written caller never invokes it - the fix is to make the caller read the marker. Here there is no logic to invoke at all: the field is a literal with no computation behind it, so nothing was skipped because there was never anything to skip.
@@ -1197,15 +1354,16 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 
 ### 8932 search_files can report an absence that is not real
 - **Pattern-Key:** bridge-8932-searchfiles-false-negative
-- **Date:** 2026-09-01
+- **Date:** 2026-09-08
 - **Trigger:** failure
 - **Rule:** `search_files` glob-matches against the path RELATIVE to the search root - it is not a substring search. A pattern with no wildcards matches nothing, and `*` does not cross a directory separator, so nested files need a leading `**/`. Search `**/*term*`, and still never read "No matches found" as proof of absence.
 - **Delivered-to:** local-file-bridge
-- **Failed:** Checking whether a state-changing quarantine job had already run, by calling `search_files` with pattern `conflicted` on a folder known to hold conflict copies. It returned "No matches found", which would have meant the job had already moved them.
+- **Failed:** Checking whether a state-changing quarantine job had already run, by calling `search_files` with pattern `conflicted` on a folder known to hold conflict copies. It returned "No matches found", which would have meant the job had already moved them. SECOND HIT 2026-09-08: while verifying that a dropped `run_batch_file` call had not started `agent-of-record-merge-pr7.bat`, called `search_files` on `CommandJobs\Logs` with the bare pattern `agent-of-record-merge-pr7` and got "No matches found" although that job's `.log`, `.exit` and `.json` from an earlier run were present; `*merge-pr7*` returned all three. The decision did not rest on it - the report file's timestamp was the independent check - but three earlier did-it-run checks that day had used the bare form and were uninformative without anyone noticing.
 - **Why:** ESTABLISHED 2026-09-01 by controlled probe; this line previously read "not established". The pattern is a GLOB matched against the path relative to the search root, so there are two independent ways to get a silent empty result: a pattern carrying no wildcard never matches a longer filename, and `*` does not cross a directory separator so anything nested is invisible without `**/`. The original `conflicted` call hit the first. Both return success with an empty result, so nothing in the response signals doubt.
 - **Worked:** `**/*term*`, which matches at any depth. `list_directory` on the specific folder remains the independent cross-check whenever ABSENCE is the thing being proven - a glob that is merely mistyped fails the same silent way.
 - **Evidence:** measured - controlled probe in CommandJobs against a known ground truth of 18 matching files at top level and 8 more in `Archive\`. Bare `conflicted` returned nothing while `*conflicted*` returned 3 in the same folder; `*2026-09-01*` returned the 18 top-level and none of the 8 nested; the exact literal basename `2026-09-01-close-diagnose.bat` of a file that demonstrably exists in `Archive\` returned "No matches found", and `**/2026-09-01-close-diagnose.bat` found it.
-- **Hits:** 1
+- **Hits:** 2
+- **Promoted-to:** copilot-instructions.md LESSON-DIGEST block (always-on tier, hits >= 2), applied mechanically by digest_apply.py in the 2026-09-08 lessons job and confirmed by findstr in the same job. Already delivered to local-file-bridge; delivery to command-bridge as well is PROPOSED (the verify-before-retry step in that skill is where the bare pattern gets used) and needs an `exact` route, which is the operator's call.
 - **Distinct-from:** bridge-drops-are-tunnel-not-bridge - that is a transport drop which surfaces as an ERROR and is fixed by retrying; this call succeeded and returned a wrong answer, so a retry would confirm it.
 - **See also:** artifact-deadness-needs-consumer-grep
 
@@ -1226,7 +1384,6 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 
 ### A rule demoted to ENFORCED is only as wide as the thing enforcing it
 - **Pattern-Key:** digest-enforced-demotion-outruns-the-enforcer
-- **Platforms:** windows
 - **Date:** 2026-09-01
 - **Trigger:** failure
 - **Rule:** Before classing a rule ENFORCED in `digest-tiers.txt`, name every surface the mistake can be made on and confirm the enforcer reads all of them. `job_lint` inspects `.bat`/`.cmd` files only, so an ENFORCED rule is unenforced everywhere a session acts directly - and the demotion removes the prose from precisely the surface left unguarded.
@@ -1251,7 +1408,10 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 - **Why:** The rule was written on 2026-08-31 as "never recurse a OneDrive tree" and the check encoded `-recurse` near a OneDrive path. On 2026-09-01 the entry was sharpened by measurement - walking metadata across the whole tree took about a second and hydrated NOTHING; it is reading CONTENT that forces a fetch. The prose changed and the check did not, so the enforcer kept refusing the old, broader thing. Because the rule sits in the ENFORCED tier its prose is held out of turn-1 context, which means the stale check was the loudest surviving statement of it.
 - **Worked:** Re-encoded the check to the sharpened rule: a bare enumeration is no longer a finding, a recursion whose output is READ still is. The selftest case was inverted to match - the bad sample now reads, the good sample walks - so a future revert to "flag any -Recurse" fails a named case instead of passing quietly.
 - **Evidence:** measured - the flagged line is a metadata-only enumeration, confirmed by reading the script; the check's pattern keyed on `-recurse` alone; after the change the selftest passes 31/31 and the same file is no longer flagged, while a content-reading recursion still is
-- **Hits:** 2
+- **Hits:** 3   (2026-09-01 job_lint kept the pre-sharpening wording; 2026-09-03 dream_analyze counted the corpus against an always-on threshold; 2026-09-11 lesson_check --digest requires every authored Rule to sit in the tiered block)
+- **Third hit, 2026-09-11 - `lesson_check --digest` demands the pre-tiering population, and a whole afternoon was spent arguing with it.** Its `digest_stale` check walks every entry with a `Rule:` field and requires the rule's first 60 characters to appear in the LESSON-DIGEST block. That was correct when the block carried every rule. After the 2026-08-31 tiering the block carries the ALWAYS-ON tier only, so the check reports exactly `authored - always-on` missing every time: 71 of 109 on this corpus, arithmetic that holds regardless of how current the digest is. MEASURED on identical bytes in one job: bare `lesson_check` exits 0 with FAIL 0 WARN 0, `lesson_check --digest` exits 1 naming 71. The cost was not the run, it was the reading: this session reported the FAIL to the operator as a real staleness finding, then over-corrected in the dream report and blamed the day's own lesson writes, before the two forms were run side by side. `lesson_gate audit` - the authoritative currency check - read clean throughout and was the evidence that settled it. The tiering split one population into two on 2026-08-31 and THREE separate checks have now been found still counting the old one.
+- **Fixed the same day.** `lesson_check.digest_findings()` now computes the always-on set by CALLING `lesson_brief.select_alwayson`, the same predicate `digest_apply` uses, so a future tiering change cannot leave this check behind - the frozen copy is gone rather than corrected. The check moved out of `main()` into its own function for the reason it was never controlled: `check()` never saw it, so the 17-case selftest could not reach it. Four controls added, 4/4: a correctly tiered block is clean (this case FAILED before the fix, which is the defect in one line); an always-on rule missing from the block still fires `digest_stale`; no block at all fires `digest_missing`; a missing tiers file fires `digest_tiers_missing` rather than passing silently. MEASURED after the change: selftest 17/17 + 4/4, live corpus clean both bare and with `--digest`, release gate CLEAN at 22 checks. Then the control was run against the REAL instructions file with one always-on rule deleted, and the check failed as it should, naming `bridge-8933-arg-name`. **The first version of that breaker deleted the wrong line** - a trailing comment about who generates the block - and the check passed, correctly. A negative control that removes the wrong thing reports as evidence while proving nothing, so the breaker now selects its victim through the same tier predicate the checker uses.
+- **Landed in the public repository the same day, and it took two pull requests because the copy had drifted further than the one defect.** Copying the fixed checker in made the repo gate FAIL: the live file also carries the `misfiled_failure` check added 2026-09-08, and the shipped corpus held SEVEN entries whose own Trigger reads `failure` or `near-miss` sitting under Contradictions. The shipped checker could not see them - the same shape as this whole entry, one layer out: the corpus was fine, its checker was old. Landing the checker alone would have arrived red for a reason that had nothing to do with the checker. So PR #16 refiled the seven verbatim into Failures (a mover that refuses unless every entry survives byte-for-byte and the count is unchanged), then PR #17 landed the checker. Both gates green, main 367800f -> 2f9a63b -> 6f24323. **The mover's first run refused on its own bad comparison:** splitting on `###` gives the last entry of a section a chunk that swallows the next `## ` heading, so two untouched entries looked changed. The refusal was correct and the verification was wrong, which is the cheaper of the two ways round.
 - **Second hit, 2026-09-03 - the same failure in `dream_analyze.py`, caught by the operator asking a question rather than by any check.** Its GROWTH section warned "digest carries 90 rules ... every one is read every session" against a hardcoded `80`. Both halves were wrong after the 2026-08-31 tiering: it counted AUTHORED Rule lines in the lessons file (90) rather than the ALWAYS-ON block (30), and only those 30 are read every session - the other 60 load per-surface via `preflight`. The two numbers were the same population until the tiering split them, so the check was correct on the day it was written and silently wrong from 08-31 onward. **It was reported to the operator twice in one evening as a real finding before he asked where the threshold came from; the answer was that nobody set it - it was a literal somebody typed.** Fixed by counting the block itself, naming the tiering in the output, and exposing `--always-on-max` as a documented judgement rather than a hidden constant. The section had ZERO selftest coverage, which is why it shipped: four cases added, including a regression control that fails if the check ever counts the corpus again, and a both-ways control proving the threshold can reinstate a warning as well as silence one. 32/32, analyser re-approved.
 - **Rule addendum:** state where a threshold CAME FROM when reporting a finding that rests on it. "Over the threshold of 80" invites a decision; "over a limit nobody chose, measured against the wrong population" does not.
 - **Promoted-to:** `copilot-instructions.md` always-on digest tier, position 31 - achieved MECHANICALLY by the repeat rule the moment Hits reached 2, not by a hand-edit. Verified by reading the block back from disk: the always-on count moved 30 -> 31 and this entry's Rule text is present verbatim.
@@ -1263,7 +1423,6 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 
 ### The digest repair a close demands cannot be applied from the read-only mount
 - **Pattern-Key:** memory-digest-repair-blocked-by-its-own-gate
-- **Routes:** copilot
 - **Date:** 2026-09-02
 - **Trigger:** failure
 - **Rule:** Repair a stale digest by computing it on a WRITABLE scratch copy, proving the repair with `lesson_gate preflight` against that copy into a SEPARATE receipt dir, then applying the difference to the PC file through the 8932 bridge with `edit_file` - never by pointing `digest_apply.py` at `/mnt/user-config/`, which is read-only. Afterwards expect the mount to keep serving the OLD file: hash it against the pre-repair copy to tell sync lag from a failed write, and never read that fresh exit 1 as a second failure.
@@ -1279,17 +1438,16 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 
 ### Check whether a capability is ALLOWED before spending turns on whether it works
 - **Pattern-Key:** tooling-install-researched-before-approval-checked
-- **Routes:** copilot
 - **Date:** 2026-09-02
 - **Trigger:** correction
 - **Rule:** Before researching, pricing or proposing any software install on the firm-managed machine, ask whether it is approved. Availability is not permission, and a clean install path is no evidence the install is allowed. Dev Tunnels specifically is NOT approved - do not re-propose it.
-- **Failed:** The last open config item was that `devtunnel.exe` is absent, so setting the four bridge ports Public in the VS Code Ports panel is manual after every restart. Asked what devtunnel was, I answered, then ran a web search, fetched Microsoft's docs to establish the install route (`winget install Microsoft.devtunnel`, or a direct download from `aka.ms/TunnelsCliDownload/win-x64`), confirmed it lands under `%LOCALAPPDATA%` and so needs no admin, worked out that a job calling it would need an absolute path, and offered to install it and test whether the CLI could adopt VS Code's existing tunnels. The operator: "dev tunnels is not explicitly approved for installation."
+- **Failed:** The last open config item was that `devtunnel.exe` is absent, so setting the four bridge ports Public in the VS Code Ports panel is manual after every restart. Asked what devtunnel was, I answered, then ran a web search, fetched Microsoft's docs to establish the install route (`winget install Microsoft.devtunnel`, or a direct download from `aka.ms/TunnelsCliDownload/win-x64`), confirmed it lands under `%LOCALAPPDATA%` and so needs no admin, worked out that a job calling it would need an absolute path, and offered to install it and test whether the CLI could adopt VS Code's existing tunnels. the operator: "dev tunnels is not explicitly approved for installation."
 - **Why:** A capability probe answers "CAN this be made to work" and returns nothing about "MAY this be made to work". The two questions look identical from inside the probe, and only the technical one has a satisfying answer, so it is the one that gets asked. Earlier the same day the opposite happened and went well: a research pass into flow auth surfaced, unprompted, that reusing the Azure CLI client ID would be policy evasion, and that route was dropped before any work went into it. The difference was not judgement - it was whether something else happened to raise the permission question. An open-items list phrased as a missing tool actively suppresses it, because the entry reads as a to-do rather than as a decision nobody has taken.
 - **Worked:** Dropped it on the correction, with no attempt to find another route to the same capability, and corrected the two records that had framed it as pending. `fact-devtunnel-cli-absent` said the manual step stands "unless the devtunnel CLI is installed" - an open door that would have produced this same proposal again from a later session reading the same list. Both records now state that the manual Public-port step is permanent by design and name the reason.
 - **Evidence:** measured - the search and the doc fetch both happened before any approval question was asked, and the correction arrived immediately after the install offer. The generalisation to other unapproved software is inference unverified.
 - **Hits:** 1
 - **Distinct-from:** probe-env-vars-blank-false-negative and bridge-devtunnel-declared-dead-without-reprobe - all three sit on devtunnel, which is exactly why they invite being filed together, and both of those are MEASUREMENT failures with a measurement fix. There a probe searched blank `%LOCALAPPDATA%` paths and wrongly reported the CLI absent; there a stale stored open item was repeated without re-probing. Both are answered by measuring better, and both were: the 2026-08-21 reprobe confirmed devtunnel really is absent. This entry starts where those finish. The absence is correctly measured and not in dispute; what was never asked is whether installing it is PERMITTED. No probe, however well scoped, returns that - so a better measurement is the wrong instrument, and reading this as another hit on either of them would prescribe exactly the fix that does not apply.
-- **See also:** bridge-restart-authorisation-needs-bounds
+- **See also:** work-is-an-exercise-not-an-engagement, bridge-restart-authorisation-needs-bounds
 
 ### A GUI launcher exits clean, so a hang-timeout guard never fires and reports success
 - **Pattern-Key:** batch-gui-launcher-defeats-timeout-guard
@@ -1349,7 +1507,7 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 - **Trigger:** failure
 - **Rule:** Call `evaluate_expression` with BOTH fixes or it lies to you. (1) Wrap the expression in `@{...}` - unprefixed input is echoed back verbatim as a string with `evaluated_locally: true`, a silent false success, not an error. (2) Drop the `?` from `?[...]`, which the parser rejects with REFUSED "unexpected character ?". Fix (2) alone lands you in failure (1). The rewrite is for THIS evaluator only - keep `?[...]` in the flow, where it is valid and null-safe.
 - **Failed:** Fed evaluate_expression a realistic multi-function expression containing `triggerBody()?['name']` and got `REFUSED: could not evaluate: unexpected character "?"`. First read was that the test expression was malformed, which would have closed a real defect as operator error.
-- **Why:** The evaluator implements WDL functions but not the optional accessor, and `?[]` is the dominant idiom in real flow definitions. The operator's own "Todo - Get My Tasks" uses `item()?['status']` and `item()?['title']`, so the tool cannot evaluate expressions copied out of his own flows - which is the main thing it exists to do. The gap therefore looks like a syntax error to the caller at exactly the moment the tool is being used correctly.
+- **Why:** The evaluator implements WDL functions but not the optional accessor, and `?[]` is the dominant idiom in real flow definitions. the operator's own "Todo - Get My Tasks" uses `item()?['status']` and `item()?['title']`, so the tool cannot evaluate expressions copied out of his own flows - which is the main thing it exists to do. The gap therefore looks like a syntax error to the caller at exactly the moment the tool is being used correctly.
 - **Worked:** Isolate by removing the `?` ALONE and re-running the otherwise identical expression. `triggerBody()['name']` evaluated and returned `div=3.5 name=the operator upper=TODO`. The A/B is the whole diagnosis: one failing call on a long expression has many candidate causes and proves nothing about any of them. AMENDED 2026-09-03 after verification: the `@` gate was found by running the rule's own delivery through a 3-run test with a control, and confirmed directly - `concat('a','b')` returns `value: "concat('a','b')"` while `@{concat('a','b')}` returns `"ab"`. The first version of this rule named only the `?` and would have walked a reader from a loud refusal into a quiet wrong answer.
 - **Evidence:** measured - both calls made live against 8934 v0.5.0 on 2026-09-03. The parser gap is observed; the cause is inferred from the error text and the surrounding behaviour, not read in the evaluator source.
 - **Hits:** 1
@@ -1358,14 +1516,14 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 ### A checker that hardcodes a phrase from the rule breaks the moment the rule is reworded
 
 - **Pattern-Key:** verifier-asserts-a-literal-copied-from-the-rule
-- **Date:** 2026-09-03
+- **Date:** 2026-09-08
 - **Trigger:** failure
 - **Rule:** Never hardcode a phrase copied from a lesson's `Rule:` text into the check that verifies it. Read the Rule out of `cowork-lessons.md` at check time and assert against that. A copied literal is correct only until the wording moves, and when it goes stale it fails LOUDLY and confidently while the thing it guards is fine.
-- **Failed:** Twice in one session a boot gate reverted a CORRECT install. First it asserted `safe-navigation`, which lives in the entry TITLE while the applier renders the `Rule:` field. Corrected that to `optional-property accessor` - accurate at the time - and the rule was amended twenty minutes later, so the same gate failed again and rolled back another good change.
+- **Failed:** Twice in one session a boot gate reverted a CORRECT install. First it asserted `safe-navigation`, which lives in the entry TITLE while the applier renders the `Rule:` field. Corrected that to `optional-property accessor` - accurate at the time - and the rule was amended twenty minutes later, so the same gate failed again and rolled back another good change. THIRD HIT 2026-09-08, same class, different literal: a lessons-close job proved three digest promotions with `findstr /C:"<Pattern-Key>"` against copilot-instructions.md. The digest renders Rule text and never the key, so all three lookups failed and the job reported the Promoted-to lines as false claims while every rule was in fact present (32 -> 35 always-on). The check carried a token the surface does not render. Fixed by deriving each key's Rule from the corpus at check time and asserting that text - the same repair this entry already prescribed.
 - **Why:** `enforcer-encodes-the-superseded-rule` prescribes updating the check in the same pass as the rule. That is not enough. The same-pass discipline was followed the first time and the check still broke the second time, because ANY copied literal has a shelf life bounded by the next edit. The failure mode is also indistinguishable from a real defect: the gate printed "routed rule absent" and reverted, naming a cause it had never tested.
 - **Worked:** Make the check DERIVE its expectation instead of carrying one. The rewritten gate reads the `Rule:` for its Pattern-Key straight out of the corpus, normalises whitespace and asserts containment - and refuses outright with exit 2 if the corpus cannot be read, because passing on a missing expectation is worse than failing. Proven: the rule was reworded and the gate kept working with no edit to the gate.
 - **Evidence:** measured - both false negatives observed live on 2026-09-03, each reverting a verified-correct install; the derived version then passed against the amended text with no change to itself.
-- **Hits:** 2
+- **Hits:** 3
 - **Promoted-to:** `copilot-instructions.md`, "Rules already paid for" (LESSON-DIGEST block), and the `dream-cycle` SKILL.md lessons block via the `verifier-` route. Both were applied MECHANICALLY in the same close job - `digest_apply.py` then `skill_lessons.py` - and the key was grepped back out of both files afterwards rather than assumed. Promoted on first logging because the two hits happened within one session: the second occurrence is what proved the same-pass fix insufficient, so there was never a version of this entry that deserved to sit unpromoted.
 - **Distinct-from:** `enforcer-encodes-the-superseded-rule` - that one says keep the check in sync with the rule. This one says synchronisation is the wrong goal: delete the copy so there is nothing left to keep in sync.
 
@@ -1381,20 +1539,125 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 - **Evidence:** measured - both controls run live on 2026-09-03 against the same rule; the asking control passed and the watching control failed, changing the verdict from INERT to EFFECTIVE.
 - **Hits:** 1
 - **Distinct-from:** `nightly-constant-reported-as-a-measurement` - that one is a number nothing writes. This one is a number that IS computed, from arms that are not comparable.
+### `gh` inside an 8933 job says "not logged into any GitHub hosts" while the user is logged in
+- **Pattern-Key:** bridge-8933-gh-needs-config-dir
+- **Date:** 2026-09-07
+- **Trigger:** failure
+- **Rule:** FIXED AT SOURCE 2026-09-09 - executor 1.3.0 supplies `%APPDATA%`, and `gh api user` inside a job returned the login with `GH_CONFIG_DIR` unset (measured). Setting it explicitly stays harmless and the standing aor-land/aor-merge jobs still do. What survives: a CLI that says "not logged in" while the user is logged in is resolving the wrong config directory - print the variables it reads before re-authenticating anything.
+- **Failed:** `broaden.ps1` called `gh repo edit --add-topic`, `gh api repos/:owner/:repo/milestones` and `gh issue edit` with no `GH_CONFIG_DIR`. Every call printed `To get started with GitHub CLI, please run: gh auth login`, the script died on the first `NativeCommandError`, and a read-only `gh auth status` in the same environment said `You are not logged into any GitHub hosts`. the operator confirmed he was logged in; the second run failed identically.
+- **Why:** `gh` keeps `hosts.yml` under `%APPDATA%\GitHub CLI`. Per `bridge-8933-env-partially-stripped` the user-profile variables are empty in the job environment, so `gh` resolves an empty config directory and finds no credential. The 2026-09-04 `agent-of-record-github-configure.ps1` already carried the exact fix; the new script was written without reading it, which is how a solved trap gets paid for twice.
+- **Worked:** `$env:GH_CONFIG_DIR = 'C:\Users\YOURUSER\AppData\Roaming\GitHub CLI'` at the top of the script. `gh api user --jq .login` then returned the account name, and every metadata write (topics, homepage, milestones) succeeded and was read back from GitHub in the same job.
+- **Evidence:** measured - the failing stderr, the `gh auth status` line, and the succeeding read-back were all read in one session
+- **Fixed-at-source:** 2026-09-09 - with executor 1.3.0 live, the read-only census job ran `gh api user --jq .login` with `GH_CONFIG_DIR` empty and `APPDATA=C:\Users\YOURUSER\AppData\Roaming`: rc 0, `jordanmrash`.
+- **Hits:** 1
+- **Distinct-from:** `bridge-8933-env-partially-stripped` - that entry states the CAUSE (user-profile variables are blank in the job environment) and its rule is about the working directory; this one is a specific CONSEQUENCE with its own misleading symptom (`gh` reports the user logged out while he is logged in) and its own one-line fix (`GH_CONFIG_DIR`), which a session reading only the cause did not derive - the script that failed had been written with that entry in the corpus. `probe-env-vars-blank-false-negative` - there a PROBE searched paths under blank variables and reported a binary absent; here the binary was found and ran, and it was the binary's own config lookup that resolved to nothing. `bridge-8933-user-path-not-inherited` - that is PATH (which binary is found); this is a config directory (what the found binary can read).
+- **See also:** bridge-8933-env-partially-stripped, bridge-8933-user-path-not-inherited
+
+### A verification check that throws is scored as PASSED when only the failure branch increments the counter
+- **Pattern-Key:** verifier-crashed-check-counts-as-pass
+- **Date:** 2026-09-07
+- **Trigger:** false-success
+- **Rule:** In a verify block, wrap every check in try/catch and increment the failure counter in the catch, so a check that could not run is a finding and never a pass. Run the whole verify section with `$ErrorActionPreference = 'Continue'` and branch on `$LASTEXITCODE`, because a probe whose EXPECTED answer is an error (a 404 proving a file is gone) is killed by `Stop` before the verdict prints. Then re-run the checks from a SEPARATE read-only job before reporting.
+- **Failed:** Two shapes in one night, opposite directions. (a) `agent-of-record-remove-roadmap.ps1` probed `gh api .../contents/docs/article-roadmap.md` expecting 404 as the SUCCESS signal, under `$ErrorActionPreference = 'Stop'`. The 404 became a terminating error, the script died before its verdict line, and the wrapper reported `COWORK_RESULT: FAIL` for a removal that had fully succeeded and been pushed. (b) `agent-of-record-restore-snapshot.ps1` decoded `gh api --jq .content` with `[Convert]::FromBase64String`; on three checks `gh`'s stderr text was joined into the string, the decode threw, the variable stayed null, `.Contains()` threw again, and because only the `else` branch did `$fail++`, the run printed `verify failures: 0` with three checks never evaluated.
+- **Why:** A check has three outcomes - passed, failed, could not run - and a counter that increments only on an OBSERVED failure folds the third into the first. Shape (a) is the mirror: a probe whose success looks like an error is stopped by the error policy before it can be read as success. Both yield a confident verdict the evidence does not support, and in (b) the confident verdict was the one the user was about to be told.
+- **Worked:** For (a), `$ErrorActionPreference = 'Continue'` across the verify section and branching on `$LASTEXITCODE`. For (b), fetching content with `gh api -H "Accept: application/vnd.github.raw"` - no base64 leg to fail - and re-running the three checks in a separate read-only job, `agent-of-record-verify-snapshot.bat`, which confirmed all three before anything was reported. The durable pattern is `try { <check> } catch { $fail++; "could-not-check: <name>" }`, with the verdict computed once after every check has either passed, failed, or been counted as unrunnable.
+- **Evidence:** measured - both verdict lines and both stderr traces were read in-session, and the independent re-verification job passed all three checks
+- **Hits:** 1
+- **Distinct-from:** `verifier-verdict-announced-before-evidence-read` - there the checker READ evidence and adjudicated too early; here the check never RAN and its silence was scored. `verifier-usage-error-reads-as-finding` - there a checker that never ran was read as a FINDING; here one that never ran was read as CLEAN: the same third state, misread in the opposite direction, so fixing one cannot catch the other. `verifier-pipe-masks-the-exit-code` - there sound plumbing lost a true code through a pipe; here the code was never produced. `verification-scoped-away-from-the-risk` - there every check RAN and was sound, but each one's scope excluded the failure; here the check's scope was right and it never executed, and non-execution was scored as a pass.
+- **See also:** verifier-usage-error-reads-as-finding, verification-scoped-away-from-the-risk, cowork-close-reports-ok-on-failed-commit
+
+### Editing a generated public snapshot in place leaves its build source stale, so the next rebuild reverts every edit
+- **Pattern-Key:** git-published-tree-edited-without-build-source
+- **Date:** 2026-09-07
+- **Trigger:** failure
+- **Rule:** Before editing a published tree that a build script generates, locate the source it is generated FROM and change that too - or record the drift as a blocker on the next rebuild in the same pass. A direct edit to the output survives exactly until the next build.
+- **Failed:** Five rounds of direct edits to the public `agent-of-record` clone - broadened thesis, roadmap removal, template dedupe, changelog, re-root - with no corresponding change to the publish set that `GitHubSetup/02-build-clean-repo.ps1` copies from. Checked afterwards through the bridge: `COPILOT_COWORK\GitHubSetup\README.template.md` is an unrelated earlier document ("Cowork Tooling"), the local folder has no `public-template/`, and the v2 publish set that actually produced the repo was built off-PC. Wherever it lives, it has none of the night's edits, and the repository's own model is "wipe, rebuild as one commit, force-push" - so the next publication would silently revert all of them.
+- **Why:** A generated output has two homes and only one is authoritative. Editing the output is fast and verifiable in the moment, which is why it wins under time pressure; the cost is deferred to a rebuild that nobody is watching when it runs.
+- **Worked:** Re-rooted the live tree ITSELF as the snapshot commit (so the published tree is the verified content, not a stale generator's idea of it) and recorded the source drift as a blocking item in memory and in the CHANGELOG note. The remaining fix - locate the v2 publish set and apply the diff - is open and named as open; this entry does not close it.
+- **Evidence:** measured - `README.template.md` read through the bridge and the local `GitHubSetup` folder listed; the published `02-build-clean-repo.ps1` lines that copy `public-template` and the `GitHubSetup` subtree were read from the repo
+- **Hits:** 1
+- **Distinct-from:** `docx-build-with-python-docx-not-patch-array` - that is about HOW to construct a generated document (build from source, verify per paragraph); this is about WHERE an edit must land when the artifact has a generator - the output can be perfectly built and still be overwritten. `skill-edit-by-extraction-and-hash-verify` - that is a technique for editing one file safely in place; this is the case where editing the file in place is itself the mistake, however safely it is done. `git-commit-job-must-stage-itself` - that is about what a commit job stages; this is about a rebuild REVERTING committed work because the commit was made to the output rather than the source.
+- **See also:** git-deletion-does-not-sanitize-history, config-contradiction-survives-in-second-file
+
+### gh api --input rejects a JSON file written with a UTF-8 BOM
+- **Pattern-Key:** gh-api-input-rejects-utf8-bom
+- **Date:** 2026-10-01
+- **Trigger:** failure
+- **Rule:** Never write a file ANY strict JSON parser will read - GitHub's API, Node `JSON.parse` in the M365 Agents Toolkit CLI - with `Set-Content -Encoding UTF8` in Windows PowerShell 5 - it prepends a byte-order mark. Use `[IO.File]::WriteAllText($path, $text, (New-Object System.Text.UTF8Encoding($false)))` for `gh --input` bodies AND for committed files such as `.github/CODEOWNERS`, and prove it by reading the first three bytes back (EF BB BF is the defect), locally and from the GitHub contents API after the push.
+- **Failed:** `agent-of-record-v030-collaborate.ps1` built a branch-protection body with `ConvertTo-Json`, wrote it with `Set-Content -Encoding UTF8`, and passed it to `gh api --method PUT ... --input <file>`. GitHub answered HTTP 400 `Problems parsing JSON` although the file was structurally valid JSON. The job exited 4 at step 2 with no side effects. SECOND HIT 2026-09-08, different consumer: the same collaborate job had written `.github/CODEOWNERS` with `Set-Content -Encoding UTF8` and pushed it. The docfix probe read the file's bytes and reported `BOM=True`; the docfix job stripped the three bytes, committed, and read the file back from the GitHub contents API as `BOM=False`. The BOM had sat on main for a day. THIRD HIT 2026-10-01, different consumer: `atk provision` 1.3.0 failed at `copilotAgent/publish` with `SyntaxError: Unexpected token '∩╗┐', "∩╗┐{\r\n    \"$\"... is not valid JSON at JSON.parse at verifyLocalMCPPluginCerts (m365agentstoolkit-cli\lib\index.js)`. EF BB BF sat at the start of ai-plugin.json, ai-plugin_1.json, ai-plugin_2.json and mcp-tools.json, written by PowerShell on 2026-09-30. `teamsApp/update` had already SUCCEEDED before publish failed, so the provision was half-applied. 1.2.1 had provisioned with the same BOM files, so either the publish parse is new in this toolkit version or 1.2.1 never ran it - inference unverified.
+- **Why:** Windows PowerShell 5's `-Encoding UTF8` prepends a byte-order mark (EF BB BF). GitHub's JSON parser rejects a body whose first bytes are not `{` or `[`. `gh` forwards the file bytes verbatim, so the BOM reached the API.
+- **Worked:** Write JSON bodies for `gh --input` with `[IO.File]::WriteAllText($path, $json, (New-Object System.Text.UTF8Encoding($false)))` - the `$false` is "no BOM". Re-run succeeded on the identical payload. Applies to EVERY 8933 job that hands `gh` a file: protection, releases, invitations, milestone edits. `ConvertTo-Json -Compress` is not the fix on its own; the BOM is the whole defect. For a committed file: read the bytes, strip a leading EF BB BF if present, and verify the remote copy through the contents API - never trust the local file alone, and never trust that GitHub parsed line 1. For files already on disk, 8932 `edit_file` with oldText `\ufeff{` -> newText `{` strips the BOM in place (it also normalises CRLF->LF; expect a size delta of exactly 3 plus the CRLF count). Diagnostic shortcut: the glyph trio `∩╗┐` in CP437 console output IS the BOM.
+- **Evidence:** measured - the 400 was read from the job report, the payload file was read back and found structurally valid, and the re-run with the BOM-free write returned 200 with the protection applied Second hit: the BOM's presence was measured (bytes read in the clone) and its removal was measured (bytes read back from the API). Its EFFECT on GitHub's CODEOWNERS parsing was inferred from documentation, not observed - inference unverified for that part only. Third hit measured - the SyntaxError read verbatim, per-file size deltas matched 3 + CRLF count exactly, next run 5/5 Done exit 0.
+- **Hits:** 3
+- **Promoted-to:** copilot-instructions.md LESSON-DIGEST block (always-on tier, hits >= 2), applied mechanically by digest_apply.py in the 2026-09-08 lessons job and confirmed by findstr in the same job. Routing to the command-bridge SKILL.md is PROPOSED, not applied: the key carries no routed prefix, so it needs an `exact` line in skill_lesson_routes.json, which is the operator's call.
+- **See also:** bridge-8933-gh-needs-config-dir, bridge-8932-writes-lf
+- **Distinct-from:** file-edit-reencodes-existing-characters - that lesson is a READ/WRITE round-trip corrupting a file's own existing content; this one is a correctly-written, content-intact file being REJECTED BY A REMOTE PARSER for the BOM alone. Same three bytes, same `UTF8Encoding($false)` fix, different failure: there the file is damaged and the tool reports success, here the file is fine and the API says no.
+
+### A disclosure scan that skips an extension does not scan the files that extension holds
+- **Pattern-Key:** public-scan-unscanned-extension-passes-clean
+- **Date:** 2026-09-07
+- **Trigger:** near-miss
+- **Failed:** Added a POSIX home-path pattern (`/Users/<name>`, `/home/<name>`) to `scripts/public_scan.py` for the new `Startup/posix/*.sh` launchers, ran the scan, got `PUBLIC_SCAN: CLEAN`, and nearly shipped. A planted `/Users/<name>/...` leak in a `.sh` file ALSO scanned clean.
+- **Why:** `TEXT_EXTENSIONS` did not include `.sh`. Every shell script in the tree was silently skipped - the new pattern was correct and never ran against the files it was written for. The green result was true of the files scanned and said nothing about the files that mattered.
+- **Worked:** Before trusting a scanner on a new file type, PLANT A LEAK in that type and confirm the scan FAILS, then remove it and confirm it passes. The negative control found in one run what reading the code had not. Fix was adding `.sh .bash .zsh` to `TEXT_EXTENSIONS`; verified fail-with-leak then clean-without. Generalises: a new rule in any scanner is untested until a fixture that should trip it has tripped it.
+- **Evidence:** measured - CLEAN with a planted leak was read, then 1 finding naming the planted file after the extension fix, then CLEAN after removing it
+- **Hits:** 1
+- **See also:** verifier-crashed-check-counts-as-pass
+- **Distinct-from:** new-rule-is-untested-until-it-survives-a-real-case - that is a RULE whose effect is unproven until a real case exercises it; this is a SCANNER whose file-type filter excluded the very files the new pattern was written for, so the pattern never ran at all - a coverage gap, not an unexercised rule. Also distinct from verifier-crashed-check-counts-as-pass: nothing crashed; the scan completed over the wrong population and reported honestly about it. And from git-chmod-lost-container-to-windows-clone, which shares only the day and the tree: that is a permission bit, this is a scan filter.
+
+### A refusal test that searches the response body for a sentinel flags the server's own echo
+- **Pattern-Key:** selftest-sentinel-in-refusal-echo-false-fail
+- **Date:** 2026-09-07
+- **Trigger:** false-success
+- **Failed:** `exec_bridge_selftest.py` proved a payload was refused by checking that a sentinel word (`pwned`, `escaped`) did NOT appear in the response. Two correct refusals FAILED the test: the server's rejection message quotes the offending path back (`REJECTED: file does not exist -- .../hello.sh; echo pwned`), so the sentinel was present in a response that proved nothing had run.
+- **Why:** The heuristic conflated "the payload text appears" with "the payload executed". A well-behaved refusal echoes what it refused, so the two are indistinguishable by substring search.
+- **Worked:** Assert on the thing only execution produces. The bridge emits an `exit_code` field solely when a process ran, so `executed = '"exit_code"' in body` is the discriminator; the refusal check became `isError or REJECTED/REFUSED in body` AND `not executed`. 31/31 on both platforms after. The same run also exposed a real gap: `;` and `$` were not in the metacharacter refusal set - hardened, and the refusal is now BY NAME rather than incidental to the file not existing.
+- **Evidence:** measured - two FAIL lines with the echoed payload were read, then 31 of 31 after the discriminator change, on POSIX in the container and on Windows in the publish job
+- **Hits:** 1
+- **See also:** verifier-crashed-check-counts-as-pass
+- **Distinct-from:** guard-substring-matches-its-own-filename - both are substring heuristics hitting an unintended source, but there the guard matched its own filename in a listing and the fix was to narrow the string; here the test matched the server's echo of the payload it had refused, and the fix was to stop searching for text at all and assert on an artifact only execution produces (`exit_code`). Also distinct from cowork-close-reports-ok-on-failed-commit: no exit code went untested; the test asserted the wrong evidence.
+
+### Container-built shell scripts arrive without the execute bit and git must be told explicitly
+- **Pattern-Key:** git-chmod-lost-container-to-windows-clone
+- **Date:** 2026-09-07
+- **Trigger:** near-miss
+- **Failed:** `chmod +x Startup/posix/*.sh` in the build container did not persist (`ls -l` still showed 644 after two attempts), and the zip carried 644. A Windows clone has `core.fileMode=false`, so `git add` would have committed every launcher as `100644` and a Mac clone would have failed to start the bridges with a permission error.
+- **Why:** The container filesystem discards permission bits; the zip format preserves what it was given. On Windows git never reads filesystem mode, so nothing downstream would have set it either. Three layers each honestly passed along a wrong bit.
+- **Worked:** Set the mode in the INDEX, not the filesystem: `git update-index --chmod=+x <file>` for each script in the publish job, then REFUSE to commit if `git ls-files -s Startup/posix` shows any `100644`. Verified twice - in the clone before commit, and in the fresh clone from GitHub after push. CI's macOS job additionally runs `test -x` on every launcher so a regression fails the gate.
+- **Evidence:** measured - 644 read in the container, the `100755` assertion passed in the publish job on the PC, and the fresh-clone check read `100755` from the published tree
+- **Hits:** 1
+- **See also:** bridge-8932-writes-lf
+- **Distinct-from:** git-deletion-does-not-sanitize-history - that is CONTENT surviving in history after a deletion, unfixable by any later commit; this is a file MODE bit that never entered the index because two filesystems in a row (container, Windows) do not carry it, fixed by `git update-index --chmod=+x` with no history operation at all. Also distinct from bridge-8932-writes-lf: that is line endings altered by a transport; this is a permission bit dropped by a filesystem.
+
+### Windows PowerShell 5.1 strips embedded double quotes from arguments handed to a native command
+
+- **Pattern-Key:** batch-ps51-strips-embedded-quotes-in-native-args
+- **Date:** 2026-09-08
+- **Trigger:** failure
+- **Rule:** In an 8933 job, an argument that PowerShell 5.1 hands to a native executable (`gh`, `git`, `node`) must contain NO double quotes: PS 5.1 re-quotes the token and drops the inner quotes, so a jq program such as `.title == "x"` or `.conclusion // "-"` reaches gh as `.title == x` and fails to parse. Shape jq output with `@tsv` (a null renders as an empty field, so no quoted default is needed) and compare strings in PowerShell afterwards. And test the call's exit code before reading its output - a parse error read as data looks exactly like "no result yet".
+- **Failed:** Two 8933 jobs in two sessions. 2026-09-07/08: `agent-of-record-v030-probe.ps1` passed jq programs with quoted literals; every multi-field line printed `accepts 1 arg(s), received 4` and the probe was rewritten to `@tsv`. 2026-09-08: `agent-of-record-merge-pr7.ps1` polled CI with `--jq '.jobs[] | [.name, .status, .conclusion // "-"] | @tsv'`; gh received `.conclusion // -` and answered `failed to parse jq expression ... unexpected token "]"`. The helper merged stderr into stdout and the loop never tested the exit code, so the parse error was read as "not reported yet"; the job polled for 200 s, refused to merge and exited 4, twice (the first run had also queried `commits/<7-char sha>/check-runs`, which does not resolve a short sha). CI had been green for twelve minutes.
+- **Why:** Windows PowerShell 5.1 builds the native command line itself: a token containing spaces is wrapped in quotes and embedded double quotes are neither escaped nor preserved, so the receiving program sees them removed or the token split. PowerShell 7 fixed this; 8933 jobs run `powershell.exe`, which is 5.1. The rest of the cost was the polling loop treating error text as pending state instead of testing `$LASTEXITCODE` on every call.
+- **Worked:** Removed every double quote from the jq programs (`.conclusion` bare, `@tsv` rendering null as empty; title matching moved into PowerShell after an `@tsv` dump). The same job then merged on its next run in 12 s with both gates read as `completed success`. The repaired probe has run clean four times today. Not tested: the `\"x\"` escape inside a single-quoted PowerShell string, which PS 5.1 is documented to pass through.
+- **Evidence:** measured - both error texts were read from job reports (`accepts 1 arg(s), received 4` in the 2026-09-07 handoff; the jq parse error naming `// -` in the 2026-09-08 merge report), and the fixed job's report was read after the merge.
+- **Hits:** 3   (2026-09-07 jq literals in a probe; 2026-09-08 a jq default in the merge poller; 2026-09-11 a quoted phrase in a params VALUE)
+- **Repeat 2026-09-11 - the data carries it, not just the code:** `_aor-merge.params.txt` was written with a quoted phrase inside its BODY line. The job's own quoting was correct and untouched since the last repair, but the value reached `gh pr merge` as seven positional arguments (`accepts at most 1 arg(s), received 7`) and the merge failed at step 3 with CI already read as green. Rewriting the same sentence without quotation marks merged it on the next run. Every earlier occurrence was a quote inside a jq PROGRAM in the script; this one was a quote inside a parameter FILE a standing job reads, which is a surface the rule as written did not obviously cover. The rule now has to reach whoever writes the params, not only whoever writes the job.
+- **Promoted-to:** copilot-instructions.md LESSON-DIGEST block (always-on tier, hits >= 2) and the command-bridge SKILL.md lessons block via the `batch-` route - both applied mechanically by digest_apply.py and skill_lessons.py in the 2026-09-08 lessons job and confirmed by findstr in the same job. Promoted on first logging because the second hit came the session AFTER the first repair had been recorded in a handoff note but never in this corpus - which is precisely the delivery gap promotion closes.
+- **See also:** bridge-8933-gh-needs-config-dir, cowork-close-reports-ok-on-failed-commit
+- **Distinct-from:** bridge-8933-gh-needs-config-dir - that is gh finding no configuration in a stripped environment; this is a well-formed argument being mangled by the shell before gh ever sees it. Also distinct from cowork-close-reports-ok-on-failed-commit, which is a job echoing OK after a failed step; here the untested exit code made a failure look like WAITING, and the job correctly refused - the cost was time, not a false success.
 
 ### `where <tool>` in an 8933 job misses every per-user installed tool
 - **Pattern-Key:** bridge-8933-user-path-not-inherited
-- **Routes:** copilot
 - **Refines key:** bridge-8933-env-partially-stripped
 - **Date:** 2026-09-02
 - **Trigger:** failure
-- **Rule:** 8933 jobs inherit the MACHINE PATH only, not the USER PATH. `where <tool>` therefore finds nothing for anything installed per-user (PAC CLI, npm globals, dotnet global tools, VS Code CLIs) even when it resolves fine in the operator's own shell. Read the user PATH with `reg query "HKCU\Environment" /v Path` and locate the tool from there.
+- **Rule:** FIXED AT SOURCE 2026-09-09 - executor 1.3.0 appends the user PATH from `HKCU\Environment` to the machine PATH, so `where pac` resolves inside a job (measured: 12 user entries). What survives: when a tool the operator uses daily is not found, print the PATH sources before guessing install paths.
 - **Delivered-to:** command-bridge
 - **Failed:** A job resolved pac.exe with `where pac` plus four guessed install paths. All five missed; the job exited 3 `COWORK_RESULT: FAIL pac.exe not found`. The prior lesson said "PATH is intact and bare interpreter names resolve", which was read as "all PATH entries are present".
 - **Why:** The 2026-08-20 probe tested System32, PowerShell, Git, node and Python - all MACHINE-PATH entries - so "PATH is intact" was true of the machine PATH and silently generalized to the user PATH. PAC CLI lives at `C:\Users\YOURUSER\AppData\Local\Microsoft\PowerAppsCLI\`, the FIRST entry of HKCU\Environment\Path, and was invisible to the job.
 - **Worked:** One job that (a) dumps `%PATH%`, `HKCU\Environment` Path and the HKLM Path, then (b) tries targeted absolute paths, then (c) falls back to bounded `dir /s /b <root>\pac.exe` over six roots. It found pac.exe at `...\Microsoft.PowerApps.CLI.2.11.2\tools\pac.exe` - a versioned subfolder none of the four guesses would ever have hit - and completed the whole discovery in 145s, exit 0.
 - **Rule of thumb:** when a job cannot find a tool the operator uses daily, do NOT add more guessed paths. Print the three PATH sources first; the answer is almost always sitting in the user PATH.
 - **Evidence:** measured - two consecutive runs of the same task, exit 3 then exit 0
+- **Fixed-at-source:** 2026-09-09 - executor 1.3.0 reads `HKCU\Environment\Path` with `reg.exe`, expands `%VAR%` references, and appends the entries to the machine PATH with case-insensitive de-duplication. Measured through the live bridge: `where pac` -> `...\AppData\Local\Microsoft\PowerAppsCLI\pac.cmd`, `where code` -> the per-user VS Code CLI, `user_path_entries: 12`.
 - **Distinct-from:** bridge-8933-env-partially-stripped - that entry says user-profile VARIABLES expand to nothing, and concluded "PATH is intact". This one says the USER PATH is a separate PATH that is not inherited at all. The 2026-08-20 probe behind "PATH is intact" tested only machine-PATH entries - System32, PowerShell, Git, node, Python - so its conclusion was true of the machine PATH and was silently generalised to both. The remedies differ too: that one is answered by `cd /d` and never assuming `%LOCALAPPDATA%`; this one by reading `HKCU\Environment` before hunting for a tool.
 - **Distinct-from:** probe-env-vars-blank-false-negative - there the variable the script interpolates is EMPTY, so the probe searches nowhere and returns NOT FOUND without ever having looked. Here `%PATH%` is populated - with the machine PATH - so the job searches a real location and correctly fails to find a tool that lives on a PATH it was never handed. The sharpest evidence that these are separate lessons is that the earlier one's remedy was TRIED here and failed: this job used four hard-coded absolute paths, and pac.exe sat in a versioned subfolder (`Microsoft.PowerApps.CLI.2.11.2\tools\`) none of them could have guessed. Hard-coding cures an empty variable; it does not cure an unseen PATH, which needs the registry read.
 - **Dispositioned:** 2026-09-01 close, by a different session from the one that wrote this entry. The wording above is derived from this entry's own Why line and its `Refines key:` field, not from independent diagnosis - the author should confirm it. Worth noting that the entry HAD named the relationship, as `Refines key:`; the dupe gate reads only `Distinct-from:`, so an author who dispositioned their key in different vocabulary still reads to the gate as one who did not.
@@ -1422,15 +1685,14 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 - **Rule:** Before stripping a client name, check whether the CONTENT is also client-specific. If the file's substance is the client's work product, renaming is concealment rather than sanitization - stop and put the decision to the owner.
 - **Delivered-to:** git-bridge
 - **Hits:** 1
-- **Failed:** Nothing shipped, which is the only reason this is a near-miss. Seven occurrences of one client name were genericized across three memory files - correctly, because there the name was decoration on lessons about process. The next move, already queued and about to run, was to apply the identical treatment to 41 occurrences of a SECOND client name in `je-builder`, `alteryx-to-python` and `cowork-alteryx-conversion.md`.
-- **Why:** The two cases are indistinguishable to a grep and are opposites in substance. In the first, deleting the name lost nothing - the lesson taught a process and the client was incidental. In the second the files ARE the engagement's work product: account-code mappings and legal-entity structure, not a client name that merely appears in them. Removing the header word leaves every mapping in place while making the tree READ as sanitized, so the next audit returns a clean grep and the exposure becomes invisible. A cosmetic fix to a disclosure problem is worse than no fix, because it retires the signal that would have prompted a real one.
+- **Failed:** Nothing shipped, which is the only reason this is a near-miss. Seven occurrences of one client name were genericized across three memory files - correctly, because there the name was decoration on lessons about process. The next move, already queued and about to run, was to apply the identical treatment to 41 occurrences of a SECOND client name in `prov000-fn-je-builder`, `alteryx-to-python` and `cowork-alteryx-conversion.md`.
+- **Why:** The two cases are indistinguishable to a grep and are opposites in substance. In the first, deleting the name lost nothing - the lesson taught a process and the client was incidental. In the second the files ARE the engagement's work product: `LEARNED_MAPPINGS.md` holds 52 account-code mapping decisions, `ROLLFORWARD_STRUCTURE.md` holds legal-entity numbers and names for a parent and a subsidiary plus expected quarterly row counts. Removing the header word leaves every mapping in place while making the tree READ as sanitized, so the next audit returns a clean grep and the exposure becomes invisible. A cosmetic fix to a disclosure problem is worse than no fix, because it retires the signal that would have prompted a real one.
 - **Worked:** Stopped before editing and put three options to the operator - leave it as engagement work in its sanctioned location, split the generic taxonomy from an engagement-local mappings file, or rebuild the mappings as illustrative examples. The test to apply: is the name DECORATION on generic content, or the LABEL on client content? Decoration can be genericized freely; a label is the owner's call.
 - **Evidence:** measured - 41 occurrences located across 3 skills and 1 memory file by scoped findstr, with the file and line of each; none edited
 - **See also:** git-deletion-does-not-sanitize-history, cleanup-quarantine-instead-of-delete
 
 ### A recursive scan of the OneDrive tree is a download, not a search
 - **Pattern-Key:** onedrive-recursive-scan-hydrates-tree
-- **Routes:** copilot
 - **Date:** 2026-09-01
 - **Trigger:** failure
 - **Rule:** Never recurse the Cowork tree to READ file CONTENTS - not in a PC job, and not as a session-side grep of the `/mnt/user-config/` mount, which is the same tree and hydrates the same way. Scope to named files or one folder. Walking metadata is cheap; opening contents is the download.
@@ -1471,44 +1733,393 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 
 ### Deadness is a property of the reference graph, not of the file
 - **Pattern-Key:** artifact-deadness-needs-consumer-grep
-- **Date:** 2026-08-31
+- **Date:** 2026-09-09
 - **Trigger:** near-miss
-- **Rule:** Before moving or deleting a file, grep the files that would REFERENCE it and record the count. A filename-and-timestamp audit proves nothing about whether a file is dead.
-- **Hits:** 1
+- **Rule:** Before moving, deleting or changing the behaviour of a file, grep the whole tracked tree for what REFERENCES or ASSERTS on it - self-tests included - and add every hit to the change list. A filename-and-timestamp audit, or a design written from the files you read, proves nothing about what depends on them.
+- **Hits:** 2   (2026-08-31 the quarantine list; 2026-09-09 the item-5 design listed the files it had read and missed the self-test asserting on them)
+- **Promoted-to:** copilot-instructions.md LESSON-DIGEST block (always-on tier, hits >= 2), applied mechanically by digest_apply.py in the 2026-09-09 close and confirmed by findstr in the same job
 - **Failed:** A filename-and-mtime audit listed `intercompany-eliminations\MANUAL INPUTS.xlsx` as dead residue and it reached the approved quarantine list. Reading `intercompany-eliminations\SKILL.md` showed Rule 2 names that exact file as one of two REQUIRED upfront build inputs. Quarantining it would have broken a working skill silently - the failure would have surfaced only at the next build, far from the cause.
 - **Why:** An audit that inspects only the candidate can never see its consumer, so a load-bearing input and abandoned residue score identically. Age and an unreferenced-looking name are properties of the file; being dead is a property of what points at it.
 - **Worked:** Grepped each candidate's owning `SKILL.md` for the candidate's filename before moving anything, and recorded the count. Three superseded drafts scored 0 references and were moved; `MANUAL INPUTS.xlsx` scored a required-input citation and stayed. The cleanup job then asserted its presence both BEFORE and AFTER the move, with a hard abort either way, so the guard survives the next run of the same job.
-- **Evidence:** measured - 0 references for `SS_SKILL v1.md`, `SS_SKILL v2.md` and the pre-approved-batch-executor draft; a required-input citation for `MANUAL INPUTS.xlsx`
+- **Evidence:** measured - 0 references for `SS_SKILL v1.md`, `SS_SKILL v2.md` and the pre-approved-batch-executor draft; a required-input citation for `MANUAL INPUTS.xlsx`; 2026-09-09 measured - the read-only xref job's `git grep -n` over the clone listed `scripts/personalize_selftest.py` asserting `C:\Users\<user>\...` inside `fs-server.cmd` and `tasks.json`, the two files the change strips that path from, and the amended 21-file change set then passed `RELEASE_CHECK: CLEAN (22 checks)` on the PC and CI on both platforms
+- **Repeat 2026-09-09 - a change design has the same blind spot as a deletion audit:** the #6 item-5 design was written from a 25-file snapshot of the agent-of-record clone and listed sixteen files to change - the launchers, the task file, the manifest, the checks and the docs it had read. It did not list `scripts/personalize_selftest.py`, which asserts that `fs-server.cmd` and `tasks.json` contain the account path the change removes; built as specified, the release gate would have failed on the branch. The consumer was visible only from the other side - a `git grep` over the tracked tree for `YOURUSER`, `COWORK_ROOT`, `cowork-env` and `third argument` - which also surfaced `CONTRIBUTING.md`. Both went into the change list before anything was written; PR #8 landed 21 files, not 16, and the gate ran clean first time.
 - **Distinct-from:** agent-recommends-edit-without-reading-file - that lesson says read the file you are about to CHANGE, and the file to read is the file you are acting on. Here you can read the candidate file completely, end to end, and still be wrong, because the evidence that it is load-bearing lives in a DIFFERENT file - the consumer that references it. Same instinct, different search target: one says read your subject, this one says find who depends on your subject. Kept separate on that basis, but they are close enough that if a third instance of either appears it should be logged as a hit on whichever it matches, not as a fourth key.
 - **See also:** agent-recommends-edit-without-reading-file, prune-list-counts-drift-from-names, cleanup-quarantine-instead-of-delete
+
+### Stateless bridges leave one child process behind per request
+- **Pattern-Key:** bridge-stateless-child-per-request-never-exits
+- **Date:** 2026-09-09
+- **Trigger:** failure
+- **Rule:** Under supergateway stateless mode every request spawns `cmd.exe` + `node.exe` and neither exits afterwards. Census a listener's descendants (Win32_Process by ParentProcessId) before blaming memory or slowness on anything else, and make own servers exit when idle.
+- **Failed:** `bridge-restart-8932.bat` had to kill 223 live descendants of the 8932 listener on 2026-09-09 (three weeks of stateless use). A read-only census fourteen minutes after that restart: 8932 already 37 descendants (18 cmd + 18 node, 1,131 MB - `server-filesystem` is about 60 MB a copy); 8933 249 (124 cmd + 123 node, 689 MB, the oldest from 2026-09-08 13:40, the listener's start day); 8934 160 (80 + 80, 270 MB); 8931, the one stateful bridge, 0. 225 node.exe on the machine, 1,557 MB working set.
+- **Why:** Stateless was adopted 2026-08-21 so a dropped session could not take a bridge down: each POST gets a fresh stdio child. supergateway neither closes that child's stdin nor kills it once the response is out, so the child waits on stdin forever and the executor's own `process.stdin.on('end', exit)` never fires. The leak grows with USE, and the 8932 children are the heavy ones.
+- **Worked:** `2026-09-09-bridge-process-census.bat` (read-only) makes the tree visible per listener - descendants, names, working set, oldest - in four seconds. `bridge-restart-8932.bat` clears one port. The fix is designed and not yet built: an idle-exit timer in both own servers (exit some seconds after the last message when no job is in flight, so a 300 s job is never cut) and a watchdog sweep of upstream 8932 children older than ten minutes.
+- **Evidence:** measured - the restart's taskkill output and the census output, same session
+- **Hits:** 1
+- **Distinct-from:** `bridge-8933-stateless-defeats-in-process-state` - that entry is STATE failing to survive between calls because every call is a new process; this one is the PROCESSES surviving after the call. Same mode, opposite symptom: nothing persists that should, everything persists that should not. `bridge-idle-session-expiry` - that is a stateful-era SESSION dying under the caller; this is stateless CHILDREN never dying behind it.
+- **See also:** bridge-8933-stateless-defeats-in-process-state, bridge-server-edit-live-without-restart
+
+### An anchored edit whose FIND stops mid-line fails once it crosses the block format
+- **Pattern-Key:** edit-block-anchor-must-end-at-line-boundary
+- **Date:** 2026-09-09
+- **Trigger:** failure
+- **Rule:** In any FIND/REPLACE block format that stores anchors as whole lines, both texts must end at a line boundary. Assert it in the generator: a FIND that stops mid-line loses its last character in the round trip and matches nothing.
+- **Failed:** The CHANGELOG edit for executor 1.3.0 used FIND = `## Unreleased`, a blank line, and the first half of the next bullet, with no trailing newline. The generator strips one trailing newline when it writes the `>>>>> FIND` block and the applier appends one when it reads it back, so the anchor lost its final character and the PowerShell-equivalent simulation reported count 0 for `CHANGELOG.md` - after the Python side, which never round-tripped the block, had passed.
+- **Why:** Two representations of one edit - the in-memory string and the whole-line block on disk - agree only when the string ends exactly where a line ends. Every earlier anchor happened to; this was the first partial line, and nothing asserted the contract.
+- **Worked:** Extend FIND and REPLACE to the end of that line, add `assert find.endswith('\n') and repl.endswith('\n')` to `edit_block` in the generator, re-run the round-trip simulation to 0 mismatches, and only then write the inputs. The land job applied 11 of 11 anchors first time.
+- **Evidence:** measured - simulation count 0 before the fix, `edited : CHANGELOG.md` and 8 of 8 result hashes in the land job's stdout after
+- **Hits:** 1
+- **Distinct-from:** `lessons-file-section-anchor-must-be-exact` - there a heading PREFIX locates the wrong position because it also matches prose; the anchor is too short in CONTENT. Here the anchor is unique and correct in content and fails on its BOUNDARY - a serialization contract, not a matching one. `file-edit-reencodes-existing-characters` - that alters characters OUTSIDE the edit; here the edit itself is altered by the format that carries it.
+- **See also:** lessons-file-section-anchor-must-be-exact, git-published-tree-edited-without-build-source
+
+### The last file in a batched bridge read arrives with an extra trailing newline
+- **Pattern-Key:** bridge-8932-batch-read-last-file-extra-newline
+- **Date:** 2026-09-09
+- **Trigger:** failure
+- **Rule:** `read_multiple_files` appends one newline after the LAST file in the batch. For anything hash-pinned or byte-compared, read that file alone with `read_text_file`, or strip to one trailing newline - and let a before-hash guard, not the author, decide whether the read was faithful.
+- **Failed:** The docs-route land (PR #10) pinned twelve source hashes from four batched `read_multiple_files` calls. `aor-land` refused at its `expect_before` step: `docs/bridge-facts.json` on `main` was `79208962d464`, the design had read `e66350287899`. Nothing was touched. The four files that had been LAST in their batch - `bridge-facts.json`, `llms.txt`, `quickstart.md`, `setup-macos.md` - all ended in two newlines in the extracted copies; every middle-of-batch file and every single-file read hashed exactly.
+- **Why:** The bridge joins files with a `\n\n---\n` separator and terminates the whole response with a newline, so a splitter that strips separators leaves the final file one `\n` long. The hash was computed on the artifact, not the file. Nothing in the design step compared against the repo; only the land job did.
+- **Worked:** `rstrip('\n') + '\n'` on the four copies reproduced the PC's hash exactly (`79208962d464`); the manifest was regenerated (bundle, edits and their pins unchanged) and the second run passed the gate first time. The guard that caught it - `expect_before`, added to the land job two PRs earlier - is the control that makes a batched read safe to use at all.
+- **Evidence:** measured - the refusal line with both hashes, then the corrected hash matching, then exit 0
+- **Hits:** 1
+- **Distinct-from:** `bridge-8932-writes-lf` - that is a WRITE artifact (line terminators changed on the way in, fixed at source by executor 1.3.0); this is a READ artifact (one byte appended on the way out) that no server fix has addressed. `file-edit-reencodes-existing-characters` - there the tool altered bytes INSIDE the file on disk; here the file on disk is untouched and only the copy the agent holds is wrong. `git-sync-scope-memory-went-stale` - that is a remembered claim decaying; this is a fresh read being wrong at the moment it is taken.
+- **See also:** bridge-8932-writes-lf, edit-block-anchor-must-end-at-line-boundary, git-sync-scope-memory-went-stale
+
+### Never put an absolute path in the glob tool's `pattern` — put the directory in `paths`
+- **Pattern-Key:** glob-absolute-pattern-matches-nothing
+- **Date:** 2026-09-10
+- **Trigger:** failure
+- **Rule:** Give the container `glob` tool a RELATIVE pattern with the directory in `paths`, and cross-check any "No files matched the pattern." against `view <dir>` or `ls` before reading it as absence.
+- **Failed:** Four `glob` calls whose `pattern` was an absolute path all returned "No files matched the pattern." for directories that demonstrably held matching files: `pattern="/mnt/user-config/skills/myvoice/**/*"` (while `view /mnt/user-config/skills/myvoice` and bash `ls` listed SKILL.md, references and skill-quality-report.json in the same turn), `pattern="/mnt/user-config/skills/gamma-tango/*.md"`, `pattern="/opt/workspace-config/.github/skills/*/SKILL.md"`, and `pattern="/mnt/workspace/output/*.docx"` for a .docx that the relative pattern `output/**/*` had found minutes earlier. Three different roots, including the working directory itself, so it is not mount-specific.
+- **Why:** The tool returns the same clean "No files matched" for an absolute pattern as for a genuine miss, so nothing in the response signals that the pattern form, not the directory, is the problem. Whether the tool anchors every pattern under `paths`/cwd so a leading `/` can never match was not probed - inference unverified.
+- **Worked:** Same directory in `paths`, relative pattern: `glob pattern="**/SKILL.md" paths="/mnt/user-config/skills/myvoice"` returned `/mnt/user-config/skills/myvoice/SKILL.md`, and `glob pattern="*.docx" paths="/mnt/workspace/output"` returned the .docx. `view <dir>` also works as a plain listing and is the independent cross-check when ABSENCE is the thing being asserted.
+- **Evidence:** measured - all four failing calls and both working calls were run and their output read in the session, with the directory contents confirmed by `view` and `ls` in the same turn; reproduced by the Phase 2 reflector on a fourth directory (`pattern="/mnt/user-config/skills/self-improvement/*.md"` -> none; `pattern="*.md" paths="/mnt/user-config/skills/self-improvement"` -> SKILL.md). The Why is inference unverified.
+- **Hits:** 1
+- **Distinct-from:** `bridge-8932-searchfiles-false-negative` - that is the PC-side `search_files` tool matching a glob against the path RELATIVE to its search root, so a wildcard-free or non-`**/` pattern misses nested files; this is the container-side `glob` tool returning nothing for an ABSOLUTE `pattern` on any root, fixed by moving the directory into `paths`. Same symptom (an empty result that reads as absence), different tool, different cause, different fix. `lessons-gate-receipt-dir-read-only` - an exit code meaning the gate could not run; here the call ran and succeeded, it just matched nothing. `artifact-delete-recursive-skips-file-paths` - a delete that silently skipped file paths handed to it beside folders; here nothing was written or skipped, a read returned an empty set.
+- **See also:** bridge-8932-searchfiles-false-negative
+
+### A voice rule's own example or fix sentence is untested content — count paragraph shapes before a myvoice draft ships
+- **Pattern-Key:** skill-voiceprofile-own-example-is-the-ai-tell
+- **Date:** 2026-09-10
+- **Trigger:** correction
+- **Rule:** Before a myvoice draft ships, count paragraph shapes with a script (openers under ~10 words, "That is / It is ..." summarizing sentences, aphoristic closers under ~12 words) and treat a rule's own example or prescribed rewrite as untested content, never as his voice.
+- **Delivered-to:** myvoice
+- **Failed:** Shipped a myvoice draft (v1 of "Behold I made a thing"; his marked-up copy came back as v2) carrying two shapes the profile itself had supplied. (1) Rule 36 ("State early that the exercise was the point") was implemented as a standalone one-line paragraph opener, "Nobody was waiting on any of this." - the operator's red comment: "I hate paragraphs that start like this." Rules 22 and 33 already ban a lone short sentence as a section opener and teaser paragraph openers; nothing checked rule 36's implementation against them. (2) A paragraph closed on "The pages changed shape, and that is the part worth writing down." - his comment: "I hate the structure of this last sentence immensely. This is another AI tell." That is the exact shape rule 33 recommends as its rewrite ("..., and that is the reason the exercise was worth it"). Two further paragraphs he marked "confusing" were compressed abstractions. A script count over the 24 body paragraphs he did not review then found 7 opening on a sentence of <=9 words, 11 "That is / It is ..." summarizing sentences and 12 closing on an aphoristic line of <=12 words - while the punctuation tells the profile's mechanical sweep looks for were absent (0 em dashes, 0 semicolons), so nothing mechanical flagged the piece before it shipped.
+- **Why:** A rule's illustrative sentence and a rule's prescribed fix are content the profile author wrote, and they were never tested against the OTHER rules or counted across a finished draft; rule 33's fix for one complaint produced the shape he calls an AI tell, and rule 36 as implemented produced the shape rules 22/33 ban. Calibration from his six edited paragraphs, measured by the mechanical diff: no paragraph opens on a sentence under 13 words, no closing sentence points at its own significance, and his one significance statement is spoken ("and really, this illustrates the whole point of doing this at all") and is immediately followed by the analogy that explains it. Why the sweep had never been extended to paragraph shape - inference unverified.
+- **Worked:** In the v3 rewrite, fused every short opener into the sentence that followed it with a causal connective and replaced or cut every "that is the X" tail; re-count after the rewrite: 0 short openers, 1 "It is" line (a figure-caption metaphor), 3 short closers, punctuation sweep still clean. Rewrite "confusing" abstractions as plain causal chains, which is what his own rewrites were ("primarily because", "Eventually though", "Additionally"). Amendments to `myvoice` rules 2, 6, 12, 17, 23, 33, 36 plus new rules 44+ were PROPOSED to the operator in chat and NOT applied - a session reading this must check whether they landed before trusting rules 33 or 36.
+- **Evidence:** measured - both red comments quoted verbatim from his marked-up v2; the mechanical difflib diff (paragraph then word level) confined his edits to 5 paragraphs plus 4 comments; the shape counts before and after the rewrite were produced by a script and read. The last clause of the Why is inference unverified.
+- **Hits:** 1
+- **Distinct-from:** `skill-voiceprofile-calibrate-from-user-diff` - that is the METHOD (diff his real rewrite mechanically, test a rule against the whole document), and it held again this session, so its Hits moved to 3; this entry is the trap the method surfaced: the profile's own example and fix sentences were the tells, and no pre-ship count covered paragraph shape. `voice-us-register-sweep` - that extended the mechanical sweep to spelling and contractions; this extends it to paragraph openers, summarizers and closers, a different measurement that the register sweep passes. `new-rule-is-untested-until-it-survives-a-real-case` - that is a rule generalised from a single diff hunk; rules 33 and 36 had survived earlier passes, and the failure was that their illustrative sentences were never counted as content.
+- **See also:** skill-voiceprofile-calibrate-from-user-diff, voice-us-register-sweep, new-rule-is-untested-until-it-survives-a-real-case
+
+### A working-tree read on main cannot see a pushed branch or an open pull request
+- **Pattern-Key:** git-repo-state-read-from-worktree-only
+- **Date:** 2026-09-11
+- **Trigger:** failure
+- **Rule:** Before saying whether work landed, run `git branch -vv`, `git status --short --branch`, `git log --oneline` and `gh pr list --state open` in one read-only job. A file listing on the checked-out branch answers a different question.
+- **Failed:** Told the operator "No. Nothing from the Mac installer work has landed" after reading the clone through the 8932 bridge: `Startup/posix/install-mac.sh`, `examples/hello-mac.sh` and `docs/install/claude-cowork-mac-quickstart.md` all absent, `Startup/posix/exec-server.sh` still ending in a bare `exec node` with no COWORK_NODE pin, and `docs/install/claude-cowork-mac.md` still carrying its unresolved `[verify: ...]` marker. Every one of those readings was correct.
+- **Why:** The clone was checked out on `main` at 8fade1b. The work was committed on `mac-installer` at 7190941, pushed, and open as PR #12 against main. A filesystem read sees one branch's worktree, and a branch or a pull request is not a file, so the read cannot be wrong and cannot be complete either.
+- **Worked:** A read-only job (`agent-of-record-status.bat`) running `git branch -vv`, `git status --short --branch`, `git fetch --all --prune`, `git log --oneline -10`, `git rev-list --left-right --count HEAD...origin/main`, `gh pr list --state open` and `gh issue list --state open`, with `GH_CONFIG_DIR` set. It reported the local `mac-installer` branch tracking origin and PR #12 open, in the same run that confirmed the four files absent from main. Correction was stated plainly in chat before anything else was done.
+- **Evidence:** measured - both the file reads and the status job output were read in the session; the merge that followed took main from 8fade1b to 1a40ffc and the same four paths then verified present.
+- **Hits:** 1
+- **Distinct-from:** `git-repo-clean-not-dirty` - there the failure was narrating repo state from memory without running git at all; here a real read was run and was accurate, but its scope (one branch's worktree) did not cover the question asked (did the work reach the repository).
+- **See also:** git-repo-clean-not-dirty, git-misses-system-state
+
+### A PASS from the agent's own shell proves the repository, not the host
+- **Pattern-Key:** claude-cowork-agent-vm-validation-proves-repo-not-host
+- **Date:** 2026-09-11
+- **Trigger:** false-success
+- **Rule:** Validate a host install from that machine's own terminal. A check that passed inside the agent's Linux VM says nothing about the host's toolchain or whether the desktop app can spawn the server.
+- **Failed:** The Claude Cowork install page was followed on a MacBook Air and the checks came back clean, which read as a successful install. Nothing in that run executed on macOS itself - every check ran inside Cowork's Linux VM - and the executor, installed as a plugin, enabled and never connected.
+- **Why:** The agent's shell and code execution live in a Linux virtual machine isolated from the host, so a run there exercises the repository's Python, Node and markdown and never touches the host's node, its PATH, AppleScript, or the desktop app's ability to start a stdio server.
+- **Worked:** Treat a clean verdict as proof only when it comes from the machine's own Terminal. The Mac installer now runs `release_check.py` and `install_check.py` in a real Terminal window and completes an MCP handshake under a deliberately minimal PATH, and `--verify` reads the desktop app's own MCP logs afterwards.
+- **Evidence:** measured - the first-run report records the checks passing in the VM and the executor never connecting; the installer's own behavior is tested against a stand-in tree in a Linux container only, so its effect on a real Mac is not yet measured.
+- **Hits:** 1
+- **Distinct-from:** `claude-cowork-connectors-dialog-is-remote-only` - that is WHERE a local server is registered on this host; this is what a PASS from a check actually covers, and it would still apply if registration had worked first time. `bridge-gui-spawned-launcher-gets-minimal-path` - that is one concrete host-side defect a check run in the wrong place cannot see; this is the scope rule that holds even when the launcher is perfect, because the VM never exercises the host's toolchain at all.
+- **See also:** claude-cowork-connectors-dialog-is-remote-only, bridge-gui-spawned-launcher-gets-minimal-path
+
+### The Connectors dialog takes a URL, so a local stdio server registers somewhere else
+- **Pattern-Key:** claude-cowork-connectors-dialog-is-remote-only
+- **Date:** 2026-09-11
+- **Trigger:** failure
+- **Rule:** Register a local stdio MCP server on Claude Cowork through Settings > Developer > Edit Config, a plugin `.mcp.json`, or an `.mcpb` extension. Connectors > Add accepts a remote URL only.
+- **Failed:** Looking for a local-command field in Customize > Connectors > Add on the desktop app (1.52386.0, personal account). There is none. The executor was then packaged as a plugin whose `.mcp.json` declares a stdio server; it installed and enabled, and never connected in a cloud chat.
+- **Why:** The Connectors dialog is built for remote servers reached by URL. Local stdio servers are configured in `claude_desktop_config.json` or delivered by a plugin or extension. Whether the plugin route fails because of the cloud session model or because the launcher could not resolve node was not isolated - inference unverified.
+- **Worked:** Write the executor into `claude_desktop_config.json` directly, with absolute paths and a PATH that contains node, backing up whatever was there first. That is what the Mac installer now does.
+- **Evidence:** measured - the dialog was opened and has no local-command field; the plugin install, enable and non-connection were observed. The cause of the non-connection is not measured.
+- **Hits:** 1
+- **Distinct-from:** `claude-cowork-agent-vm-validation-proves-repo-not-host` - that is a validation-scope trap (a clean verdict from the wrong machine); this is a fact about the desktop app's registration surface, independent of how anything is validated.
+- **See also:** claude-cowork-agent-vm-validation-proves-repo-not-host, bridge-gui-spawned-launcher-gets-minimal-path
+
+### A launcher started by a desktop app gets a minimal PATH, so resolve the runtime explicitly
+- **Pattern-Key:** bridge-gui-spawned-launcher-gets-minimal-path
+- **Date:** 2026-09-11
+- **Trigger:** failure
+- **Rule:** Never call `node` or `npx` bare in a launcher a desktop app spawns. Pin the interpreter, prepend the usual install folders to PATH, and exit with a distinct code and a stderr message naming the fix when it is missing.
+- **Failed:** `Startup/posix/exec-server.sh` ended in `exec node ...` with no PATH handling. On the Mac run the server never connected and the only record of why would have been the desktop app's per-server log, which nothing was reading.
+- **Why:** A GUI-spawned process does not inherit a login shell's PATH. On macOS the app hands a launcher roughly `/usr/bin:/bin:/usr/sbin:/sbin`, which contains no node, so `exec node` dies with a bare command-not-found that never reaches the person installing it. Whether that is what happened on the first run was not isolated - inference unverified.
+- **Worked:** The hardened launcher honors `COWORK_NODE` from `cowork-env.sh`, prepends `~/.local/bin`, `~/.local/node/bin`, `/opt/homebrew/bin` and `/usr/local/bin` before looking for node, and exits 127 with a three-line stderr message naming the fix. Merged to main as part of PR #12. The same pattern still belongs in `pw-server.sh`, `fs-server.sh` and `flow-server.sh`, which call node and npx bare.
+- **Evidence:** measured - the old launcher's bare `exec node` was read from the file on 2026-09-11 before the merge, and the hardened launcher's node resolution and exit 127 were exercised against a stand-in tree in a Linux container. Not yet measured on a Mac.
+- **Hits:** 1
+- **Distinct-from:** `bridge-8933-user-path-not-inherited` - there the executor runs and the JOB it starts sees a reduced environment; here the launcher process itself is spawned by a desktop app with a minimal PATH, so the interpreter is never found and no job runs at all. `claude-cowork-agent-vm-validation-proves-repo-not-host` - that is a rule about where a check must RUN to mean anything; this is a defect in the launcher itself, fixed in the file by pinning the runtime, and it would still be a defect if every check had been run on the Mac.
+- **See also:** bridge-8933-user-path-not-inherited, claude-cowork-connectors-dialog-is-remote-only
+
+### The release gate rewrites a tracked receipt, so the next merge refuses on a dirty tree
+- **Pattern-Key:** git-gate-rewrites-tracked-receipt-blocks-merge
+- **Date:** 2026-09-11
+- **Trigger:** failure
+- **Rule:** After running the release gate in the clone, restore `CoworkConfig/Skills/self-improvement/scripts/analyser.approved` before calling the merge job. Read the diff first; a line-ending-only change is not a content change.
+- **Failed:** `aor-merge.bat` refused twice with `REFUSING - clone is dirty`, once for PR #13 and again for PR #14, with nothing in the session having edited the clone.
+- **Why:** `dream_analyze_selftest.py` runs inside `release_check.py` and writes `analyser.approved`, which is tracked. It is written LF while the clone normalizes to CRLF, so git reports the file modified while `git diff` shows no content change at all.
+- **Worked:** A job that prints `git diff` for that one file and then runs `git checkout --` on it, between the gate and the merge. The diff was empty both times, the tree went clean, and the merge proceeded. `2026-09-11-aor-clean-analyser.bat` is that job.
+- **Evidence:** measured - both refusals, the empty diff, the restore and the clean status line were read in the session, and the merge that followed each one succeeded.
+- **Hits:** 1
+- **Distinct-from:** `git-repo-clean-not-dirty` - there the repo was clean and a session claimed otherwise from memory; here git genuinely reports dirty and the change is an artifact of running a checker. `git-commit-job-must-stage-itself` - that is about which files a job should stage; this is a file no job should be staging at all.
+- **See also:** git-repo-clean-not-dirty
+
+### A self-test fixture anchored on a live line fails the gate when that line is the change
+- **Pattern-Key:** git-selftest-fixture-anchored-on-the-edited-line
+- **Date:** 2026-09-11
+- **Trigger:** failure
+- **Rule:** Before changing an executable line in a launcher or a config, grep the self-tests for that literal. A fixture anchor is a second copy of the line and has to move in the same commit.
+- **Failed:** A landing job that rewrote the three POSIX launchers passed its own hash checks and then failed the gate: `facts_check_selftest.py` raised `fixture anchor missing in Startup/posix/flow-server.sh`. The job reverted the branch and deleted it.
+- **Why:** That negative control proves the checker catches a launcher pointed at the wrong server, and it builds its broken fixture by string-replacing the real exec line. Changing that line to resolve the runtime removed the anchor, so the control could no longer construct its own failure case.
+- **Worked:** Re-ran the landing job with a fourth pinned change, one anchored edit moving the fixture's find and replace strings onto the new exec line. Gate clean at 22 checks, PR opened and merged. The case still proves the same thing.
+- **Evidence:** measured - the failing gate output, the reverted clean tree, and the passing re-run were all read.
+- **Hits:** 1
+- **Distinct-from:** `enforcer-encodes-the-superseded-rule` - there a check froze an old RULE and kept reporting confidently; here the check is correct and only its fixture's copy of a literal line went stale, and it failed loudly rather than passing wrongly. `git-published-tree-edited-without-build-source` - that is editing an output instead of its source; here the source was edited correctly and a test that quotes it was missed.
+
+### One large base64 write through the filesystem bridge can corrupt a single character
+- **Pattern-Key:** bridge-8932-large-write-corrupts-a-character
+- **Distinct-from:** batch-certutil-hashfile-findstr-never-matches - that is a CHECK that can never pass (the needle cannot match certutil's output format), so corruption is invisible by construction; this is the CORRUPTION itself (one base64 character substituted in transit, length preserved). The two met in one job: this fault, hidden by that check.
+- **Date:** 2026-09-13
+- **Trigger:** failure
+- **Failed:** Moved a 12,661-byte git patch to the PC as ONE ~16 KB base64 file with `write_file`, then decoded it in a job with `certutil -decode`. The decoded file was exactly 12,661 bytes and read as correct, but hashed `0C1B28DD...` against the expected `D8CD4269...`. A second patch sent the same way in the same session decoded byte-perfect, so this path is not reliably wrong - it is intermittently wrong, which is worse.
+- **Why:** A substituted base64 character still maps 4 characters to 3 bytes, so the decoded LENGTH is unchanged and only the content differs. File size is therefore not a verification of a base64 transfer, and neither is eyeballing the decoded text. Which layer substituted the character was not isolated - inference unverified.
+- **Worked:** Split the payload into three ~4.2 KB parts, wrote each in its OWN tool block, and had the job verify each part against a pinned SHA-256 BEFORE assembling with `copy /b`, then hash the assembled file against its own pin. On the retry all three parts and the whole file matched and `git am --3way` applied cleanly. Pin and print every part hash: a per-part gate names the bad chunk, so only that chunk is re-sent.
+- **Evidence:** measured - both the failing and the passing hashes were read from job stdout.
+- **Hits:** 1
+- **See also:** bridge-8932-writes-lf
+
+### `certutil -hashfile` piped to `findstr` can never match - use `Get-FileHash`
+- **Pattern-Key:** batch-certutil-hashfile-findstr-never-matches
+- **Distinct-from:** bridge-8932-large-write-corrupts-a-character - that is the defect in the data (a substituted character with the decoded length unchanged); this is a verifier that cannot distinguish good from bad because its needle never matches certutil's formatted output. Fixing the transfer does not fix the check, and vice versa.
+- **Date:** 2026-09-13
+- **Trigger:** failure
+- **Failed:** `certutil -hashfile 0001.patch SHA256 | findstr /i "<64-hex-digits>" >nul` set errorlevel 1 for a file whose hash was in fact correct, so a byte-perfect patch was reported as a hash mismatch and the job refused to touch git.
+- **Why:** certutil's hash output on this machine is not the bare continuous hex string the `findstr` needle assumed, so the needle cannot match any file, correct or corrupt. The check fails identically in both cases, which means it only ever refuses and can never confirm - a check that cannot pass is indistinguishable from a check that caught something. The exact formatting was not captured - inference unverified.
+- **Worked:** ``for /f "usebackq delims=" %%H in (`powershell -NoProfile -Command "(Get-FileHash <file> -Algorithm SHA256).Hash"`) do set H=%%H`` then `if /i not "%H%"=="<UPPERCASE-HASH>" goto fail_hash`. Echo the computed hash before comparing: the first run then printed both values, which is what identified the real corruption behind the false one.
+- **Evidence:** measured - the job printed the computed hash beside the expected one on the next run.
+- **Hits:** 1
+- **See also:** batch-ps51-strips-embedded-quotes-in-native-args
+
+### Calling a `.cmd` shim from a `.bat` without `CALL` ends the job, and it still exits 0
+- **Pattern-Key:** batch-cmd-shim-without-call-ends-the-job
+- **Date:** 2026-09-13
+- **Trigger:** failure
+- **Rule:** Invoke every `.cmd`/`.bat` shim - `npm`, `npx`, and anything else that is a shim rather than an `.exe` - with `CALL`. Bare `npm install ...` TRANSFERS control to `npm.cmd` instead of returning to the caller, so every later line dies with it, including the `COWORK_RESULT` verdict, and the job still reports exit 0. Treat a missing verdict line as FAIL, never as "it worked".
+- **Failed:** A job that ran `npm` bare partway through produced no `COWORK_RESULT` line at all and returned exit code 0. Read as a pass, the only symptom was silence where the verdict should have been.
+- **Why:** `cmd.exe` treats a batch file invoked without `CALL` as a chained target, not a subroutine: control never comes back, the remaining lines are never parsed, and the exit code reported is the shim's, so an install that succeeded masks a job that never finished. This is the same failure shape as `cowork-close-reports-ok-on-failed-commit` inverted - there the verdict lied, here the verdict is absent and the exit code lies.
+- **Worked:** `call npm install ...` followed by `if errorlevel 1 goto fail_npm`, and a verdict line that is the LAST thing the job prints. The verdict's presence is then itself the end-to-end control: stdout without a `COWORK_RESULT` line means the job was truncated, whatever the exit code says.
+- **Evidence:** reported by the operator on 2026-09-13 from the prior session, where the truncated stdout and the exit 0 were both read. The `CALL` mechanism is documented `cmd.exe` behaviour; it was not re-measured when this entry was written.
+- **Hits:** 1
+- **Distinct-from:** `cowork-close-reports-ok-on-failed-commit` - there a job echoed `OK` unconditionally over a real failure; here no verdict is printed at all because the job stopped executing. `bridge-8933-transport-drop-verify-first` - that is the connection dying; here the connection is fine and the SCRIPT ended early.
+- **See also:** batch-certutil-hashfile-findstr-never-matches, cowork-close-reports-ok-on-failed-commit
+
+### A text tool built against LF fixtures fails three different ways on a CRLF checkout
+- **Pattern-Key:** repo-crlf-checkout-defeats-lf-anchored-tools
+- **Date:** 2026-09-13
+- **Trigger:** failure
+- **Rule:** Before running any exact-string tool - anchor patch, heredoc extractor, delimiter split - against a file in the Windows clone, read that file's line endings and build the local fixture in the SAME convention. The agent-of-record clone checks out `.sh` as CRLF and `.md`/`.json` as LF; a Mac checkout has everything LF. Normalise on read (`text.replace("\r\n", "\n")`) or adapt the anchor to the file, and put a CRLF case in the self-test so the fixture cannot pass where the repo fails.
+- **Failed:** Item 3 of the AoR work order needed four runs of one mutating job before it reached the commit step. Run 1: 13 of 22 anchors matched zero times, every one in a CRLF `.sh`, every LF `.md` anchor matched. Run 2: one anchor off by a single space, typed from a rendered view instead of copied from a byte read. Run 3: the post-apply check asserted OLD gone, wrong for two additive edits where NEW contains OLD; the failure label did not revert, leaving the tree dirty. Run 4: the heredoc extractor split on `<<'PYEOF'\n` and found nothing in a `\r\n` file. Every helper had passed its self-test and an end-to-end fixture first - all built LF.
+- **Why:** A fixture that shares the tool's own assumptions proves nothing about the input that violates them. Self-tests written by the same hand carry the same blind spot, so 6/6 and 9/9 were true and irrelevant. The dirty tree after run 3 was the second-order cost: a refusal path written for one failure shape (refused before writing) silently mishandled another (refused after writing).
+- **Worked:** `adapt()` converts each anchor to the file's convention before counting and replacing, and a CRLF case in the self-test reproduces run 1's zero then shows the adapted count of one. The extractor normalises to LF on read, with a CRLF case that reproduces run 4's zero blocks. The post-apply invariant became NEW present exactly once, with a self-test naming the two additive edits. Every fail label after the write path reverts the five target files. The full chain - patch, compile, LF rewrite, `bash -n`, the real `install-mac.sh --register` twice against a seeded config, TCC refusal - was then run in the container on a CRLF fixture before the job was proposed again.
+- **Evidence:** measured - the 13/9 split, the 1-space diff, the two additive anchors, the zero-block extractor result and the clean revert were all read from job stdout across runs 1-4; the container chain was run and read.
+- **Hits:** 3   (2026-09-13 CRLF `.sh` files defeated LF-anchored patches across four runs; 2026-09-14 a container-rehearsed lint died on the PC at the first non-ASCII snippet, because the container writes UTF-8 and the redirected Windows stream encodes cp1252; 2026-09-14 a self-test case asserted an ORDERED list of scan hits - `sorted(rglob)` puts `SKILL.md` before `notes.md` on Linux and after it on Windows, so 50/50 in the container was 49/50 on the PC. Third axis: path sort order. Fixed with `sorted()` on the assertion)
+- **Promotion:** 2026-09-14 - second hit; the Rule is authored above and is DUE into the copilot-instructions.md LESSON-DIGEST at the next close, alongside gate-asserts-an-unmeasured-count.
+- **Repeat 2026-09-14 - the same mechanism on a different axis, ENCODING not line endings:** `platform_lint.py` passed a 6/6 self-test and an end-to-end fixture run in the container, then crashed on the PC with `UnicodeEncodeError: 'charmap' codec can't encode character '\u2192'` after reporting 8 of 10 skills. The container is UTF-8; the job redirects stdout to a file and Windows encodes that stream as cp1252, so one arrow in a quoted source line killed the run. Read-only, so the cost was one job. Fixed by folding snippets to ASCII before printing - deterministic on every platform rather than dependent on the console code page - with a self-test case that writes a non-ASCII line and asserts the fold, reproduced first under `PYTHONIOENCODING=cp1252`. The general form: a rehearsal proves the tool against the REHEARSAL's environment. Before trusting a container run, name every way the target's environment differs - line endings, code page, path separators, locale - and put one case per difference in the self-test.
+- **Distinct-from:** `bridge-8932-writes-lf` - that is the bridge writing a NEW file LF where cmd wants CRLF; this is an EXISTING repo file being CRLF where a tool assumed LF. `git-selftest-fixture-anchored-on-the-edited-line` - there a fixture went stale when its anchor line changed; here the fixtures were never representative in the first place. `batch-job-written-before-proposal-shown` - that is about WHEN a job file is written (before approval); this is about the ENCODING of the file a tool reads, regardless of timing. `git-gate-rewrites-tracked-receipt-blocks-merge` - that is a gate mutating a tracked file so the merge refuses; this is a tool misreading an unchanged file because of its line endings - no mutation, no merge.
+- **See also:** bridge-8932-writes-lf, git-selftest-fixture-anchored-on-the-edited-line, batch-cmd-shim-without-call-ends-the-job
+
+### A gate that asserts a count you did not measure refuses a correct result
+- **Pattern-Key:** gate-asserts-an-unmeasured-count
+- **Date:** 2026-09-14
+- **Trigger:** failure
+- **Rule:** When a job gates on a number - cases run, files changed, rows matched - take the number from the inventory you already ran, or compute it in the job from the same source the tool uses. A count typed from memory is a second assertion about the world, and when it is wrong the gate reverts a correct result and reports the tool as the failure.
+- **Failed:** The Item 1 job required `22/22 negative controls caught` from `facts_check_selftest.py`. The real suite had 18 cases before the edit and 21 after; the run printed `21/21` and `FACTS_SELFTEST: OK`, and the job reverted 48 correct edits with the reason `the self-test did not run 22 cases`. The preflight had printed the whole self-test file an hour earlier; the 18 was there to count.
+- **Why:** The gate encoded my belief about the suite instead of a fact read from it. Every other gate in the job asserted something the tool itself reports - `CLEAN`, `OK`, `3 of 4` - and those all held. The one that asserted my arithmetic was the one that failed.
+- **Worked:** Corrected the literal to 21 and re-ran; the job landed on the next run. The durable fix is either to gate on the tool's own verdict line (`FACTS_SELFTEST: OK`) plus a MINIMUM (`at least 21`) rather than an exact count, or to compute the expected count in the job from `len(CASES)` in the self-test source before running it.
+- **Evidence:** measured - both runs' stdout were read: `21/21` with the revert, then `21/21` with the commit.
+- **Hits:** 4   (2026-09-14 the Item 1 gate asserted 22 cases where 21 ran; 2026-09-14 later the same day, a self-test's own PASS label hard-coded `16/16` while 14 cases ran; 2026-09-14 the Item 6 strict-gate job required `git grep "22 checks"` to return exactly 2 sites and refused at exit 45 when the tree returned 3; 2026-09-14 the matcher job did the SAME thing six hours later with `"23 checks"` - 2 asserted, 3 found, the third being the CHANGELOG bullet the previous job had itself written)
+- **Repeat 2026-09-14 - the fourth hit, and the one with no excuse:** the site count was typed as 2 again, by a session that had refused on exactly this assertion that morning and had READ the third site (its own CHANGELOG bullet) while reviewing the tree. The gate held, cost one run. The sharper rule: a count of grep sites is never typed - the job's Step 4 runs the grep, and the PROPOSAL shows the grep's output before approval, so the expected set is measured at proposal time, not remembered from the last job.
+- **Promotion:** 2026-09-14 - second hit; the Rule is authored above and is DUE into the copilot-instructions.md LESSON-DIGEST at the next close. Third hit the same day - the digest splice is now overdue, not merely due.
+- **Repeat 2026-09-14 - the third hit, and the one that cost nothing:** the strict-gate job's site count was typed from the prepared hand-off rather than re-measured against the tree it would run on. It refused BEFORE writing, so the cost was one run instead of a revert - which is the shape this Rule is trying to produce. The sharpening: a gate on a count of MATCHES must also name which matches it expects, because the count can be wrong for a reason that raising it would not fix (see `docs-record-vs-statement-in-a-value-sweep`).
+- **Repeat 2026-09-14 - the same defect one layer down, in the self-test itself:** `myvoice_patch.py --selftest` printed `SELFTEST_RESULT: PASS 16/16` over fourteen cases. Nothing gated on the label, so nothing reverted, but the label was written to be read as a count and it was wrong the first time it was read - a job that had asserted `16/16` from it would have refused a correct helper for the second time in one day. Fixed by counting inside `case()` (`ran += 1`) and printing `PASS {ran}/{ran}`; the label can no longer disagree with the run. The general form: never TYPE a count into a label or a gate when the code that produces the count is right there to count for you.
+- **Distinct-from:** `cowork-close-reports-ok-on-failed-commit` - there a verdict was echoed without a test; here a test was too strict about a number nobody had measured. `git-selftest-fixture-anchored-on-the-edited-line` - there a fixture's copy of a line went stale; here a gate's copy of a count was never right.
+- **See also:** cowork-close-reports-ok-on-failed-commit, repo-crlf-checkout-defeats-lf-anchored-tools
+
+### A job file written before the proposal was shown shipped a malformed line
+- **Pattern-Key:** batch-job-written-before-proposal-shown
+- **Date:** 2026-09-14
+- **Trigger:** near-miss
+- **Rule:** Author the job text in the container and read it back to yourself before the ONE write to CommandJobs, which happens after approval. A file written first and reviewed second is a draft on the execution path.
+- **Failed:** The read-only myvoice inventory job was written to `CommandJobs\` through the 8932 bridge BEFORE its contents were shown for approval, inverting the one-approval workflow's order (show, wait, write, run). The first write carried a malformed line, `git tag --contains %%~ --`, that would have printed a usage error mid-job. It was caught on re-reading the proposal text, not by any check, and correcting it cost a second write that then dropped on the tunnel and had to be verified and re-sent.
+- **Why:** Writing felt like part of drafting because the job was read-only and nothing would run without a second call. But the file under `CommandJobs\` IS the thing `run_batch_file` executes; once it exists, the gap between a draft and an approved job is one approval word. Reviewing in chat afterwards put the review after the artifact instead of before it.
+- **Worked:** For the two mutating jobs that followed, the helper and the job were composed and rehearsed in the container first (self-test, fixture forward path, fixture revert path), the job text was shown in full with the output folder, and the write to `CommandJobs\` happened once, followed by a tail read-back and, for the helper, a SHA-256 gate inside the job. Neither needed a second write.
+- **Evidence:** measured - the malformed line is in the first write's read-back; the corrected file's tail was read back after the second write.
+- **Hits:** 1
+- **Distinct-from:** `bridge-8932-large-write-corrupts-a-character` - there the bridge altered what was sent; here what was sent was wrong. `cowork-close-reports-ok-on-failed-commit` - there a job lied about its result; here a job was written before it had been reviewed. `repo-crlf-checkout-defeats-lf-anchored-tools` - that is a tool failing on a file's line-ending convention; this is a correct file written to the execution path BEFORE it was reviewed - the content could have been perfect and the ordering would still be the defect.
+- **See also:** bridge-8933-transport-drop-verify-first, gate-asserts-an-unmeasured-count
+
+### A value sweep must separate a page that STATES the value from one that RECORDS it
+- **Pattern-Key:** docs-record-vs-statement-in-a-value-sweep
+- **Date:** 2026-09-14
+- **Trigger:** failure
+- **Rule:** Before a job rewrites every occurrence of a stated value, split the grep hits into pages that STATE the current value and pages that RECORD a past measurement. A dated transcript, a first-run record or an evidence file KEEPS its old number - rewriting one falsifies measured output. Assert the full hit list by name, name the exclusions in the job, and prove after the edit that the excluded files are untouched.
+- **Failed:** `2026-09-14-aor-strict-gate.bat` required `git grep "22 checks"` to return exactly the two install pages its helper patches, and refused at exit 45 when the live tree returned three: `docs/install/claude-cowork-mac-first-run.md:60` also carries `RELEASE_CHECK: CLEAN (22 checks)`. The job had been prepared against a two-site belief and nothing had re-measured it against the tree it would run on.
+- **Why:** The third hit sits inside a captured console transcript of a run against tag `v0.3.1`, whose gate really did print 22. It is not a statement of the current count. A sweep that treats every grep hit as the same kind of text would have rewritten measured output into a number that run never produced - and the page's own header says it is kept as it was written that day.
+- **Worked:** Left the helper's four edits unchanged; widened the job's Step 4 assertion to the three expected sites by name with the record named as a deliberate exclusion; added a post-apply gate that `git diff --name-only` is exactly four files and does not contain the record; stated the exclusion and its reason in the commit message. Re-run landed: `PATCH_RESULT: OK`, flipped-scratch control exit 1 with exactly one failure, real tree `RELEASE_CHECK: CLEAN (23 checks)`, commit `a3d19bc`.
+- **Evidence:** measured - run 1 stdout shows the three grep hits, `sites stating 22 checks: 3` and exit 45 with nothing written; run 2 stdout shows `files changed: 4`, the record absent from `touched.txt`, and the clean gate.
+- **Hits:** 1
+- **Distinct-from:** `gate-asserts-an-unmeasured-count` - there the number in the gate was never counted at all and the fix is to count it. Here counting is not enough: the population is mixed, and the right answer is to EXCLUDE a hit rather than to raise the number. `count-assertion-must-use-independent-control` - there two numbers shared one premise; here one number was correct about a population that should have been two populations.
+- **See also:** gate-asserts-an-unmeasured-count, batch-job-written-before-proposal-shown
+
+### When a gate flags text as platform-specific, the fix is portable text, not platform-conditional delivery
+- **Pattern-Key:** skill-portability-is-one-text-not-two-bundles
+- **Date:** 2026-09-14
+- **Trigger:** correction
+- **Rule:** A skill is a SKILL.md and must be correct on every platform it is installed on. When a gate flags Windows-only text, rewrite the sentence so it names both platforms' mechanics - never build machinery to ship one bundle per platform or to hide the text from one of them. The gate then has to measure PAIRING (a Windows token beside its macOS counterpart), because a portable sentence legitimately contains both.
+- **Failed:** Built and proposed a section-2.6 design - `Platform:` tags on lessons, two marker pairs per skill, per-platform stripping in `build_plugin.py` - so that 16 Windows-flavoured rule texts could ship to Windows and vanish from the macOS bundle. the operator: "It does not make sense that skills would be windows only. the skills are just based on SKILL.md files and should be fully usable in Claude Cowork on both PC and Mac." The whole design was infrastructure for not rewriting 138 sentences.
+- **Why:** The token gate reported the residue as a count to drive to zero, and the cheapest route to zero was to make the text invisible to the scanner rather than correct for the reader. That optimises the gate, not the skill. A `platforms` field in a manifest is an honesty marker for text that is not yet portable; it was about to become a permanent architecture.
+- **Worked:** Dropped the two-block design before it touched the repo. Redefined the gate (`8fb1c2c`): a Windows token is acceptable where the same table row or prose paragraph names its macOS counterpart; the generated lessons block - the operator's record, emptied by a new install's empty corpus - is not scanned; `--list` prints each windows-only skill's unpaired-token count so the rewrite is measured by the gate itself. Then rewrote `persistent-memory` (`5496b51`) and `git-bridge` (`9868738`) as one text each naming both platforms, and flipped both to `["windows","macos"]` in the same commits; `--strict` accepted both and the macOS bundle went 2 -> 4. The `platforms` field goes when all ten are through.
+- **Evidence:** measured - the pairing self-test runs 50 cases and fails 1 of 22 by name against the pre-change module; a flipped scratch `command-bridge` still fails `--strict` exit 3 on unpaired body text; both skill flips proved by `--strict --list` exit 0 with no unpaired tokens reported and `--platform macos` listing one more skill.
+- **Hits:** 1
+- **Distinct-from:** `docs-record-vs-statement-in-a-value-sweep` - there the question was which occurrences of a value to REWRITE; here it was whether to rewrite at all or route around. `verifier-warns-on-proxy-not-the-defect` - there a check fired on a proxy; here the check was fine and the RESPONSE to it was wrong.
+- **See also:** verifier-warns-on-proxy-not-the-defect, enforcer-encodes-the-superseded-rule
+
+### The toolkit validator rejects a manifest member the published v1.8 schema documents
+- **Pattern-Key:** atk-validator-rejects-documented-depends-on
+- **Date:** 2026-10-01
+- **Trigger:** failure
+- **Rule:** Run the declarative-agent manifest through `atk provision` (teamsApp/validateAppPackage) before trusting a member the learn.microsoft.com v1.8 reference or the published JSON schema says is valid; when the validator rejects a documented member, remove it rather than argue the schema.
+- **Failed:** `atk provision` for ACL 1.3.0 stopped at `teamsApp/validateAppPackage` with `InvalidDeclarativeCopilotDocument: Invalid Declarative Agent Document: declarativeAgent.json. Problems discovered: Unrecognized member 'depends_on' ... at (#/conversation_starters/2/depends_on)`. `depends_on` is documented on the declarative-agent-manifest-1.8 page (Conversation starters object, "depends_on Array of Depends on object Optional") and is present in the published v1.8 JSON schema under `$defs/conversation-starter.properties.depends_on`.
+- **Why:** The toolkit CLI (m365agentstoolkit-cli) validates against its own copy of the schema, which does not match the published v1.8 schema for this member. Whether the CLI's schema lags or the member is gated some other way was not probed - inference unverified.
+- **Worked:** Removed `depends_on` from all four conversation starters with 8932 `edit_file`; the next `atk provision` run passed validation (59 checks) and proceeded to the later steps.
+- **Evidence:** measured - the error was read verbatim from the provision output and the next run's validation pass was read; the documentation and schema presence were read on learn.microsoft.com and in the published schema file. Why is inference unverified.
+- **Hits:** 1
+- **See also:** gh-api-input-rejects-utf8-bom, verify-product-claim-before-correcting-the-operator
+- **Distinct-from:** verify-product-claim-before-correcting-the-operator - there the operator was told a product could NOT do something it could; here the documentation says the product accepts something and the shipped validator refuses it. Documentation is the thing not to trust here, and only the tool's own run settles it.
+
+### node:sqlite rows crash Array.prototype.sort when no comparator is given
+- **Pattern-Key:** node-sqlite-rows-break-default-sort
+- **Date:** 2026-10-01
+- **Trigger:** failure
+- **Rule:** Never call `.sort()` without a comparator on an array whose elements contain `node:sqlite` rows (or anything else without a prototype); write `.sort((a, b) => String(a[0]).localeCompare(String(b[0])))` or compare an explicit key.
+- **Failed:** `acl-memory-recall.bat` first run on the PC died with `TypeError: Cannot convert object to primitive value at Array.sort at main (acl-recall.js:48:49)  Node.js v25.9.0`. The line was `for (const [g, list] of [...groups.entries()].sort()) {`. The same script had passed under the container's Node against a seeded database.
+- **Why:** Default `Array.prototype.sort` stringifies each element; each element here is a `[key, list]` pair whose `list` holds `DatabaseSync` rows, and under Node 25 those rows have a null prototype, so stringifying throws. The container's Node did not reproduce it. The null-prototype mechanism was not probed directly - inference unverified.
+- **Worked:** Explicit comparator on the group key: `.sort((a,b)=>String(a[0]).localeCompare(String(b[0])))`. The next run printed `ACL_RECALL=PASS` with export and active-total counts.
+- **Evidence:** measured - the TypeError and the Node version were read verbatim from job output, and the PASS line was read on the re-run; the Why is inference unverified.
+- **Hits:** 1
+- **See also:** repo-crlf-checkout-defeats-lf-anchored-tools
+- **Distinct-from:** repo-crlf-checkout-defeats-lf-anchored-tools - that entry is the general shape (a rehearsal proves the tool against the REHEARSAL's environment, and its listed axes are line endings, code page and path sort order); this is one new axis - RUNTIME VERSION - with its own one-line fix, which a session reading only the general rule did not derive. Also distinct from fs-server-pin-measured-output-schema-only: that is a dependency pin against a schema fault; this is a language-level default that changes with the host's Node.
+
+### An export that excludes secrets by FILENAME ships the secrets its logs contain
+- **Pattern-Key:** export-name-exclusion-ships-token-logs
+- **Date:** 2026-10-01
+- **Trigger:** failure
+- **Rule:** Before a workspace archive leaves the machine, scan its CONTENT for token-shaped strings and the account name - a filename exclusion list is not a disclosure scan - and treat browser-automation console logs as secret-bearing by default.
+- **Failed:** `Version 01.10.zip`, a full workspace export (2,279 files), contained playwright-output console logs from 2026-08-17 holding JWT-shaped strings from the signed-in Edge session, and the Windows account name across 17 folders. The export job excludes files whose NAMES mark them as secrets; it does not scan content, so the logs passed.
+- **Why:** The exclusion list encodes where secrets are EXPECTED to live. Console logs captured by Playwright record whatever the page emitted, including bearer tokens, under a name that signals nothing. The job's filter therefore measured the wrong property - the filename - and the archive carried the content untouched.
+- **Worked:** The finding came from opening the archive and reading its contents; the log records the detection, not a remediation of the archive or a change to the export job - both are follow-ups for the next session, not facts this entry can claim.
+- **Evidence:** measured - the archive's contents were read and the token-shaped strings and account-name occurrences were counted in-session; the export job's exclusion behaviour is as described in the log, not re-read for this entry.
+- **Hits:** 1
+- **See also:** public-scan-unscanned-extension-passes-clean, git-renaming-is-not-sanitizing, git-deletion-does-not-sanitize-history
+- **Distinct-from:** public-scan-unscanned-extension-passes-clean - there a content scanner RAN and reported honestly about the wrong population because one extension was skipped; here no content scanner ran at all - the filter was a name list - so adding an extension would not have caught it. git-renaming-is-not-sanitizing - there the exposure was client work product behind a cosmetic rename; here it is live credentials in incidental logs, and the fix is scrubbing or exclusion, not an ownership decision.
+
+### Consolidate duplicated instruction sections before trimming words - and gate overlap was NOT the no-response cause
+- **Pattern-Key:** acl-instruction-overlap-no-response-unmeasured
+- **Distinct-from:** skill-description-cap-crossed-by-edit - that is a hard cap that silently removes a whole skill when crossed; this is a hard cap (8,000 characters) that was met by TRIMMING words when the real surplus was DUPLICATED sections. The cap mechanics differ (unload vs reject) and the lesson here is about how to make room, not that a cap exists. acl-empty-turn-correlates-with-write-first-call - that entry owns the still-open root cause of the empty turn; this one records only that instruction overlap was tested and ruled out as the cause.
+- **Date:** 2026-10-02
+- **Trigger:** better-approach
+- **Routes:** copilot
+- **Rule:** When an instruction file hits its cap, consolidate overlapping sections first and trim words last; and do not spend instruction edits trying to cure ACL's empty turns - they persisted unchanged after the overlap was removed.
+- **Failed:** The 1.3.0 `instruction.txt` first draft was over the 8,000-character cap and took three word-trimming passes to land under it by a thin margin. Trimming words kept every one of four overlapping completion-gate sections in place. A side-hypothesis was then carried for a day that the overlapping gates caused the agent's no-response failure.
+- **Why:** Word-trimming treats the cap as the problem; the rewrite treated DUPLICATION as the problem. The 1.4.0 rewrite consolidated the four sections into one RESPONSE CONTRACT + EXECUTION LOOP and landed well under the cap with all rules retained. The hypothesis was then measured on 2026-10-02: 1.4.0 with the consolidated instruction returned EMPTY on 3 of 3 Auto-mode turns and on the first Think-deeper turn of a fresh case, and 1.4.1 returned EMPTY again on its first attachment case - so removing the overlap did not remove the failure, and overlap is not its cause.
+- **Worked:** Consolidating overlapping sections frees far more room than trimming words and loses no rules: consolidate first, trim last. For the empty-turn failure itself, follow `acl-empty-turn-correlates-with-write-first-call` - the only thing established is that instruction overlap is not it.
+- **Evidence:** measured - character counts of both versions were read in-session on 2026-10-01; the empty turns on the consolidated 1.4.0 and 1.4.1 were observed in the ACL UI on 2026-10-02 and the resulting files (or their absence) read from disk over the 8932 bridge.
+- **Hits:** 1
+- **See also:** acl-empty-turn-correlates-with-write-first-call, nightly-constant-reported-as-a-measurement, review-rounds-outpaced-the-first-real-run
+
+### ACL's account of its own turn is not the record - grade from the debug panel and the disk, never from a case it ran itself
+- **Pattern-Key:** acl-self-report-is-not-the-record
+- **Distinct-from:** agent-claims-action-before-doing-it - that is THIS session narrating its own action as done; here the SUBJECT under evaluation reports on itself and the evaluator was about to accept it. nightly-constant-reported-as-a-measurement - that is a scoring SCRIPT whose inputs are literals; this is a live chat eval where the subject chose, ran and graded the case.
+- **Date:** 2026-10-02
+- **Trigger:** false-success
+- **Routes:** copilot
+- **Rule:** Grade an ACL case only from the per-request Agent debug panel and a bridge read of the disk; never from ACL's account of its previous turn, and never from a case ACL chose, administered and graded itself.
+- **Failed:** (1) After an empty Think-deeper turn, "why did you stop?" drew "I stopped after the write". The Agent debug panel for THAT correction turn listed `write_file 200` and `read_text_file 200` as its own executed actions, and the panel is per-request (an earlier panel showed only its own 3 calls) - so the empty turn had executed nothing and the self-diagnosis was wrong. (2) On the 1.4.1 attachment case ACL's reply showed a 2-line truncated folder listing yet asserted "Confirmed present". (3) In the morning session the operator typed "run the next evaluation case" 11 times; ACL chose the prompt, ran it and graded it, producing "12/15 first-try PASS" - a self-report with no independent prompt or check.
+- **Why:** The agent has no reliable view of a turn that produced no text, so its explanation is a reconstruction; and an evaluation where the subject picks and grades the case measures its self-assessment, not its behaviour. Both read as evidence because they arrive in the same voice as a real result.
+- **Worked:** The evaluator (this session) wrote the prompts, handed them to the operator as a text file to paste, read the per-request debug panel for each turn, and verified every artifact on disk over 8932 before recording results in `evals/results-2026-10-02.json`. Where the panel and the agent disagreed, the panel was taken.
+- **Evidence:** measured - debug panel contents read for the turn in question; files read from disk over the bridge; the morning run's self-grading seen in the ACL transcript file.
+- **Hits:** 1
+- **See also:** acl-empty-turn-correlates-with-write-first-call, agent-claims-action-before-doing-it, nightly-constant-reported-as-a-measurement
+
+### The Cowork composer turns any path token into a file chip and truncates the line around it
+- **Pattern-Key:** cowork-composer-path-tokens-become-file-chips
+- **Date:** 2026-10-02
+- **Trigger:** failure
+- **Routes:** copilot
+- **Rule:** Text the operator will paste into the Cowork composer must contain no path tokens - no backslash paths, no forward-slash paths, spell hostnames out - or be delivered as a .txt file; describe a location in words instead.
+- **Failed:** Fenced prompts containing `Outputs\ACL-Test\hello2.txt` rendered in the composer as file chips and the line collapsed to "Create the file Outputs\ACL-Tes...onfirm."; the operator read it as the session cutting its own output short ("stop cutting off things... you cut them off again"). Lines with no path rendered fully. First fix - switching to forward slashes - FAILED: `Outputs/ACL-Test/` became a chip too ("...hello2.txt ...ontent.").
+- **Why:** The composer detects path-shaped tokens in either separator style and replaces them with a chip that truncates the surrounding text. The agent's output was complete; only the composer rendering was not. Whether a bare URL also chips was not isolated (the working rewrite spelled the hostname as "example dot com" at the same time).
+- **Worked:** Two things, both confirmed by the operator's screenshots: writing the prompts to a .txt file in output/ (unaffected), and rewriting them with no path tokens at all - "the ACL-Test folder, which is inside the Outputs folder of the COPILOT_COWORK workspace" - which rendered fully.
+- **Evidence:** measured - three screenshots from the operator read in-session, one per attempt; the chip mechanism is inferred from them, inference unverified.
+- **Hits:** 1
+
+### Several related edits on the PC are one read-modify-verify job, not a run of bridge edits
+- **Pattern-Key:** batch-one-reconcile-job-beats-many-bridge-edits
+- **Distinct-from:** onedrive-task-output-is-a-binary-safe-transport - that moves a PAYLOAD to the PC without retyping it; this is about MUTATING files already on the PC. land-expect-hashes-from-scratch-apply - that pins the result of a land; this is the choice of transport for the edits themselves. bridge-drops-are-tunnel-not-bridge - that is the drop rate and the retry discipline; this is how to stop paying it N times.
+- **Date:** 2026-10-02
+- **Trigger:** better-approach
+- **Routes:** copilot
+- **Platforms:** windows
+- **Rule:** When a change touches several files or several fields on the PC, write ONE 8933 job that takes before-copies, reads, modifies, and prints its own assertions - instead of a sequence of approval-gated 8932 edits each exposed to the tunnel drop rate.
+- **Delivered-to:** command-bridge, local-file-bridge
+- **Failed:** The same afternoon's 1.4.1/1.4.2 build went through individual `edit_file` / `write_file` / `move_file` calls: roughly one call in four dropped, several payloads had to be split, and every drop cost a read-back before the retry (see `bridge-drops-are-tunnel-not-bridge`, Hit 4).
+- **Why:** Each bridge edit is one approval and one tunnel round-trip; N edits buy N exposures to the drop rate and N read-backs. A job is one round-trip, runs locally at a measured 0% drop, and can assert its own result.
+- **Worked:** `acl-release5-reconcile` - a PowerShell 5.1 job that round-tripped five JSON state files through `ConvertFrom-Json` / `ConvertTo-Json`, kept before-copies, and printed 17 assertions - exited 0 on the first run. The job is still one bridge call: if its dispatch drops, apply `bridge-8933-transport-drop-verify-first` (check the before-copies/outputs before re-running).
+- **Evidence:** measured - job exit code and the 17 assertion lines read from stdout; "beat ~15 bridge edits" is an estimate of the avoided call count, inference unverified.
+- **Hits:** 1
+- **See also:** bridge-drops-are-tunnel-not-bridge, bridge-8933-transport-drop-verify-first, bridge-8932-parallel-writes-denied, land-expect-hashes-from-scratch-apply
 
 ## Contradictions — stored memories that proved wrong
 
 ### The 8933 environment is PARTIALLY stripped — PATH is intact
 - **Pattern-Key:** bridge-8933-env-partially-stripped
-- **Platforms:** windows
 - **Supersedes key:** bridge-8933-stripped-environment
 - **Date:** 2026-08-20
 - **Trigger:** contradiction
-- **Rule:** 8933 does not inherit a working directory, so start every job with `cd /d <repo>`. PATH is intact and bare interpreter names resolve; only user-profile variables are empty.
+- **Rule:** FIXED AT SOURCE 2026-09-09 - executor 1.3.0 hands jobs a complete environment: the profile variables and the user PATH, derived from the account. What survives: the working directory is CommandJobs, so start every job with `cd /d <repo>`; there is no console and no elevation.
 - **Delivered-to:** command-bridge
 - **Failed:** Generalizing the 2026-08-18 finding ("the 8933 environment is stripped") to PATH, and flagging a job that used bare `powershell.exe` as broken. It was not broken.
 - **Why:** The original finding was about USER-PROFILE variables — `%LOCALAPPDATA%` expanded to empty. That is still true. PATH was never tested, and the word "stripped" was carried across to it.
 - **Worked:** A read-only probe: `echo %PATH%`, `where powershell.exe`, and a bare `powershell.exe -NoProfile -Command` invocation. All three passed — System32, PowerShell, Git, node and Python all resolve. So bare interpreter names are fine; hard-coded absolute paths remain necessary only for anything under a user profile. What 8933 does NOT inherit is the WORKING DIRECTORY, which is why `cd /d <repo>` stays mandatory at the top of every job.
 - **Evidence:** measured — probe output read
+- **Fixed-at-source:** 2026-09-09 - `batch-exec-server.js` 1.3.0 builds the environment itself (`buildJobEnvironment`): `USERPROFILE`, `APPDATA`, `LOCALAPPDATA`, `TEMP`, `USERNAME`, `HOMEDRIVE`/`HOMEPATH`, the `ProgramFiles` family from the account, and `Path` = machine PATH + `HKCU\Environment` user PATH. Measured through the live bridge: every variable filled, `user_path_entries: 12`. The cause was in the server all along - the old `runBatch` built a fixed nine-variable environment - not in how the watchdog started the bridge.
 - **See also:** bridge-8933-arg-name, bridge-8933-user-path-not-inherited
 
 ### Two memory stores exist and drift apart silently
 - **Pattern-Key:** memory-two-stores-drift
-- **Date:** 2026-08-20
+- **Date:** 2026-09-09
 - **Trigger:** contradiction
-- **Rule:** A fact gets ONE home. Pointer tier is short keys; the deep file is mechanism and evidence. On conflict the file wins.
+- **Rule:** A fact gets ONE home. Pointer tier is short keys; the deep file is mechanism and evidence. On conflict the LATER-DATED statement wins and the stale store is corrected in the same pass - the file is authoritative only while it is current.
 - **Delivered-to:** dream-cycle, persistent-memory
 - **Failed:** Treating `save_memory` as "saved to persistent memory." It writes to the built-in memory store (59 entries), not to `Documents/Cowork/cowork-memory/*.md`, which is what the `persistent-memory` skill reads and what `CoworkConfig\` commits to git.
 - **Why:** They are separate systems with no sync between them. On 2026-08-20 the built-in store held three entries from that day while every file in `cowork-memory/` still read 2026-08-18 — a two-day drift that was invisible until the folder was listed.
 - **Worked:** SUPERSEDED 2026-08-25 — see `memory-tiering-pointer-vs-deep`. (Old rule: write durable findings to BOTH stores. That duplication was the cause of the drift, not the cure.)
-- **Hits:** 2
-- **Evidence:** measured — folder listing showed all four files last modified 2026-08-18
+- **Repeat 2026-09-09 - the file can be the stale side:** `agent-of-record-public-repo.md` (deep tier, last updated the morning of 2026-09-07) still said the public repo runs a single-commit snapshot model, force-pushed on each publication, and its Preferences section said never to stack ordinary commits on `main`. The v0.3.0 release that same evening ended that model - `main` protected, history kept, changes by pull request with CI on two platforms - and only the pointer tier and the repo's own CHANGELOG recorded it. A session applying "the file wins" would have prepared a force-pushed root commit against a protected branch with a contributor's fork behind it. Caught because the pointer entries carried later dates and the clone's branch list was read before anything was planned; the deep file was rewritten in this close.
+- **Hits:** 3
+- **Evidence:** measured — folder listing showed all four files last modified 2026-08-18; 2026-09-09 measured - deep file dated 2026-09-07 describing the snapshot model, against pointer memories dated 2026-09-07 23:20 and 2026-09-08 describing the protected-main model, and the clone's remote head list showing PR-merged history
 - **Promoted-to:** copilot-instructions.md, "Rules already paid for" (LESSON-DIGEST block) - rule text confirmed present in the digest 2026-08-28.
 
 ### A skill's ALWAYS-ON line does not survive skill routing
@@ -1555,7 +2166,6 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 
 ### The 8932 devtunnel was not dead - all three tunnels answer
 - **Pattern-Key:** bridge-devtunnel-declared-dead-without-reprobe
-- **Routes:** copilot
 - **Date:** 2026-08-21
 - **Trigger:** contradiction
 - **Rule:** Run `bridge-health.bat` before characterising tunnel state. It is read-only and measures all three legs.
@@ -1572,22 +2182,22 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 ### The COPILOT_COWORK repo was clean, not dirty
 - **Pattern-Key:** git-repo-clean-not-dirty
 - **Supersedes key:** repo-clean-not-dirty
-- **Date:** 2026-08-26
+- **Date:** 2026-09-09
 - **Trigger:** contradiction
 - **Rule:** Read the actual git status before describing repo state. Do not narrate from memory of what you changed.
 - **Delivered-to:** gamma-tango, git-bridge
-- **Hits:** 2   (2026-08-18 stale "everything is uncommitted"; 2026-08-26 a handoff offered a bare `git add`/`git commit` for two cloud-side writes)
+- **Hits:** 3   (2026-08-18 stale "everything is uncommitted"; 2026-08-26 a handoff offered a bare `git add`/`git commit` for two cloud-side writes; 2026-09-09 a hand-off said the prior day's snapshot jobs were committed - `git status` showed them untracked)
 - **Failed:** Carrying "everything changed since the 11:52 baseline is uncommitted" into a new session and repeating it as fact.
 - **Why:** The day's work was on skills and memory in OneDrive `Documents/Cowork`, which is outside the repo. Git saw nothing because nothing tracked had changed.
 - **Worked:** Run `git --no-pager status --porcelain` before characterizing repo state. Correct the source memory, then log.
 - **Repeat 2026-08-26 — a cloud-side write is not a committable change until the sync job runs:** `cowork-lessons.md` and `MEMORY-INDEX.md` were written cloud-side that morning via `UploadFileContent` because the bridges were down. A handoff then offered the operator "the exact `git add`/`git commit` line for the two files" to paste into his own terminal. Git tracks only `COPILOT_COWORK\CoworkConfig\`, a robocopy mirror of OneDrive `Documents/Cowork` (commit 5ff400d) — so a bare `git add` against those two paths stages nothing until (a) OneDrive has replicated the cloud write down to the PC and (b) `CommandJobs\2026-08-18-sync-cowork-config.bat` has mirrored it into `CoworkConfig\`. Any hand-off git line for a memory or lessons file MUST lead with the sync job, and must name the `CoworkConfig\cowork-memory\` path rather than the OneDrive one.
-- **Evidence:** measured — the 2026-08-18 occurrence, the repo layout (5ff400d), and confirmed directly on 2026-08-26 once the bridges returned: the `CoworkConfig\cowork-memory\` mirror was still a full day behind the OneDrive copy and `git status --short` listed no memory file at all, so the bare `git add` that had been drafted for the operator would indeed have staged nothing
+- **Repeat 2026-09-09 - a hand-off's "committed" is a claim, not a status:** the previous session's hand-off summary said the 2026-09-08 snapshot jobs were "committed and can join the archive at the next close". The read-only baseline job that opened this session ran `git status --porcelain` in COPILOT_COWORK and listed `CommandJobs/2026-09-08-aor-snapshot2.bat` and `.ps1` as untracked (`??`). Nothing was lost - the files were on disk - but a session that trusted the hand-off would have skipped them at the next close. The baseline job is the fix: every open reads the real status before any state is described.
+- **Evidence:** measured — the 2026-08-18 occurrence, the repo layout (5ff400d), and confirmed directly on 2026-08-26 once the bridges returned: the `CoworkConfig\cowork-memory\` mirror was still a full day behind the OneDrive copy and `git status --short` listed no memory file at all, so the bare `git add` that had been drafted for the operator would indeed have staged nothing; 2026-09-09 measured - `git status --porcelain` in the snapshot3 job listed the two files as `??`
 - **See also:** git-misses-system-state, onedrive-cloud-to-laptop-lag, bridge-connector-removed-midsession
 - **Promoted-to:** copilot-instructions.md, "Rules already paid for" (LESSON-DIGEST block) - rule text confirmed present in the digest 2026-08-28.
 
 ### The watchdog was not responsible for the midday outage
 - **Pattern-Key:** watchdog-exonerated
-- **Routes:** copilot
 - **Date:** 2026-08-18
 - **Trigger:** contradiction
 - **Failed:** Suspecting the watchdog of killing bridges or sessions.
@@ -1610,13 +2220,16 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 
 ### A settled rule is only settled once every surface that states it agrees
 - **Pattern-Key:** config-contradiction-survives-in-second-file
-- **Date:** 2026-08-21
+- **Date:** 2026-10-01
 - **Trigger:** contradiction
 - **Rule:** A rule is settled only when EVERY surface that states it agrees. Before calling one done, grep the instructions file, every SKILL.md, the memory folder and the stored-memory index for the old wording, and fix them in the same pass - routing loads whichever copy it reaches first, and the dangerous copy is usually the one that loads precisely when the rule matters.
 - **Failed:** Treating "no autorun fallback" as done after fixing `cowork-bridge-infrastructure.md`. The forbidden path was still taught in two other places: the "Fallback when the command bridge is down" section of `copilot-instructions.md`, and a section of the `local-file-bridge` skill instructing the filesystem bridge to drop scripts into `COPILOT_COWORK\autorun\queue` when 8933 is down. The `local-file-bridge` copy was the dangerous one, because that skill is loaded exactly when 8933 is unavailable.
 - **Why:** The same rule is restated across instructions, several SKILL.md files, memory files and stored memories. Fixing the surface that prompted the correction leaves the others intact, and routing picks whichever one loads.
 - **Worked:** When a rule changes, grep every config surface for the forbidden term before declaring it removed - `grep -rni "<term>" /mnt/user-config/skills --include=SKILL.md`, the instructions file, the memory folder, and the stored-memory index. Fixed all three surfaces and deleted the contradicting stored memory `pref-8933-down-use-autorun-queue`.
 - **Evidence:** measured - grep found the three surfaces; all re-read after editing
+- **Hits:** 2
+- **Hit 2, 2026-10-01:** `AgentConstructLab\release4\PROJECT_IDENTITY.md` and `release4-status.json` scope_guardrails both state "ACL is the Microsoft 365 Copilot agent, not a provider-neutral layer"; the public-repo plan written the night before states the opposite. the operator decided 2026-10-01: provider-neutral, runtime lives in ACL. The two frozen-core files were NOT corrected in that session - step 1 of contradiction handling is outstanding and belongs to the Release 5 closeout, before anything reads them as authoritative.
+- **Promotion:** 2026-10-01 - Rule exists; carried into the copilot-instructions.md LESSON-DIGEST by digest_apply.py at this close.
 - **See also:** git-repo-clean-not-dirty
 
 ### A stored constraint about a script decays when the script is improved
@@ -1625,7 +2238,9 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 - **Trigger:** contradiction
 - **Rule:** Read the script before designing around a remembered constraint about what it does. A stored scope claim decays silently when the script is fixed.
 - **Delivered-to:** git-bridge
-- **Hits:** 1
+- **Hits:** 2
+- **Promotion:** 2026-09-09 - second hit; the Rule is carried into the copilot-instructions.md LESSON-DIGEST at Hits 2, so it now loads every session.
+- **Repeat 2026-09-09 - the same decay, on a server instead of a script:** the working assumption for porting executor 1.3.0 was that the live `Startup\CommandBridge\batch-exec-server.js` equalled the repo's 1.2.0. Reading it first (`read_text_file`, then a local diff) found v1.1.0: `COWORK_ROOT` and the OneDrive lessons path hard-coded, no `COWORK_CONFIG_ROOT` support, 31,185 bytes against the repo's 36,688. That changed the port - the launcher had to gain `set COWORK_CONFIG_ROOT=...`, or the operating-rules reminder would have silently switched from the live corpus to the CoworkConfig mirror - and the port job pinned the live file's hash as a precondition so the design and the artifact could not drift apart between reading and acting.
 - **Failed:** Carrying the stored fact that `2026-08-18-sync-cowork-config.bat` copies `SKILL.md` ONLY, recorded 2026-08-20 after `review_strip.py` could not reach the repo. On that basis the operator was warned that the pending commit would silently miss all four changed `scripts/*.py` files and would need extra verification to catch it.
 - **Why:** The job was improved at some point after 2026-08-20 and its Skills leg now reads `robocopy "%SRC%\Skills" "%DEST%\Skills" *.md *.py *.js /S /PURGE`. A memory records a script's behaviour at one instant; the script is then edited and nothing revisits the memory, so a claim that was true once keeps being repeated with the confidence of a fresh measurement. This is the same decay shape as a stale "X is broken" open item, applied to a capability rather than a fault - and it biases the opposite way, planning around a limit that no longer exists.
 - **Worked:** Read the job with `read_text_file` before relying on the stored scope, and let the commit stat prove it. Commit ac6d9ec carried all four scripts - `lesson_brief.py`, `lesson_brief_selftest.py`, `lesson_check.py`, `lesson_check_selftest.py` - 8 files, 245 insertions, and `git status --short` empty afterwards. Corrected the memory in the same pass, keeping the half still true (the PC's local OneDrive copy can lag a cloud write, and robocopy exit 0 means nothing was copied) and deleting the half that is not.
@@ -1636,6 +2251,7 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 
 ### Does Cowork accept a well-formed draft-07 tool schema?
 - **Pattern-Key:** cowork-draft07-well-formed-untested
+- **Distinct-from:** fs-server-pin-measured-output-schema-only - that entry is a MEASURED defect in how a pin was chosen (output schemas read, input schemas never); this is an UNTESTED claim about the host (draft-07 rejected regardless of completeness) that sits in a launcher comment. One is a wrong measurement already made; the other is a measurement not yet made.
 - **Date:** 2026-09-15
 - **Trigger:** open
 - **Failed:** Not established either way. The observed rejection was of a structurally empty `inputSchema` — no `type`, no `properties` — which would be refused whatever dialect it declared.
@@ -1659,10 +2275,26 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 - **Hits:** 1
 - **See also:** artifact-delete-recursive-skips-file-paths, onedrive-user-surface-not-live, cleanup-quarantine-instead-of-delete
 
+### Every empty ACL turn so far began with a write-class tool call - cause still unmeasured
+- **Pattern-Key:** acl-empty-turn-correlates-with-write-first-call
+- **Distinct-from:** acl-instruction-overlap-no-response-unmeasured - that hypothesis (instruction gate overlap) was tested and ruled out; this entry holds what remains. acl-self-report-is-not-the-record - that is how to GRADE a turn after it happens; this is WHY the turn comes back empty.
+- **Date:** 2026-10-02
+- **Trigger:** failure
+- **Routes:** copilot
+- **Rule:** Treat an empty ACL turn as unknown state, not as a stall: read the disk over 8932 and the per-request debug panel before saying "continue", and count empty turns separately for write-first and read-first prompts whenever a new ACL version is tested.
+- **Failed:** On 1.4.0 in Auto mode, 3 of 3 turns returned no text (a write+verify case, a bare "hello?", a browser case) while the UI showed "Reasoning completed in 1 step / Connecting to jordan-filesdev"; the write case's file later existed on disk with correct content, so Auto executed the write and dropped the reply. On 1.4.0 in Think deeper, the first turn of a fresh write case returned no text and, per the debug panel, executed NOTHING. On 1.4.1 (Think deeper, dev mode on) the first attachment case returned no text again and completed only after "continue". Two stalls in the morning's self-administered run also needed "why did you stop?".
+- **Why:** Not established. What was measured: the pinned `mcp-tools.json` and `mcp-tools-playwright.json` already carried `annotations.readOnlyHint` on every tool (reads true; writes false + destructive); only `mcp-tools-command.json` had none. Microsoft's documentation says `readOnlyHint` suppresses confirmation cards, so cards could only ever fire on write-class calls - and every observed empty turn (10-01 attachments; 10-02 cases 3 and 5; the hello3 case; case 17) was a turn whose first tool was write-class, against 0 empty turns on roughly 16 single-read or single-dispatch turns. A public ATK issue with the same setup (devtunnel anon, v1.8 manifest, v2.4 plugin, pinned server) reports confirmation-card loops where zero requests reach the server. That is a correlation and a candidate mechanism, not proof - inference unverified. The two empty turns also differ inside: Auto executed and dropped the reply; Think deeper executed nothing. The empty-response behaviour is not on the M365 known-issues page.
+- **Worked:** UNKNOWN. Safe to act on: after an empty turn, check the artifact on disk over the bridge and read the per-request debug panel before choosing between "continue" and re-issuing; "continue" completed every stalled case observed. 1.4.2 was provisioned with annotations on the 2 command tools and `capabilities.confirmation` on 12 write-class functions - its effect on empty-turn incidence has NOT been measured.
+- **Still open:** (1) Does the operator ever see Allow/Cancel confirmation cards on write-class calls? Asked 2026-10-02, unanswered. (2) Re-run the same write-first cases on 1.4.2 and count empty turns against the 1.4.0/1.4.1 record. (3) Why does Auto execute-and-drop while Think deeper executes nothing behind the same empty UI? (4) Does `default_response_mode` matter - the doc says the default is not applied via @mention.
+- **Evidence:** measured for the empty turns and the on-disk outcomes (files read over 8932; debug panel read); the write-first correlation is a count over this session's and the previous day's turns; the confirmation-card mechanism is inference unverified.
+- **Hits:** 1
+- **See also:** acl-instruction-overlap-no-response-unmeasured, acl-self-report-is-not-the-record, acl-handoff-files-must-land-in-a-declared-root
+
 ## Patterns
 
 ### A rule served where it cannot apply costs the rules that can
 - **Pattern-Key:** lessons-served-out-of-scope-dilute-the-block
+- **Distinct-from:** skill-portability-is-one-text-not-two-bundles - that is about a SKILL's text having to be correct on every platform (one text, named mechanics for each); this is about which LESSONS are delivered to a route: a hit count measured on one route selects the wrong rules for another. One is authoring scope, the other is delivery selection.
 - **Date:** 2026-09-15
 - **Trigger:** pattern
 - **Rule:** Scope a lesson to the route and platform where its rule can fire. A delivery block is spent attention, not free shelf space.
@@ -1675,6 +2307,7 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 
 ### Narrow before fixing a capability the host already has
 - **Pattern-Key:** narrow-before-fixing-duplicated-capability
+- **Distinct-from:** fs-server-pin-measured-output-schema-only - that is a measurement defect inside a repair that was warranted; this is the question that comes BEFORE any repair: whether the component should still exist now that the host does its job. Had this question been asked first, that measurement would not have been needed.
 - **Date:** 2026-09-15
 - **Trigger:** pattern
 - **Rule:** Before repairing a component, ask whether the host now does the same job. A duplicated component is worth deleting, not fixing.
@@ -1683,3 +2316,100 @@ Third instance, same day, different file: a rule-numbering check on `myvoice/SKI
 - **Why:** A handoff that names a component as the task makes the component the frame. The repository was built when Cowork shipped none of connected folders, a browser, memory or a plugin installer; three of its four bridges had since become duplicates, and the port-and-tunnel vocabulary was carried over from the hosted route where it still belongs.
 - **Worked:** Asking what each component adds that the host does not. Three of four bridges and five of ten skills turned out to be scaffolding; the approved executor is the one thing with no first-party equivalent. Narrowing removed the schema fault, the npx fetch and the upstream dependency from the Claude route without fixing any of them.
 - **Evidence:** measured — `bridges in scope 1 of 4`, `INSTALL_CHECK: CLEAN`, and the executor confirmed running natively on Darwin while the session shell runs on Linux.
+
+### `git apply` under Git for Windows rewrites every patched text file to CRLF
+- **Pattern-Key:** git-apply-on-windows-writes-crlf
+- **Date:** 2026-10-01
+- **Trigger:** failure
+- **Routes:** copilot
+- **Platforms:** windows
+- **Rule:** After `git apply` on Windows, hash every patched file against a pin before trusting it; expect CRLF. Normalise CRLF to LF only where the LF form matches the pin, or apply with `git -c core.autocrlf=false apply`.
+- **Delivered-to:** command-bridge
+- **Failed:** `gt541-apply.bat` applied a 145 KB unified diff cleanly (`--check` and apply both exit 0), then the hash gate failed on all 17 text files it had touched - each exactly one byte per line longer than the container's copy. The new file in the patch (selection.py) came out CRLF too.
+- **Why:** Git for Windows honours `core.autocrlf` when it writes the result of `git apply`, even outside a repository. Content was correct; line endings were not. Nothing in the apply output says so.
+- **Worked:** A fix-up job that converts CRLF to LF ONLY on files whose LF form hashes to the pinned value, refuses anything else, then re-verifies all 86 files and the untouched baseline. Three apply rounds, same 17 files each time, all recovered.
+- **Evidence:** measured - `FAIL every release-tree file matches ... ['CHANGELOG.md', ...]` then `FIXLF_RESULT: OK files=86`; sizes 14937 -> 15214 for a 277-line file.
+- **See also:** bridge-8932-writes-lf, python-text-mode-on-windows-writes-crlf
+
+### Python text-mode writes on Windows produce CRLF, zipfile normalises stored backslashes on read, and an inherited cp1252 stdout crashes on an emoji
+- **Pattern-Key:** python-text-mode-on-windows-writes-crlf
+- **Date:** 2026-10-01
+- **Trigger:** failure
+- **Routes:** copilot
+- **Platforms:** windows
+- **Rule:** In an 8933 job's Python: write hash-pinned or byte-compared files with `write_bytes`, never `write_text`; read ZIP member names from `ZipInfo.orig_filename` when judging path safety; call `sys.stdout.reconfigure(encoding="utf-8", errors="replace")` at the top - setting PYTHONUTF8 in `os.environ` only reaches child processes.
+- **Delivered-to:** command-bridge
+- **Failed:** Three separate release-job failures after the suite had already passed 81/81: (1) a regenerated MANIFEST.json was not byte-identical to the reviewed one - `write_text` had written CRLF; (2) the 5.3.8 test that plants `deck-builder\\bad.py` in a ZIP passed `linuxPaths: True` on Windows because `ZipFile.infolist()` normalises the stored backslash to `/` while reading; (3) printing a dict containing the selector cue `🟥` raised `UnicodeEncodeError: 'charmap'` and killed the job one step from the ZIP.
+- **Why:** Windows text mode translates `\n`; `ZipInfo.__init__` normalises `os.sep` on both write and read; a job interpreter starts under the console code page before the script can set an environment variable.
+- **Worked:** `write_bytes((json.dumps(...) + "\n").encode("utf-8"))`; `getattr(i, "orig_filename", i.filename)` in `package_integrity` (shipped in 5.4.1 so Windows users verifying a ZIP get the right answer); the stdout reconfigure. Each fix was a one-line `edit_file` on the PC copy, mirrored to the source.
+- **Evidence:** measured - job stdout for all three, then `RESULT=OK`, `VERIFY_ZIP=ok`, `ZIP_SHA256=bce27d72...`.
+- **See also:** git-apply-on-windows-writes-crlf
+
+### The approved executor kills a job at 300 seconds - long work must checkpoint and resume
+- **Pattern-Key:** batch-8933-job-timeout-300s-checkpoint-resume
+- **Date:** 2026-10-01
+- **Trigger:** failure
+- **Routes:** copilot
+- **Rule:** Design any job that may run past five minutes to record progress per unit of work and to skip finished units on rerun. Run it again until it completes; treat `exit 9999 TIMED OUT` as a pause, not a failure, and only after reading what the checkpoint says finished.
+- **Delivered-to:** command-bridge
+- **Failed:** `gt541-release.bat` was killed twice at 303-304 s (`exit code 9999 (TIMED OUT -- process tree killed)`) while the 82-case certification suite ran; the kill took the case in progress with it.
+- **Why:** The executor enforces a hard 300 s wall clock with no override parameter in the schema (only `file`). The certification suite needs about seven minutes on the operator's PC.
+- **Worked:** The 5.4.1 harness writes a checkpoint after every case (atomic tmp + replace) and `--resume` marks already-passed cases RESUMED; the release script always passes both flags. Pass 1 finished 75 cases in the window, pass 2 finished the last 6 and reported `81/81 passed`, pass 3 (after two small script fixes) did the manifest, preflight, verify-package and ZIP in 6 s.
+- **Evidence:** measured - three job records in `CommandJobs\Logs\ops\gt541-release*`, the checkpoint JSON, and `TESTS_CERTIFICATION=81/81 passed`.
+- **See also:** bridge-8933-longjob-fixed-by-stateless, schtask-hosted-success-describes-the-trigger
+
+### The task's OneDrive output folder reaches the PC in about two minutes and is a binary-safe transport
+- **Pattern-Key:** onedrive-task-output-is-a-binary-safe-transport
+- **Date:** 2026-10-01
+- **Trigger:** success
+- **Routes:** copilot
+- **Rule:** To move a payload of any size or type to the PC, `CopyArtifact` it into the session's `output/`, wait ~90 s, confirm it under `OneDrive\Documents\Cowork\Tasks\<task>\output\...` with the bridge, then stage it with robocopy in an 8933 job. Never retype file contents through `write_file` - pin and verify instead.
+- **Delivered-to:** local-file-bridge, command-bridge
+- **Failed:** Hand-typing an 8 KB hash table into `write_file` produced one wrong SHA-256 (caught by the pin on the file, not by eye). Twelve 4.5 KB base64 parts were about to go the same way.
+- **Why:** Anything that passes through the assistant's own output is a transcription, and a 64-character hash has no redundancy. The OneDrive route copies bytes.
+- **Worked:** A 19-file payload (patch parts, pins, scripts, instructions) landed complete on the PC 90-120 s after `CopyArtifact`, three times running; `robocopy` staged it and every pin matched first time. Use a NEW folder name per revision - `CopyArtifact` refuses to overwrite without `overwrite=true`, and a fresh name keeps the earlier payload for the record.
+- **Evidence:** measured - `list_directory_with_sizes` on the synced folder, then `OK payload part patch.b64.01 matches its pin` x12 in the apply job.
+- **See also:** bridge-8932-large-write-corrupts-a-character, onedrive-cloud-to-laptop-lag, onedrive-user-surface-not-live
+
+### Agent Builder rewrites a skill's SKILL.md front matter on upload - a hash-enforced package must expect it
+- **Pattern-Key:** agent-builder-rewrites-skill-md-front-matter
+- **Date:** 2026-10-01
+- **Trigger:** failure
+- **Routes:** copilot
+- **Rule:** Any integrity check shipped inside an M365 declarative-agent skill must treat SKILL.md as host-managed: compare it after normalising line endings (and be ready for the front matter to be re-serialised), report the normalisation, and keep strict byte hashing for every other file. Prove the fix in-tenant with the agent's own preflight, not on the PC.
+- **Delivered-to:** command-bridge
+- **Failed:** Deck Builder 5.4.1 verified clean on the PC (`verify-package` ok, ZIP SHA bce27d72...) and then reported `hash mismatch: SKILL.md` on every preflight inside the agent, so the agent was obliged to call the package unverified every time.
+- **Why:** Agent Builder parses the `name`/`description` front matter and writes it back: measured in-tenant, exactly the five front-matter lines came back CRLF (5 CRLF, 186 LF, no BOM, length 21,447 -> 21,677); CRLF->LF restored the shipped hash; trailing-whitespace stripping did not match; MANIFEST.json was untouched.
+- **Worked:** 5.4.2 `package_integrity` moves a HOST_MANAGED file from `changed` to `normalized` when its CRLF->LF hash matches and says so in `note`; a content edit or any other file still fails (regression case plants the exact five-line rewrite). In-tenant preflight then returned `ok: true, normalized: ["SKILL.md"]`.
+- **Evidence:** measured - the agent's diagnostic output (raw vs CRLF->LF hashes) and the 5.4.2 preflight output inside the agent.
+- **See also:** python-text-mode-on-windows-writes-crlf, git-apply-on-windows-writes-crlf
+
+### Compute a landing's expected hashes by applying the land folder to a scratch copy, not by predicting them
+- **Pattern-Key:** land-expect-hashes-from-scratch-apply
+- **Distinct-from:** edit-block-anchor-must-end-at-line-boundary - that is the FORMAT rule for an anchored edit; this is how the RESULT of all the edits is pinned before the land job runs. gate-asserts-an-unmeasured-count - there a gate asserted a count nobody measured; here the `expect{}` hashes used to be predicted from file contents held in context, and the fix is to measure them from a real application of the same inputs with the same semantics. bridge-8932-large-write-corrupts-a-character - that is why the pins exist; this is how the post-edit hashes are obtained.
+- **Date:** 2026-10-01
+- **Trigger:** better-approach
+- **Routes:** copilot
+- **Rule:** Before `aor-land.bat`, run a read-only job that copies the clone (without `.git`) to a scratch folder, applies `bundle.txt` and `edits.txt` with the land job's own semantics (FILE body + one LF; `once` anchors matched as whole lines; `countN` tokens), prints the LF-normalised SHA-256 of every touched file, and runs the gate checks the change can affect. Paste those hashes into `expect{}`. The land job then verifies a measured result instead of a predicted one, and a bad anchor or a failing gate costs twenty seconds on a scratch copy instead of a reverted land.
+- **Delivered-to:** command-bridge, git-bridge
+- **Failed:** The previous landings predicted `expect{}` from file contents read into the session, which for a 9-file change meant reading CHANGELOG.md (569 lines), README.txt and both install pages over the bridge just to hash them, and a prediction that was wrong once (an extra trailing newline) reverted a correct land.
+- **Why:** The land job's checks are deterministic functions of (clone at `expected_head`, bundle, edits). Running those same functions on a copy produces the exact hashes it will compute, with no transcription in between, and the affected gate checks (executor self-test, bundle check, plugin delivery, operator scan, facts, public scan) run on the result the job will see.
+- **Worked:** `scratch_apply.py` in LAND_DIR `Outputs\Agent of Record\executor-1.9.0`: two runs (21 s and 19 s) produced the hashes, caught a prose claim of "70 cases" that the Windows run measured as 74, and the land then passed `9 files match their pinned content` and `RELEASE_CHECK: CLEAN (32 checks)` first time; PR #34 merged as `110405f`.
+- **Evidence:** measured - both scratch runs' stdout, then the land job's stdout.
+- **Hits:** 1
+- **See also:** edit-block-anchor-must-end-at-line-boundary, gate-asserts-an-unmeasured-count, onedrive-task-output-is-a-binary-safe-transport
+
+### A file handed to the M365 agent must sit under a root the agent's own plugin names
+- **Pattern-Key:** acl-handoff-files-must-land-in-a-declared-root
+- **Distinct-from:** bridge-8932-searchfiles-false-negative - that is the glob semantics of `search_files` within a root it can see; here the files were outside every root the agent's plugin description names, so no pattern could have found them. onedrive-user-surface-not-live - that is which LEG a write takes to reach the PC; here the write reached the PC fine but landed in the wrong tree for the consumer.
+- **Date:** 2026-10-01
+- **Trigger:** failure
+- **Routes:** copilot
+- **Rule:** When handing files to ACL (the M365 declarative agent), land them under `COPILOT_COWORK` with `move_file` first and give it the exact folder path. The 8932 bridge serves four roots, but ACL's plugin text names only `COPILOT_COWORK`, so it searches there and reports "no local matches" for anything in the OneDrive Cowork tree - truthfully, and at the cost of a turn each time.
+- **Delivered-to:** command-bridge, local-file-bridge
+- **Failed:** Three hand-off files were staged in the OneDrive Cowork task folder (a bridge root) and ACL was told to move them. It searched `COPILOT_COWORK` recursively twice, found nothing, created the destination folder, and reported a blocker - two agent turns and the operator's time, with no progress.
+- **Why:** The agent's notion of "the workspace" is what its plugin description says, not what the bridge can reach. A Cowork session knows the other three roots; ACL 1.4.0 does not.
+- **Worked:** The session moved the files itself with `move_file` into `COPILOT_COWORK\Outputs\Agent of Record\executor-1.9.0` and did the hash check and self-test by `run_job`. Durable fix queued for ACL 1.4.1: name all four roots in `ai-plugin.json` and the instructions.
+- **Evidence:** measured - ACL's two replies ("no local matches" with the recursive patterns it used) and the successful `move_file` result.
+- **Hits:** 1
+- **See also:** bridge-8932-searchfiles-false-negative, acl-instruction-overlap-no-response-unmeasured
