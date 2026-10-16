@@ -121,7 +121,7 @@ def main() -> int:
                  info.get("name") == "aor-batch-exec" and info.get("version") == version, str(info))
             tools = replies.get(2, {}).get("result", {}).get("tools", [])
             desc = tools[0]["description"] if tools else ""
-            case("one tool, run_batch_file", len(tools) == 1 and tools[0]["name"] == "run_batch_file")
+            case("two tools, run_batch_file then run_job", [t["name"] for t in tools] == ["run_batch_file", "run_job"])
             case("tool description carries no operator lessons block",
                  "OPERATING RULES, each learned" not in desc and "PLUGIN-LESSONS" not in desc)
             case("server created CommandJobs and Outputs under the chosen root",

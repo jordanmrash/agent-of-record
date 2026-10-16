@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /* ============================================================================
- *  Cowork Command Bridge -- hardened script-only MCP server   v1.3.0
+ *  Cowork Command Bridge -- hardened script-only MCP server   v1.9.0
  *  <tooling root>/Startup/CommandBridge/batch-exec-server.js
  *
  *  Replaces the unrestricted `mcp-server-commands` package behind port 8933.
@@ -9,7 +9,8 @@
  *  and the executable extension; it does not decide any security property.
  *  See the PLATFORM note in the config block.
  *
- *  ONE tool:  run_batch_file  { "file": "<relative path under CommandJobs>" }
+ *  TWO tools: run_batch_file  { "file": "<relative path under CommandJobs>" }
+ *             run_job         { "file": "<plain filename>", "content": "<script>" }  (v1.7.0)
  *
  *  The caller CANNOT supply: a command, arguments, an executable, an
  *  interpreter, a working directory, environment variables, an output
@@ -58,6 +59,59 @@
  *    handed jobs an environment with those variables empty, so per-user tools
  *    had to be located by hand inside every script.
  *
+ *  CROSS-PROCESS LOCK AND OPERATION RECORD (v1.4.0)
+ *    8933 runs stateless: every request is a fresh node process, so the
+ *    in-process RUNNING flag never saw a concurrent job. The single-flight
+ *    guard is now CommandJobs/Logs/_executor.lock, created exclusively ('wx').
+ *    A lock is stale (and removed) only when neither the server process nor
+ *    the job process it records is alive, or it is older than timeout + 120 s.
+ *    Every run writes an operation record, CommandJobs/Logs/ops/<op_id>.json
+ *    plus <script>.latest.json: ACCEPTED -> STARTED -> COMPLETED | FAILED |
+ *    TIMED_OUT, with the script SHA-256. After a lost response, READ
+ *    <script>.latest.json instead of rerunning. A request that arrives while
+ *    a job runs gets EXECUTOR_BUSY and starts nothing.
+ *
+ *  BOUNDED RESPONSE (v1.5.0)
+ *    Microsoft 365 Copilot calls this bridge through a plugin with a small
+ *    response budget, and a large reply fails there as a bare "Execution
+ *    unsuccessful" even though the job ran. The reply therefore carries at
+ *    most RETURN_STREAM_CHARS of stdout and of stderr (the first
+ *    RETURN_HEAD_CHARS plus the tail, so the COWORK_RESULT line survives)
+ *    and at most RETURN_MAX_FILES entries per file list, with totals and
+ *    truncation flags. Nothing is lost: the complete result is still written
+ *    to Logs/<tag>.json and Logs/<tag>.log, and result_file names it.
+ *    Execution, validation, locking and the operation record are unchanged.
+ *
+ *  PROPORTIONAL FAILURE REPORTING (v1.6.0)
+ *    No automatic OPERATING RULES digest. A failure returns execution
+ *    evidence only. At most MAX_TARGETED_LESSONS lessons, ranked by term
+ *    overlap with the failure output, are attached only when the same
+ *    script's previous run also FAILED or TIMED_OUT. Logs unchanged.
+ *
+ *  WRITE-AND-RUN (v1.7.0)
+ *    Second tool, run_job { file, content }: writes a job script into
+ *    CommandJobs and runs it in ONE call, so a model cannot stall between
+ *    writing and running. file must be a plain filename (no folders, no
+ *    device names); content is capped at 64 KB. After the write, the job goes
+ *    through exactly the same validation, lock, execution and op record as
+ *    run_batch_file. A script that is currently running is never overwritten.
+ *
+ *  PROPORTIONAL SUCCESS REPLY (v1.8.0)
+ *    A clean run (exit 0, no timeout) replies with a concise result: exit
+ *    code, duration, bounded stdout, stderr only if present, op_id and the
+ *    record/log paths, the declared output folder, and at most 10 changed
+ *    files. Failures and timeouts still return the full bounded result.
+ *    Logs and operation records are unchanged in both cases.
+ *
+ *  MERGE (v1.9.0)
+ *    1.4.0 to 1.8.0 were built on the operated Windows copy while the
+ *    published copy gained its portable layer. This release carries both:
+ *    the server name is aor-batch-exec (the old prefix is reserved by Claude
+ *    Desktop and refused at launch), every string a model reads is derived
+ *    from the platform constants the checks use, and a lesson may be scoped
+ *    with Routes: / Platforms: lines so a rule that cannot apply on this
+ *    route or platform is not served. No security property changed.
+ *
  *  Zero npm dependencies. Speaks MCP JSON-RPC 2.0 over newline-delimited
  *  stdio directly. Nothing is fetched from the network at start time.
  * ==========================================================================*/
@@ -68,6 +122,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { spawn, spawnSync } = require('child_process');
+const crypto = require('crypto');
 
 /* ---------------------------------------------------------------- config -- */
 
@@ -109,6 +164,11 @@ const MAX_SCAN_FILES = 20000;
 const MAX_DIRECTIVE_BYTES = 256 * 1024;   // how much of a script we read to find the directive
 const MAX_NORMALIZE_BYTES = 4 * 1024 * 1024; // a script larger than this runs as-is, unnormalised
 
+/* What the MCP reply may carry (v1.5.0). The full result stays on disk. */
+const RETURN_STREAM_CHARS = 4000;   // per stream, head + tail
+const RETURN_HEAD_CHARS   = 1000;
+const RETURN_MAX_FILES    = 25;     // per file list
+
 /* Path separator handling. A caller may write either separator; it is folded
  * to the platform's own before resolution. On POSIX a backslash is a legal
  * filename character, so folding the OTHER direction there would turn
@@ -132,11 +192,157 @@ const DIRECTIVE_RE = IS_WINDOWS
  * SERVER_KEY install-mac.sh registers; the old value collided with the prefix
  * Claude Desktop reserves, and a config entry under it is refused at launch. */
 const SERVER_NAME      = 'aor-batch-exec';
-const SERVER_VERSION   = '1.3.0';
+const SERVER_VERSION   = '1.9.0';
 const DEFAULT_PROTOCOL = '2025-06-18';
 
 /* Maximum concurrent executions: 1, enforced process-wide. */
-let RUNNING = false;
+let RUNNING = false;   // in-process guard only; the real guard is the lock file below
+
+/* ------------------------------------------ cross-process job lock (v1.4.0) -- */
+const OPS_DIR         = path.join(LOG_DIR, 'ops');
+const LOCK_FILE       = path.join(LOG_DIR, '_executor.lock');
+const LOCK_MAX_AGE_MS = TIMEOUT_MS + 120 * 1000;
+
+function pidAlive(pid) {
+  if (!pid || typeof pid !== 'number') return false;
+  try { process.kill(pid, 0); return true; }
+  catch (e) { return e.code === 'EPERM'; }
+}
+
+function atomicWriteJson(file, obj) {
+  const tmp = `${file}.${process.pid}.${Date.now()}.tmp`;
+  fs.writeFileSync(tmp, JSON.stringify(obj, null, 2), 'utf8');
+  fs.renameSync(tmp, file);
+}
+
+function readJson(file) {
+  try { return JSON.parse(fs.readFileSync(file, 'utf8')); } catch (_) { return null; }
+}
+
+function lockIsStale(info) {
+  if (!info) return true;
+  const age = Date.now() - Date.parse(info.started_at || 0);
+  if (!(age >= 0) || age > LOCK_MAX_AGE_MS) return true;
+  return !pidAlive(info.server_pid) && !pidAlive(info.job_pid);
+}
+
+function acquireLock(info) {
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const fd = fs.openSync(LOCK_FILE, 'wx');
+      fs.writeSync(fd, JSON.stringify(info, null, 2));
+      fs.closeSync(fd);
+      return { ok: true };
+    } catch (e) {
+      if (e.code !== 'EEXIST') return { ok: false, holder: null, error: e.message };
+      const holder = readJson(LOCK_FILE);
+      if (!holder) {
+        let young = false;
+        try { young = (Date.now() - fs.statSync(LOCK_FILE).mtimeMs) < 5000; } catch (_) {}
+        if (young) return { ok: false, holder: { note: 'lock is being written' } };
+      }
+      if (holder && !lockIsStale(holder)) return { ok: false, holder };
+      try { fs.unlinkSync(LOCK_FILE); } catch (_) {}
+    }
+  }
+  return { ok: false, holder: readJson(LOCK_FILE) };
+}
+
+function releaseLock(opId) {
+  try {
+    const h = readJson(LOCK_FILE);
+    if (h && h.op_id === opId) fs.unlinkSync(LOCK_FILE);
+  } catch (_) { /* never let bookkeeping affect a job */ }
+}
+
+function writeOp(op) {
+  try {
+    fs.mkdirSync(OPS_DIR, { recursive: true });
+    op.updated_at = new Date().toISOString();
+    atomicWriteJson(path.join(OPS_DIR, `${op.op_id}.json`), op);
+    atomicWriteJson(path.join(OPS_DIR, `${op.script_name}.latest.json`), op);
+  } catch (_) { /* evidence must never break execution */ }
+}
+
+function sha256File(p) {
+  try { return crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex'); }
+  catch (_) { return null; }
+}
+
+/* ------------------------------------------- bounded MCP reply (v1.5.0) -- */
+function capText(s) {
+  const text = s || '';
+  if (text.length <= RETURN_STREAM_CHARS) return { text, truncated: false };
+  const head = text.slice(0, RETURN_HEAD_CHARS);
+  const tail = text.slice(-(RETURN_STREAM_CHARS - RETURN_HEAD_CHARS));
+  const omitted = text.length - head.length - tail.length;
+  return {
+    text: `${head}\n...[${omitted} characters omitted from this reply; full output in log_file]...\n${tail}`,
+    truncated: true
+  };
+}
+
+function capList(list) {
+  const arr = Array.isArray(list) ? list : [];
+  return { items: arr.slice(0, RETURN_MAX_FILES), total: arr.length, truncated: arr.length > RETURN_MAX_FILES };
+}
+
+function boundedResult(result) {
+  const out = Object.assign({}, result);
+  const so = capText(result.stdout), se = capText(result.stderr);
+  out.stdout = so.text;
+  out.stderr = se.text;
+  out.stdout_chars_total = (result.stdout || '').length;
+  out.stderr_chars_total = (result.stderr || '').length;
+  out.stdout_reply_truncated = so.truncated;
+  out.stderr_reply_truncated = se.truncated;
+  for (const k of ['files_created', 'files_modified', 'files_deleted', 'output_files']) {
+    const c = capList(result[k]);
+    out[k] = c.items;
+    out[`${k}_total`] = c.total;
+    if (c.truncated) out[`${k}_reply_truncated`] = true;
+  }
+  return out;
+}
+
+/* ---------------------------------- concise success reply (v1.8.0) -- */
+const RETURN_MAX_CHANGED = 10;
+function conciseResult(result) {
+  const so = capText(result.stdout);
+  const out = {
+    exit_code: result.exit_code,
+    duration_ms: result.duration_ms,
+    stdout: so.text,
+    stdout_reply_truncated: so.truncated,
+    op_id: result.op_id,
+    op_record: result.op_record,
+    result_file: result.result_file,
+    log_file: result.log_file
+  };
+  if (result.stderr) {
+    const se = capText(result.stderr);
+    out.stderr = se.text;
+    out.stderr_reply_truncated = se.truncated;
+  }
+  if (result.output_declared) {
+    out.output_dir = result.output_dir;
+    const of = capList(result.output_files);
+    out.output_files = of.items.slice(0, RETURN_MAX_CHANGED);
+    out.output_files_total = of.total;
+  }
+  const changed = [...(result.files_created || []), ...(result.files_modified || [])];
+  if (changed.length) {
+    out.files_changed = changed.slice(0, RETURN_MAX_CHANGED);
+    out.files_changed_total = changed.length;
+  }
+  if ((result.files_deleted || []).length) out.files_deleted_total = result.files_deleted.length;
+  // 1.9.0: a rewrite of the script's terminators, or a file left alone because
+  // it was mixed or read-only, is worth one short field even on a clean run.
+  if (result.line_endings && result.line_endings !== 'unchanged')
+    out.line_endings = result.line_endings;
+  out.user_path_entries = result.user_path_entries;
+  return out;
+}
 
 /* --------------------------------------------------------------- helpers -- */
 
@@ -188,8 +394,7 @@ class RejectError extends Error {
  *   colons in any position    -> blocks alternate data streams (file.bat:ads)
  *   shell metacharacters      (& | < > ^ " ' ` * ? newline tab)
  *   .. traversal, textual and post-canonicalisation
- *   extensions outside ALLOWED_EXT (.bat/.cmd on Windows, .sh on POSIX),
- *                             checked on the CANONICAL path
+ *   extensions other than .bat / .cmd, checked on the CANONICAL path
  *   nonexistent paths, directories, non-regular files
  *   symlinks/junctions whose real target escapes CommandJobs
  *   anything inside CommandJobs\Logs
@@ -573,7 +778,7 @@ function killTree(pid) {
   } catch (_) { /* best effort */ }
 }
 
-function runBatch(realPath, approvedOutput, lineEndings) {
+function runBatch(realPath, approvedOutput, lineEndings, onSpawn) {
   return new Promise((resolve) => {
     const jobDir  = path.dirname(realPath);
     const jobName = path.basename(realPath, path.extname(realPath));
@@ -620,6 +825,10 @@ function runBatch(realPath, approvedOutput, lineEndings) {
           stdio: ['ignore', 'pipe', 'pipe'],  // stdin closed: no interactive input
           detached: true                      // own process group, so killTree reaches children
         });
+
+    if (child.pid && typeof onSpawn === 'function') {
+      try { onSpawn(child.pid); } catch (_) { /* bookkeeping only */ }
+    }
 
     let out = Buffer.alloc(0), err = Buffer.alloc(0);
     let outTrunc = false, errTrunc = false;
@@ -714,6 +923,7 @@ function runBatch(realPath, approvedOutput, lineEndings) {
         fs.writeFileSync(path.join(LOG_DIR, `${tag}.exit`), String(exitCode), 'utf8');
         fs.writeFileSync(path.join(LOG_DIR, `${tag}.json`), JSON.stringify(result, null, 2), 'utf8');
         result.log_file = path.join(LOG_DIR, `${tag}.log`);
+        result.result_file = path.join(LOG_DIR, `${tag}.json`);
       } catch (_) { /* logging must never break execution reporting */ }
 
       // The batch file is deliberately left in place.
@@ -724,87 +934,48 @@ function runBatch(realPath, approvedOutput, lineEndings) {
 
 /* ------------------------------------------------------------- MCP layer -- */
 
-/* ---------------------------------------------- operating rules (v1.2.0) -- */
+/* ------------------------------------ lesson source (v1.2.0, v1.6.0) -- */
 /*
- *  Surfaces the bridge's own hard-won rules AT THE MOMENT OF USE, instead of
- *  hoping they were read beforehand. Between 2026-08-24 and 2026-08-28 the same
- *  bridge mistakes recurred across three sessions while the lessons describing
- *  them sat unread in cowork-lessons.md. A rule delivered in the tool response
- *  cannot be skipped the way a pre-task scan can.
+ *  Bridge lessons are read LIVE from cowork-lessons.md. v1.2.0 attached a
+ *  digest of them to the first job in each 45-minute window and to every
+ *  non-clean exit; v1.6.0 removed that. They are now consulted only by
+ *  targetedLessonBlock, for a repeated failure of the same script.
  *
- *  Read LIVE from the lessons file, so there is no digest to regenerate and the
- *  text can never go stale.
- *
- *  Fires only when it is worth reading: the first job of this process, and any
- *  job that exits non-zero or times out. A reminder attached to every successful
- *  call becomes wallpaper and gets skimmed, which is the exact failure being
- *  fixed here.
- *
- *  NEVER throws and NEVER blocks execution. A missing, huge or malformed lessons
- *  file simply means no reminder. Job execution is untouched by this whole block.
+ *  NEVER throws and NEVER blocks execution. A missing, huge or malformed
+ *  lessons file simply means no lessons. Job execution is untouched.
  */
 
 /* Where the operating corpus lives. COWORK_CONFIG_ROOT is what Cowork itself
  * loads -- the OneDrive "Cowork" folder on Windows, the equivalent on a Mac --
  * and the launcher sets it because only the operator knows their OneDrive
  * folder name. The in-repo copy is the fallback, so a checkout with no
- * configured host still produces a reminder. Both are read-only here. */
+ * configured host still finds lessons. Both are read-only here. */
 const CONFIG_ROOT = process.env.COWORK_CONFIG_ROOT || '';
 const LESSON_PATHS = [
   ...(CONFIG_ROOT ? [path.join(CONFIG_ROOT, 'cowork-memory', 'cowork-lessons.md')] : []),
   path.join(COWORK_ROOT, 'CoworkConfig', 'cowork-memory', 'cowork-lessons.md')
 ];
 const MAX_LESSON_BYTES = 4 * 1024 * 1024;
-const MAX_RULES        = 8;
-
-/*  MEASURED 2026-08-28, and it changed this design.
- *  supergateway runs 8933 STATELESS: a FRESH node process is spawned per
- *  request. Two consecutive jobs both reported "first job of this session"
- *  because an in-process flag resets every call. A module-level boolean cannot
- *  throttle anything here, so the reminder would have fired on EVERY call and
- *  become the wallpaper this was built to avoid.
- *
- *  State therefore lives in a file. A clean job inside the throttle window stays
- *  quiet; a job that does not exit clean ALWAYS gets the rules, because that is
- *  the moment they are worth reading.
- */
-const REMINDER_THROTTLE_MS = 45 * 60 * 1000;
-const REMINDER_MARKER      = path.join(LOG_DIR, '_last-operating-rules.txt');
+const MAX_TARGETED_LESSONS = 3;   // v1.6.0: cap for repeated-failure lookup
+const MIN_LESSON_SCORE     = 2;   // v1.6.0: shared meaningful terms required
+const REPEAT_WINDOW_MS     = 24 * 60 * 60 * 1000;   // v1.6.0: prior failure must be this recent
 
 let RULES_CACHE = null;   // null = not yet attempted
 
-function reminderSentRecently() {
-  try {
-    const t = parseInt(fs.readFileSync(REMINDER_MARKER, 'utf8').trim(), 10);
-    if (isNaN(t)) return false;
-    const age = Date.now() - t;
-    return age >= 0 && age < REMINDER_THROTTLE_MS;
-  } catch (_) {
-    return false;   // no marker, unreadable, or clock oddity -> send it
-  }
-}
-
-function markReminderSent() {
-  try { fs.writeFileSync(REMINDER_MARKER, String(Date.now()), 'utf8'); }
-  catch (_) { /* never let bookkeeping affect a job */ }
-}
-
 // ---- rule scope --------------------------------------------------------
-//  A rules block is spent attention: it is prepended to a job result, every job,
-//  and an operator reads it or does not. Measured 2026-09-15 on macOS under Claude
-//  Cowork: eight rules were served and two applied. The other six were about a dev
-//  tunnel, setting ports PUBLIC, resyncing tasks.json and running bridge-health.bat
-//  - none of which exist on that route. A rule that cannot apply is not neutral;
-//  it competes with the ones that can.
+//  A rules block is spent attention. Measured 2026-09-15 on macOS under Claude
+//  Cowork: eight rules were served and two applied; the other six were about a
+//  dev tunnel, PUBLIC ports, tasks.json and bridge-health.bat - none of which
+//  exist on that route. A rule that cannot apply is not neutral; it competes
+//  with the ones that can.
 //
 //  So an entry may carry "Routes:" and/or "Platforms:". BOTH ARE OPTIONAL and
-//  absent means everywhere, so an untagged corpus behaves exactly as it did before
-//  this existed. Narrowing is opt-in per entry and never deletes anything.
+//  absent means everywhere, so an untagged corpus behaves exactly as before.
+//  Narrowing is opt-in per entry and never deletes anything.
 //
-//  Platform is known here: this process is the bridge. Route is not - the Windows
-//  launcher serves both products - so COWORK_ROUTE is read when the launcher sets
-//  it and no route filtering happens when it does not. Guessing a route would drop
-//  rules an operator needs; not guessing only keeps a few they do not.
+//  Platform is known here: this process is the bridge. Route is not - the
+//  Windows launcher serves both products - so COWORK_ROUTE is read when the
+//  launcher sets it and no route filtering happens when it does not.
 const THIS_PLATFORM = process.platform === 'win32' ? 'windows'
                     : process.platform === 'darwin' ? 'macos' : 'linux';
 const THIS_ROUTE = (process.env.COWORK_ROUTE || '').trim().toLowerCase() || null;
@@ -854,25 +1025,62 @@ function loadOperatingRules() {
       found.push({ key, rule: rule.trim(), hits: isNaN(hits) ? 1 : hits });
     }
     found.sort((a, b) => b.hits - a.hits);
-    RULES_CACHE = found.slice(0, MAX_RULES);
+    RULES_CACHE = found;   // v1.6.0: ranked and capped in targetedLessonBlock
   } catch (_) {
     RULES_CACHE = [];
   }
   return RULES_CACHE;
 }
 
-function reminderBlock(why) {
+/* ------------------------------------- targeted lesson lookup (v1.6.0) -- */
+/* Replaces the automatic digest. Called only for a repeated failure of the
+ * same script. Returns null unless a bridge lesson shares a meaningful term
+ * with this failure's output. Never throws. */
+const LESSON_STOPWORDS = new Set([
+  'that', 'this', 'with', 'from', 'file', 'files', 'then', 'when', 'have',
+  'does', 'will', 'into', 'your', 'only', 'before', 'after', 'than', 'there',
+  'which', 'should', 'must', 'exit', 'code', 'error', 'failed', 'jobs',
+  'bridge', 'script', 'scripts', 'what', 'survives', 'fixed', 'source',
+  'never', 'every'
+]);
+
+/* Path components that appear in nearly every failure and every path-bearing
+ * lesson. Matching on them ranks lessons by shared paths, not by cause. */
+const PATH_NOISE = new Set([
+  'users', 'documents', 'copilot_cowork', 'commandjobs', 'outputs', 'logs',
+  'appdata', 'roaming', 'program', 'windows', 'system32'
+]);
+
+function lessonTerms(s) {
+  const out = new Set();
+  const user = (process.env.USERNAME || '').toLowerCase();
+  for (const raw of (String(s || '').toLowerCase().match(/[a-z0-9_.-]+/g) || [])) {
+    const t = raw.replace(/^[.-]+|[.-]+$/g, '');          // strip edge punctuation
+    if (t.length < 4 || /^[\d.-]+$/.test(t)) continue;      // short tokens, dates, numbers
+    if (user && t === user) continue;                        // account name from paths
+    if (LESSON_STOPWORDS.has(t) || PATH_NOISE.has(t)) continue;
+    out.add(t);
+  }
+  return out;
+}
+
+function targetedLessonBlock(failureText) {
   try {
     const rules = loadOperatingRules();
     if (!rules || rules.length === 0) return null;
-    const lines = rules.map(r =>
-      `  - ${r.rule}` + `  [${r.key}${r.hits > 1 ? `, ${r.hits} hits` : ''}]`);
-    return `OPERATING RULES FOR THIS BRIDGE  (${why})\n` +
-           `Read live from cowork-lessons.md. Each was learned by getting it wrong.\n\n` +
-           lines.join('\n') +
-           `\n\nScope: these cover USING the bridge. A bridge that appears ABSENT is a ` +
-           `different failure and this message cannot reach you for it, because you ` +
-           `would not be calling the tool. That rule lives in copilot-instructions.md.`;
+    const ft = lessonTerms(failureText);
+    if (ft.size === 0) return null;
+    const scored = rules.map(r => {
+      let score = 0;
+      for (const t of lessonTerms(r.rule + ' ' + r.key)) if (ft.has(t)) score++;
+      return { r, score };
+    }).filter(x => x.score >= MIN_LESSON_SCORE)
+      .sort((a, b) => (b.score - a.score) || (b.r.hits - a.r.hits))
+      .slice(0, MAX_TARGETED_LESSONS);
+    if (scored.length === 0) return null;
+    return 'RELEVANT LESSONS (this script also failed on its previous run; ' +
+           scored.length + ' of ' + rules.length + ' bridge lessons matched)\n' +
+           scored.map(x => '  - ' + x.r.rule + '  [' + x.r.key + ']').join('\n');
   } catch (_) {
     return null;
   }
@@ -880,21 +1088,18 @@ function reminderBlock(why) {
 
 /* Everything below is text a MODEL reads to decide how to call this tool, so it
  * has to describe the platform the server is actually running on. The POSIX port
- * changed the enforcement -- ALLOWED_EXT, DIRECTIVE_RE, POSIX_SHELL -- but left
- * this text Windows-only, which told an agent on a Mac that its .sh job would be
- * refused and pointed it at `cd /d` and `reg query`. Derive the wording from the
- * same constants the checks use so the two cannot drift again. */
-/* ALLOWED_EXT_TEXT joins with "and", which is right for a refusal ("only .bat
- * and .cmd may be executed") but wrong for naming one file, so the prose form
- * is separate. */
+ * changed the enforcement -- ALLOWED_EXT, DIRECTIVE_RE, POSIX_SHELL -- so the
+ * wording is derived from the same constants the checks use and cannot drift. */
 const FILE_KIND      = IS_WINDOWS ? '.bat or .cmd'           : '.sh';
 const JOBS_HINT      = IS_WINDOWS ? 'COPILOT_COWORK\\CommandJobs' : '<tooling root>/CommandJobs';
 const OUTPUTS_HINT   = IS_WINDOWS ? 'COPILOT_COWORK\\Outputs'     : '<tooling root>/Outputs';
+const LOGS_HINT      = IS_WINDOWS ? 'CommandJobs\\Logs\\ops'      : 'CommandJobs/Logs/ops';
 const DIRECTIVE_HINT = IS_WINDOWS ? 'REM COWORK_OUTPUT: <path>'   : '# COWORK_OUTPUT: <path>';
 const JOB_OUTPUT_VAR = IS_WINDOWS ? '%COWORK_JOB_OUTPUT%'         : '$COWORK_JOB_OUTPUT';
 const NORMALIZE_HINT = IS_WINDOWS ? 'an LF-only .bat becomes CRLF' : 'a CRLF .sh becomes LF';
 const EXAMPLE_FILE   = IS_WINDOWS ? 'reconcile-q3.bat'            : 'reconcile-q3.sh';
 const EXAMPLE_NESTED = IS_WINDOWS ? 'jobs\\\\reconcile-q3.bat'    : 'jobs/reconcile-q3.sh';
+const EXAMPLE_JOB    = IS_WINDOWS ? 'report-job.bat'              : 'report-job.sh';
 const REFUSED_HINT   = IS_WINDOWS
   ? 'Absolute, drive-qualified, UNC and environment-variable paths are rejected.'
   : 'Absolute paths, ~ expansion and environment-variable paths are rejected.';
@@ -905,17 +1110,25 @@ const TOOL = {
   description:
     `Execute an existing ${FILE_KIND} file already present under ` +
     `${JOBS_HINT}. Write the script first (filesystem bridge), ` +
-    `then pass its RELATIVE name here. Deliverables belong under ${OUTPUTS_HINT}; ` +
+    `then pass its RELATIVE name here; for a new or changed script prefer run_job, which saves ` +
+    `and runs in one call. Deliverables belong under ${OUTPUTS_HINT}; ` +
     `the script declares its own destination with a "${DIRECTIVE_HINT}" line, ` +
     `which is exposed to it as ${JOB_OUTPUT_VAR}. Returns stdout, stderr, exit code, ` +
     'timing, and the files created or modified. No command, arguments, executable, ' +
     'interpreter, working directory, environment variable, output directory, timeout ' +
     'override or elevation option can be supplied -- the only input is the filename. ' +
-    'This response carries the current rules verbatim on the first job of a session ' +
-    'and on any job that does not exit clean. Before running, the server rewrites the ' +
+    'Before running, the server rewrites the ' +
     `script's line terminators to the platform convention in place (${NORMALIZE_HINT}) ` +
     'and builds a complete user environment for it (profile variables and ' +
-    'the user PATH included); both are reported in the result. '
+    'the user PATH included); both are reported in the result. ' +
+    `Every run writes ${LOGS_HINT}/<script>.latest.json with status ` +
+    'ACCEPTED, STARTED, COMPLETED, FAILED or TIMED_OUT. After a lost or ambiguous response, ' +
+    'read that file with the filesystem bridge instead of rerunning. EXECUTOR_BUSY means ' +
+    'another job holds the lock and nothing was started. ' +
+    'The reply carries at most the first 1,000 and last 3,000 characters of stdout ' +
+    'and of stderr and 25 entries per file list; the complete result is in result_file and log_file. ' +
+    'A clean run returns a concise result; a failure returns execution evidence only, plus at ' +
+    'most 3 matching lessons when the same script also failed on its previous run. '
     /* PLUGIN-LESSONS:start run_batch_file */
     + 'OPERATING RULES, each learned from a real failure and regenerated from '
     + 'cowork-lessons.md - do not hand-edit: Files written through 8932 arrive LF-only and '
@@ -945,6 +1158,64 @@ const TOOL = {
   }
 };
 
+/* ------------------------------------------------- run_job (v1.7.0) -- */
+const MAX_JOB_BYTES = 64 * 1024;
+const JOB_NAME_RE = IS_WINDOWS
+  ? /^[A-Za-z0-9][A-Za-z0-9._-]{0,80}\.(bat|cmd)$/i
+  : /^[A-Za-z0-9][A-Za-z0-9._-]{0,80}\.sh$/;
+const RESERVED_NAME_RE = /^(con|prn|aux|nul|com\d|lpt\d)(\.|$)/i;
+
+const JOB_TOOL = {
+  name: 'run_job',
+  title: 'Save and run a CommandJobs script',
+  description:
+    `Save a job script into ${JOBS_HINT} and run it in one step. ` +
+    `Prefer this over write_file followed by run_batch_file for a new or changed ${FILE_KIND} job. ` +
+    `Inputs: file, a plain filename such as "${EXAMPLE_JOB}" (no folders), and content, the ` +
+    'complete script text (up to 64 KB). The file is saved, replacing any file of that name, ' +
+    'then run exactly as run_batch_file runs it, with the same limits, logs, operation record ' +
+    'and result fields.',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      file: { type: 'string', description: `Plain ${FILE_KIND} filename with no folders, e.g. "${EXAMPLE_JOB}".` },
+      content: { type: 'string', description: 'Complete script text, up to 64 KB.' }
+    },
+    required: ['file', 'content'],
+    additionalProperties: false
+  }
+};
+
+/* Saves the script for run_job. Returns an error message, or null on success
+ * (in which case args is reduced to { file } for the shared run path). */
+function writeJobScript(args) {
+  const extra = Object.keys(args).filter(k => k !== 'file' && k !== 'content');
+  if (extra.length)
+    return `REJECTED: unexpected parameter(s): ${extra.join(', ')}. run_job accepts only "file" and "content".`;
+  const file = typeof args.file === 'string' ? args.file.trim() : '';
+  if (!JOB_NAME_RE.test(file) || file.includes('..') || RESERVED_NAME_RE.test(file))
+    return `REJECTED: file must be a plain ${ALLOWED_EXT_TEXT} filename with no folders (letters, digits, . _ -).`;
+  const content = args.content;
+  if (typeof content !== 'string' || content.length === 0) return 'REJECTED: content must be a non-empty string.';
+  if (content.includes('\0')) return 'REJECTED: content contains a NUL byte.';
+  if (Buffer.byteLength(content, 'utf8') > MAX_JOB_BYTES) return 'REJECTED: content exceeds 64 KB.';
+  try {
+    const holder = readJson(LOCK_FILE);
+    if (holder && holder.script_name === file && !lockIsStale(holder))
+      return `EXECUTOR_BUSY: ${file} is running now (op ${holder.op_id}). Nothing was saved or started.`;
+    const target = path.join(realJobRoot(), file);
+    let st = null;
+    try { st = fs.lstatSync(target); } catch (_) { /* new file */ }
+    if (st && !st.isFile()) return 'REJECTED: a non-file (folder or link) already has that name.';
+    fs.writeFileSync(target, content, 'utf8');
+  } catch (e) {
+    return `REJECTED: could not save script: ${e.message}`;
+  }
+  args.file = file;
+  delete args.content;
+  return null;
+}
+
 function send(msg) { process.stdout.write(JSON.stringify(msg) + '\n'); }
 function ok(id, result)          { send({ jsonrpc: '2.0', id, result }); }
 function fail(id, code, message) { send({ jsonrpc: '2.0', id, error: { code, message } }); }
@@ -971,7 +1242,7 @@ async function handle(msg) {
     case 'ping':
       return isNotification ? undefined : ok(id, {});
 
-    case 'tools/list':     return ok(id, { tools: [TOOL] });
+    case 'tools/list':     return ok(id, { tools: [TOOL, JOB_TOOL] });
     case 'resources/list': return ok(id, { resources: [] });
     case 'prompts/list':   return ok(id, { prompts: [] });
 
@@ -979,8 +1250,15 @@ async function handle(msg) {
       const name = params && params.name;
       const args = (params && params.arguments) || {};
 
-      if (name !== TOOL.name)
+      if (name !== TOOL.name && name !== JOB_TOOL.name)
         return fail(id, -32602, `Unknown tool: ${name}`);
+
+      // v1.7.0: run_job saves the script first, then shares the run path below.
+      const viaJob = (name === JOB_TOOL.name);
+      if (viaJob) {
+        const saveError = writeJobScript(args);
+        if (saveError) return toolErr(id, saveError);
+      }
 
       // Reject unexpected arguments outright -- nothing can be smuggled alongside "file".
       const extra = Object.keys(args).filter(k => k !== 'file');
@@ -999,18 +1277,69 @@ async function handle(msg) {
       }
 
       if (RUNNING)
-        return toolErr(id, 'REJECTED: another batch job is already running. ' +
-                           'Maximum concurrent executions is 1. Try again when it finishes.');
+        return toolErr(id, 'EXECUTOR_BUSY: another batch job is already running in this process. Nothing was started.');
+
+      const scriptName = path.basename(real);
+      const opId = `${path.basename(real, path.extname(real))}_${stamp(new Date())}_${crypto.randomBytes(3).toString('hex')}`;
+      const op = {
+        op_id: opId, script: real, script_name: scriptName, server_version: SERVER_VERSION,
+        tool: viaJob ? 'run_job' : 'run_batch_file',
+        status: 'ACCEPTED', server_pid: process.pid, job_pid: null,
+        sha256_before: sha256File(real), sha256_run: null, line_endings: null,
+        started_at: new Date().toISOString(), completed_at: null,
+        exit_code: null, timed_out: null, log_file: null
+      };
+
+      const lock = acquireLock({ op_id: opId, script_name: scriptName, server_pid: process.pid,
+                                 job_pid: null, started_at: op.started_at });
+      if (!lock.ok) {
+        const h = lock.holder || {};
+        const same = !!h.script_name && h.script_name === scriptName;
+        return toolErr(id,
+          'EXECUTOR_BUSY: another batch job is already running' +
+          (h.script_name ? ` (${h.script_name}, op ${h.op_id}, started ${h.started_at})` : '') + '. ' +
+          (same ? 'It is THIS SAME script - do NOT rerun it. ' : '') +
+          `Nothing was started. Read ${LOGS_HINT}/<script>.latest.json and wait for ` +
+          'status COMPLETED, FAILED or TIMED_OUT before starting another job.' +
+          (lock.error ? ` (lock error: ${lock.error})` : ''));
+      }
+      const priorOp = readJson(path.join(OPS_DIR, scriptName + '.latest.json'));   // v1.6.0
+      writeOp(op);
 
       RUNNING = true;
       let result;
       try {
         const endings = normalizeLineEndings(real);
-        result = await runBatch(real, approvedOutput, endings);
+        op.sha256_run = sha256File(real);
+        op.line_endings = endings;
+        op.status = 'STARTED';
+        writeOp(op);
+        result = await runBatch(real, approvedOutput, endings, (jobPid) => {
+          op.job_pid = jobPid;
+          writeOp(op);
+          try {
+            atomicWriteJson(LOCK_FILE, { op_id: opId, script_name: scriptName, server_pid: process.pid,
+                                         job_pid: jobPid, started_at: op.started_at });
+          } catch (_) { /* lock still held by the original file */ }
+        });
+        op.status = result.timed_out ? 'TIMED_OUT' : (result.exit_code === 0 ? 'COMPLETED' : 'FAILED');
+        op.exit_code = result.exit_code;
+        op.timed_out = result.timed_out;
+        op.log_file = result.log_file || null;
+        op.completed_at = new Date().toISOString();
+        writeOp(op);
+        result.op_id = opId;
+        result.op_record = path.join(OPS_DIR, `${opId}.json`);
+        result.script_sha256 = op.sha256_run;
       } catch (e) {
-        return toolErr(id, `Execution failed: ${e.message}`);
+        op.status = 'FAILED';
+        op.error = e.message;
+        op.completed_at = new Date().toISOString();
+        writeOp(op);
+        return toolErr(id, `Execution failed: ${e.message} (op ${opId})`);
       } finally {
         RUNNING = false;
+        releaseLock(opId);
       }
 
       const summary =
@@ -1018,26 +1347,23 @@ async function handle(msg) {
         (result.timed_out ? ' (TIMED OUT -- process tree killed)' : '') +
         `, ${result.duration_ms} ms`;
 
+      const cleanRun = (result.exit_code === 0) && !result.timed_out;   // v1.8.0
       const content = [
         { type: 'text', text: `${path.basename(real)}: ${summary}` },
-        { type: 'text', text: JSON.stringify(result, null, 2) }
+        { type: 'text', text: JSON.stringify(cleanRun ? conciseResult(result) : boundedResult(result), null, 2) }
       ];
 
-      /* Attach the operating rules only when they are worth reading.
-       * A failed job always gets them. A clean job gets them only outside the
-       * throttle window. See the REMINDER_THROTTLE_MS note above for why this
-       * cannot be an in-process flag. */
+      /* v1.6.0: evidence first, no automatic digest. Targeted lessons only when
+       * this script's previous run also failed within REPEAT_WINDOW_MS. */
       const didNotExitClean = (result.exit_code !== 0) || result.timed_out;
-      let why = null;
-      if (didNotExitClean)             why = 'this job did not exit clean';
-      else if (!reminderSentRecently()) why = 'first job in the last 45 minutes';
-
-      if (why) {
-        const reminder = reminderBlock(why);
-        if (reminder) {
-          content.push({ type: 'text', text: reminder });
-          markReminderSent();
-        }
+      const priorAge = priorOp ? Date.now() - Date.parse(priorOp.completed_at || 0) : NaN;
+      const repeatedFailure = didNotExitClean && !!priorOp &&
+        (priorOp.status === 'FAILED' || priorOp.status === 'TIMED_OUT') &&
+        priorAge >= 0 && priorAge < REPEAT_WINDOW_MS;
+      if (repeatedFailure) {
+        const lessons = targetedLessonBlock(
+          (result.stderr || '') + '\n' + (result.stdout || '').slice(-4000));
+        if (lessons) content.push({ type: 'text', text: lessons });
       }
 
       return ok(id, {
@@ -1065,7 +1391,7 @@ try {
 }
 
 process.stderr.write(
-  `[${SERVER_NAME}] v${SERVER_VERSION} ready. Tool: run_batch_file\n` +
+  `[${SERVER_NAME}] v${SERVER_VERSION} ready. Tools: run_batch_file, run_job\n` +
   `[${SERVER_NAME}] scripts: ${realJobRoot()}\n` +
   `[${SERVER_NAME}] outputs: ${realOutputRoot()}\n` +
   `[${SERVER_NAME}] ${ALLOWED_EXT_TEXT} only, relative paths only, 300s timeout, ` +
